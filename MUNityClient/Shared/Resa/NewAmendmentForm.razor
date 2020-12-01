@@ -1,0 +1,112 @@
+﻿@using MUNityClient.Models.Resolution;
+
+<EditForm Model="@NewAmendmentModel">
+    <div class="form-group">
+        <label>Art des Änderungsantrags</label>
+        <InputSelect @bind-Value="NewAmendmentModel.AmendmentType" class="form-control border-dark">
+            <option value="change">Text ändern</option>
+            <option value="delete">Absatz streichen</option>
+            <option value="move">Absatz verschieben</option>
+            <option value="add">Neuen Absatz hinzufügen</option>
+        </InputSelect>
+    </div>
+
+
+    @if (this.NewAmendmentModel.AmendmentType == "change")
+    {
+        <div class="form-group">
+            <label>Operativer Absatz</label>
+            // Input Target Section
+            <InputSelect @bind-Value="NewAmendmentModel.TargetSectionId" class="form-control">
+                @foreach (var paragraph in this.Resolution.OperativeSection.Paragraphs)
+                    {
+                    <option value="@paragraph.OperativeParagraphId">@(paragraph.Text.Length > 40 ? paragraph.Text.Substring(0, 40) : paragraph.Text)</option>
+                    }
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+            <label>EinbringerIn</label>
+            <InputText @bind-Value="NewAmendmentModel.Submitter" class="form-control"></InputText>
+        </div>
+    }
+
+
+
+    @if (this.NewAmendmentModel.AmendmentType == "change" && !string.IsNullOrEmpty(this.NewAmendmentModel.TargetSectionId))
+    {
+        <div class="form-group">
+            <label>Neuer Text</label>
+            <InputTextArea @bind-Value="this.NewAmendmentModel.NewText" class="form-control">Beispiel</InputTextArea>
+        </div>
+    }
+</EditForm>
+
+@code {
+    private Resolution _resolution;
+
+    [Parameter]
+    public Resolution Resolution {
+        get => _resolution;
+        set
+        {
+            this._resolution = value;
+            this.NewAmendmentModel = new NewAmendment(value);
+        }
+    }
+
+    private NewAmendment NewAmendmentModel { get; set; }
+
+    private class NewAmendment
+    {
+        private readonly Resolution _resolution;
+
+        private string amendmentType = "";
+        public string AmendmentType {
+            get => this.amendmentType;
+            set
+            {
+                // Set the default first selection
+                this.TargetSectionId = this._resolution.OperativeSection.Paragraphs.FirstOrDefault()?.OperativeParagraphId ?? "";
+                this.amendmentType = value;
+            }
+        }
+
+        public string Submitter { get; set; }
+
+        private string targetSectionId;
+        public string TargetSectionId
+        {
+            get => this.targetSectionId;
+            set
+            {
+                this.NewText = _resolution.OperativeSection.Paragraphs.FirstOrDefault(a => a.OperativeParagraphId == value)?.Text ?? "";
+                this.targetSectionId = value;
+            }
+        }
+
+        public string NewText { get; set; }
+        public NewAmendment(Resolution resolution)
+        {
+            this._resolution = resolution;
+        }
+    }
+
+    public IAmendment GetAmendment()
+    {
+        if (this.NewAmendmentModel == null || string.IsNullOrEmpty(this.NewAmendmentModel.AmendmentType))
+            return null;
+
+        if (this.NewAmendmentModel.AmendmentType == "change")
+        {
+            var changeAmendment = new ChangeAmendment();
+            changeAmendment.TargetSectionId = this.NewAmendmentModel.TargetSectionId;
+            changeAmendment.NewText = this.NewAmendmentModel.NewText;
+            changeAmendment.SubmitterName = this.NewAmendmentModel.Submitter;
+            changeAmendment.SubmitTime = DateTime.Now;
+            return changeAmendment;
+        }
+
+        return null;
+    }
+}

@@ -7,13 +7,13 @@ namespace MUNityClient.Models.Resolution
 {
     public class ResolutionHeader : IResolutionHeader
     {
-        public string Name { get; set; }
-        public string FullName { get; set; }
-        public string Topic { get; set; }
-        public string AgendaItem { get; set; }
-        public string Session { get; set; }
-        public string SubmitterName { get; set; }
-        public string CommitteeName { get; set; }
+        public string Name { get; set; } = "";
+        public string FullName { get; set; } = "";
+        public string Topic { get; set; } = "";
+        public string AgendaItem { get; set; } = "";
+        public string Session { get; set; } = "";
+        public string SubmitterName { get; set; } = "";
+        public string CommitteeName { get; set; } = "";
 
         public List<string> Supporters { get; set; }
 

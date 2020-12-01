@@ -1,0 +1,55 @@
+﻿@using MUNityClient.Models.Resolution;
+
+@if (Resolution != null)
+{
+
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <h3>@Resolution.Header.Topic</h3>
+            <h4>EINBRINGER: @Resolution.Header.SubmitterName.ToUpper()</h4>
+            <h4>@Resolution.Header.CommitteeName.ToUpper(),</h4>
+        </div>
+    </div>
+
+
+    <!-- Preamble -->
+    <div class="row">
+
+    </div>
+
+    <!-- Operative Section -->
+    <div class="row">
+        @foreach (var op in Resolution.OperativeSection.Paragraphs)
+        {
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-gradient-dark">
+                        <div class="badge badge-danger">@Resolution.OperativeSection.DeleteAmendments.Count(n => n.TargetSectionId == op.OperativeParagraphId) Anträge auf Streichung</div>
+                        <div class="badge badge-info">@Resolution.OperativeSection.ChangeAmendments.Count(n => n.TargetSectionId == op.OperativeParagraphId) Anträge auf Änderung</div>
+                        <div class="badge badge-light">@Resolution.OperativeSection.MoveAmendments.Count(n => n.TargetSectionId == op.OperativeParagraphId) Anträge auf Verschiebung</div>
+                    </div>
+                    <div class="card-body">
+                        <MUNityClient.Shared.General.MarkdownView Content="@op.Text"></MUNityClient.Shared.General.MarkdownView>
+                    </div>
+                </div>
+            </div>
+        
+        }
+    </div>
+    
+}
+else
+{
+    <div class="alert alert-danger">Resolution konnte nicht gefunden werden :(</div>
+}
+
+@code {
+    [Parameter]
+    public Resolution Resolution { get; set; }
+
+    public ResolutionReader()
+    {
+
+    }
+}

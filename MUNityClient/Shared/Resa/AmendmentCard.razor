@@ -1,0 +1,61 @@
+﻿@using MUNityClient.Models.Resolution;
+
+@if (CardVisible)
+{
+    <div class="card @CardBorder">
+        <div class="card-body">
+            @if (Amendment is ChangeAmendment)
+            {
+                <h5 class="card-title">Antrag auf Textänderung</h5>
+            }
+            <p>Zeit: @Amendment.SubmitTime.ToString()</p>
+            <p>Eingebracht durch: @Amendment.SubmitterName</p>
+
+            <div class="custom-control custom-checkbox mr-sm-2">
+                <input type="checkbox" class="custom-control-input" @bind="Amendment.Activated" id="customControlAutosizing">
+                <label class="custom-control-label" for="customControlAutosizing">Auf Ansichten markieren</label>
+            </div>
+
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-success" @onclick="ApplyAmendment">Annehmen</button>
+                <button class="btn btn-warning" @onclick="DenyAmendment">Ablehnen</button>
+                <button class="btn btn-danger">Löschen</button>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public Resolution Resolution { get; set; }
+
+    [Parameter]
+    public IAmendment Amendment { get; set; }
+
+    [Parameter]
+    public EventCallback Interaction { get; set; }
+
+    public bool CardVisible = true;
+
+    public void ApplyAmendment()
+    {
+        this.Amendment?.Apply(this.Resolution);
+        Interaction.InvokeAsync(this.Amendment);
+    }
+
+    public void DenyAmendment()
+    {
+        this.Amendment?.Deny(this.Resolution);
+        Interaction.InvokeAsync(this.Amendment);
+    }
+
+    public string CardBorder
+    {
+        get
+        {
+            if (this.Amendment is ChangeAmendment) return "border-info";
+            return "";
+        }
+    }
+}

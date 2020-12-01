@@ -8,11 +8,11 @@ namespace MUNityClient.Models.Resolution
     public class OperativeParagraph : IOperativeParagraph
     {
         public string OperativeParagraphId { get; set; }
-        public string Name { get; set; }
-        public bool IsLocked { get; set; }
-        public bool IsVirtual { get; set; }
-        public string Text { get; set; }
-        public bool Visible { get; set; }
+        public string Name { get; set; } = "";
+        public bool IsLocked { get; set; } = false;
+        public bool IsVirtual { get; set; } = false;
+        public string Text { get; set; } = "";
+        public bool Visible { get; set; } = true;
 
         public List<OperativeParagraph> Children { get; set; }
 

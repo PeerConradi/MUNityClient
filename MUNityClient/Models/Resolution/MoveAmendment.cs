@@ -17,5 +17,15 @@ namespace MUNityClient.Models.Resolution
 
         public string NewTargetSectionId { get; set; }
         public int Position { get; set; }
+
+        public bool Apply(Resolution parentResolution)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Deny(Resolution parentResolution)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

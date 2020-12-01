@@ -3,14 +3,14 @@
 <div class="card">
     <div class="card-header">
         <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-primary">Höher</button>
-            <button class="btn btn-outline-primary">Tiefer</button>
+            <button class="btn btn-outline-primary" disabled="@(Index == 0)">Höher</button>
+            <button class="btn btn-outline-primary" disabled="@(Index == Resolution.Preamble.Paragraphs.Count - 1)">Tiefer</button>
             <button class="btn btn-outline-warning">Sperren</button>
             <button class="btn btn-outline-success">Als kontrolliert markieren</button>
             <button class="btn btn-outline-danger">Löschen</button>
         </div>
     </div>
-    <div class="card-body">
+    <div class="card-body-no-padding">
         <EditForm Model="Paragraph">
             <InputTextArea @bind-Value="Paragraph.Text" class="form-control" />
         </EditForm>
@@ -26,12 +26,16 @@
     </div>
 </div>
 @code {
+    [Parameter]
     public Resolution Resolution { get; set; }
 
+    [Parameter]
     public PreambleParagraph Paragraph { get; set; }
+
+    public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
 
     public PreambleParagraphEditor()
     {
-        Paragraph = new PreambleParagraph();
+        
     }
 }

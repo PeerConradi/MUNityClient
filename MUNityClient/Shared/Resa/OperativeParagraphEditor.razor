@@ -1,0 +1,76 @@
+﻿@using MUNityClient.Models.Resolution;
+
+@if (Resolution.OperativeSection.Paragraphs.Contains(this.Paragraph))
+{
+    <div class="card">
+        <div class="card-header">
+            <div class="btn-group btn-group-sm">
+
+                <button class="btn btn-outline-primary" disabled="@(Index == 0)">Höher</button>
+                <button class="btn btn-outline-primary" disabled="@(Index == Resolution.OperativeSection.Paragraphs.Count - 1)">Tiefer</button>
+                <button class="btn btn-outline-warning">Sperren</button>
+                <button class="btn btn-outline-success">Als kontrolliert markieren</button>
+                <button class="btn btn-outline-danger" @onclick="RemoveOperativeParagraph">Löschen</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <EditForm Model="Paragraph">
+                <InputTextArea @bind-Value="Paragraph.Text" class="form-control" style="margin: -10px;" />
+            </EditForm>
+
+        </div>
+        @*<div class="card-footer">
+                <div class="text-warning">Der Preamble Paragraph enthält keinen gültigen Operator.</div>
+                Aktuelle Bearbeiter:
+                <div class="badge badge-info">Nutzer 1</div>
+                <div class="badge badge-info">Nutzer 2</div>
+                Status:
+                <div class="badge badge-success">Vom Sek kontrolliert.</div>
+            </div>*@
+    </div>
+}
+else
+{
+    if (!Dismissed)
+    {
+        <div class="alert alert-warning alert-dismissible">
+            Ich bin ein Geist, aber du kannst mich
+            <button class="btn btn-sm btn-secondary" @onclick="BringBack">wiederbeleben</button>.
+            <button type="button" class="close" aria-label="Close" @onclick="@(() => Dismissed = true)">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+}
+
+@code {
+    [Parameter]
+    public Resolution Resolution { get; set; }
+
+    [Parameter]
+    public OperativeParagraph Paragraph { get; set; }
+
+    public int Index => this.Resolution?.OperativeSection?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
+
+    public bool Dismissed { get; set; } = false;
+
+    public OperativeParagraphEditor()
+    {
+        Paragraph = new OperativeParagraph();
+    }
+
+    public void RemoveOperativeParagraph()
+    {
+        this.Resolution.OperativeSection.AddAmendments.RemoveAll(n => n.TargetSectionId == this.Paragraph.OperativeParagraphId);
+        this.Resolution.OperativeSection.ChangeAmendments.RemoveAll(n => n.TargetSectionId == this.Paragraph.OperativeParagraphId);
+        this.Resolution.OperativeSection.DeleteAmendments.RemoveAll(n => n.TargetSectionId == this.Paragraph.OperativeParagraphId);
+        this.Resolution.OperativeSection.Paragraphs.Remove(this.Paragraph);
+    }
+
+    public void BringBack()
+    {
+        this.Resolution.OperativeSection.Paragraphs.Add(this.Paragraph);
+    }
+
+}

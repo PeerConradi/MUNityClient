@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Ganss.XSS;
 
 namespace MUNityClient
 {
@@ -18,6 +19,14 @@ namespace MUNityClient
             builder.RootComponents.Add<App>("app");
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddScoped<IHtmlSanitizer, HtmlSanitizer>(x =>
+            {
+                // Configure sanitizer rules as needed here.
+                // For now, just use default rules + allow class attributes
+                var sanitizer = new Ganss.XSS.HtmlSanitizer();
+                sanitizer.AllowedAttributes.Add("class");
+                return sanitizer;
+            });
 
             await builder.Build().RunAsync();
         }

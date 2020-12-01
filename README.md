@@ -17,7 +17,7 @@ This application is under development and cannot be used at the moment. Please c
 | ------------------- | ----------------------------------- | ---------------------------------------------------------------- |
 | User Managment      | ![0%](https://progress-bar.dev/0) | NOT STARTED                                                          |
 | ConferenceManagment | ![0%](https://progress-bar.dev/1) | NOT STARTED                                                  |
-| ResaEditor          | ![10%](https://progress-bar.dev/10) | ObjectModel Done |
+| ResaEditor          | ![23%](https://progress-bar.dev/23) | Editor Frontend started and ChangeAmendment Done |
 | Speakerlist         | ![0%](https://progress-bar.dev/0) | NOT STARTED                                     |
 | Simulation          | ![0%](https://progress-bar.dev/0)   | NOT STARTED                                                    |
 | Administration      | ![0%](https://progress-bar.dev/0)   | NOT STARTED                                              |

@@ -23,5 +23,15 @@ namespace MUNityClient.Models.Resolution
         public string ParentSectionId { get; set; }
         public int Position { get; set; }
         public string Text { get; set; }
+
+        public bool Apply(Resolution parentResolution)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool Deny(Resolution parentResolution)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

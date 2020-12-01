@@ -19,5 +19,20 @@ namespace MUNityClient.Models.Resolution
         public DateTime SubmitTime { get; set; }
         public string Type { get; set; }
         public string NewText { get; set; }
+
+        public bool Apply(Resolution parentResolution)
+        {
+            parentResolution.OperativeSection.ChangeAmendments.Remove(this);
+            var target = parentResolution.FindOperativeParagraph(this.TargetSectionId);
+            if (target == null) return false;
+            target.Text = this.NewText;
+            return true;
+        }
+
+        public bool Deny(Resolution parentResolution)
+        {
+            parentResolution.OperativeSection.ChangeAmendments.Remove(this);
+            return true;
+        }
     }
 }

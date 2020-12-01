@@ -1,23 +1,127 @@
 ﻿@page "/resa/edit"
+@using MUNityClient.Models.Resolution;
 
 <h3>ResolutionEditor</h3>
 
 <div class="row">
     <!-- Preamble and Operative Section-->
     <div class="col-lg-8">
-        <MUNityClient.Shared.Resa.PreambleParagraphEditor />
-        
+        <h3>Präambel</h3>
+        @foreach (var preamble in this.Resolution.Preamble.Paragraphs)
+        {
+            <MUNityClient.Shared.Resa.PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preamble" />
+        }
+
+        <button class="btn btn-success btn-block" @onclick="AddPreambleParagraph">Neuer Präambel Paragraph</button>
+
+        <h3>Operativer Abschnitt</h3>
+        @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+        {
+            <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative" />
+        }
+
+        <button class="btn btn-success btn-block" @onclick="AddOperativeParagraph">Neuer Operativer Absatz</button>
     </div>
 
     <!-- Amendments -->
     <div class="col-lg-4">
-
+        <div class="card">
+            <div class="card-header">
+                <h3>Änderungsanträge</h3>
+                <button class="btn btn-block btn-success" @onclick="ShowNewAmendmentModal">Neuer Änderungsantrag</button>
+            </div>
+            <div class="card-body">
+                @foreach(var amendment in OrderedAmendments)
+                {
+                    <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution" Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                }
+            </div>
+        </div>
     </div>
 </div>
+
+<div class="row">
+    <div class="col-12">
+        <MUNityClient.Shared.Resa.ResolutionReader Resolution="this.Resolution"></MUNityClient.Shared.Resa.ResolutionReader>
+    </div>
+</div>
+
+<MUNityClient.Shared.Bootstrap.Modal @ref="AddAmendmentModal" OnSubmitCallback="NewAmendment">
+    <MUNityClient.Shared.Resa.NewAmendmentForm Resolution="this.Resolution" @ref="NewAmendmentForm"></MUNityClient.Shared.Resa.NewAmendmentForm>
+</MUNityClient.Shared.Bootstrap.Modal>
 
 @code {
     //[Parameter]
     //public string Id { get; set; }
 
+    private MUNityClient.Shared.Bootstrap.Modal AddAmendmentModal { get; set; }
+
+    private MUNityClient.Shared.Resa.NewAmendmentForm NewAmendmentForm { get; set; }
+
+    public Resolution Resolution { get; set; }
+
+    public ResolutionEditor()
+    {
+        this.Resolution = new Resolution();
+        Resolution.Header.Topic = "Thema";
+        Resolution.Header.SubmitterName = "Landname";
+        Resolution.Header.CommitteeName = "Gremiumname";
+        this.Resolution.OperativeSection.Paragraphs.Add(new OperativeParagraph() { Text = "Dies ist ein Test Paragraph" });
+    }
+
+    public void AmendmentInteracted()
+    {
+        this.StateHasChanged();
+    }
+
+    private void AddPreambleParagraph()
+    {
+        this.Resolution.Preamble.Paragraphs.Add(new PreambleParagraph());
+    }
+
+    private void AddOperativeParagraph()
+    {
+        this.Resolution.OperativeSection.Paragraphs.Add(new OperativeParagraph());
+    }
+
+    private void ShowNewAmendmentModal()
+    {
+        this.AddAmendmentModal.Open();
+    }
+
+    private void NewAmendment()
+    {
+        var amendment = this.NewAmendmentForm.GetAmendment();
+        if (amendment is ChangeAmendment changeAmendment)
+        {
+            this.Resolution.OperativeSection.ChangeAmendments.Add(changeAmendment);
+        }
+        this.AddAmendmentModal.Close();
+    }
+
+    private IEnumerable<IAmendment> OrderedAmendments
+    {
+        get
+        {
+            var list = new List<IAmendment>();
+            foreach (var paragraph in this.Resolution.OperativeSection.Paragraphs)
+            {
+                var deleteAmendments = this.Resolution.OperativeSection.DeleteAmendments.Where(n => n.TargetSectionId == paragraph.OperativeParagraphId);
+                if (deleteAmendments.Any())
+                    list.AddRange(deleteAmendments);
+
+                var changeAmendments = this.Resolution.OperativeSection.ChangeAmendments.Where(n => n.TargetSectionId == paragraph.OperativeParagraphId);
+                if (changeAmendments.Any())
+                    list.AddRange(changeAmendments);
+
+                var moveAmendments = this.Resolution.OperativeSection.MoveAmendments.Where(n => n.TargetSectionId == paragraph.OperativeParagraphId);
+                if (moveAmendments.Any())
+                    list.AddRange(moveAmendments);
+            }
+
+            list.AddRange(this.Resolution.OperativeSection.AddAmendments);
+            return list;
+        }
+    }
 
 }
