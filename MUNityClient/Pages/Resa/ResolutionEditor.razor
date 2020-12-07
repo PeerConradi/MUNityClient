@@ -5,19 +5,17 @@
 <div class="row justify-content-center">
     <div class="col-11">
         @* Preamble *@
-        <div>
-            <h3 class="font-weight-bold">Präambel</h3>
-            @* Preamble paragraphs *@
-            @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
-            {
-                <MUNityClient.Shared.Resa.PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preambleParagraph"
-                    OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
-                    OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
-            }
-            <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
-                <i class="fas fa-plus mr-3"></i>Neuer Präambel
-                Paragraph</button>
-        </div>
+        <h3 class="font-weight-bold col-12">Präambel</h3>
+        @* Preamble paragraphs *@
+        @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
+        {
+            <MUNityClient.Shared.Resa.PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preambleParagraph"
+                OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
+                OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
+        }
+        <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
+            <i class="fas fa-plus mr-3"></i>Neuer Präambel
+            Paragraph</button>
     </div>
 </div>
 
@@ -65,11 +63,13 @@
     </div>
 
     @* Preamble Paragraph Delete Modal *@
-    <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeletePreambleParagraphModal" OnSubmitCallback="removePreambleParagraph">
+    <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeletePreambleParagraphModal"
+        OnSubmitCallback="removePreambleParagraph">
         Bist du sicher, dass du den Paragraphen löschen möchtest?
     </MUNityClient.Shared.Bootstrap.Modal>
 
-    <MUNityClient.Shared.Bootstrap.Modal Title="Neuer Änderungsantrag" @ref="AddAmendmentModal" OnSubmitCallback="NewAmendment">
+    <MUNityClient.Shared.Bootstrap.Modal Title="Neuer Änderungsantrag" @ref="AddAmendmentModal"
+        OnSubmitCallback="NewAmendment">
         <MUNityClient.Shared.Resa.NewAmendmentForm Resolution="this.Resolution" @ref="NewAmendmentForm">
         </MUNityClient.Shared.Resa.NewAmendmentForm>
     </MUNityClient.Shared.Bootstrap.Modal>
