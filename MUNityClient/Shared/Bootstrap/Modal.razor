@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">@Title</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" @onclick="() => Close()" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -11,8 +11,8 @@
                 @ChildContent
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" @onclick="OnSubmitCallback">@SubmitText</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => Close()">Close</button>
+                <button type="button" class="btn btn-primary" @onclick="@(() => {OnSubmitCallback.InvokeAsync(null); Close();})">@SubmitText</button>
+                <button type="button" class="btn btn-light" data-dismiss="modal" @onclick="() => Close()">Abbrechen</button>
             </div>
         </div>
     </div>
@@ -36,7 +36,7 @@
     public EventCallback<MouseEventArgs> OnSubmitCallback { get; set; }
 
     [Parameter]
-    public string SubmitText { get; set; } = "Submit";
+    public string SubmitText { get; set; } = "Bestätigen";
 
     public Guid Guid = Guid.NewGuid();
     public string ModalDisplay = "none;";

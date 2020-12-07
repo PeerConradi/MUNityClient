@@ -1,23 +1,58 @@
 ﻿@using MUNityClient.Models.Resolution;
 
-<div class="card">
-    <div class="card-header">
-        <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-primary" disabled="@(Index == 0)">Höher</button>
-            <button class="btn btn-outline-primary" disabled="@(Index == Resolution.Preamble.Paragraphs.Count - 1)">Tiefer</button>
-            <button class="btn btn-outline-warning">Sperren</button>
-            <button class="btn btn-outline-success">Als kontrolliert markieren</button>
-            <button class="btn btn-outline-danger">Löschen</button>
+
+<div class="card my-2 @(markedAsControlled ? "border border-success" : "")">
+    <div class="row">
+        @* Up/Down Buttons *@
+        <div class="col-3 col-sm-2 col-md-1 justify-content-center pr-0">
+            <button disabled="@(Index == 0)" class="col-12 p-0 text-center p-4 custom-button h-50"
+                @onclick="() => OnMoveEvent.InvokeAsync(true)" title="Nach oben verschieben" alt="put higher"><i
+                    class="fas fa-lg fa-caret-up"></i></button>
+            <button disabled="@(Index == Resolution.Preamble.Paragraphs.Count - 1)"
+                class="col-12 p-0 text-center p-4 custom-button h-50" @onclick="() => OnMoveEvent.InvokeAsync(false)"
+                title="Nach unten verschieben" alt="put lower"><i class="fas fa-lg fa-caret-down"></i></button>
+        </div>
+        @* Input Field *@
+        <div class="col-6 col-sm-8 col-md-10 p-0">
+            <EditForm Model="Paragraph" class="h-100">
+                <InputTextArea @bind-Value="Paragraph.Text" disabled="@locked" placeholder="Text..."
+                    class="form-control h-100 custom-input-field px-0 p-2" />
+            </EditForm>
+        </div>
+        @* Option Buttons *@
+        <div class="col-3 col-sm-2 col-md-1 pl-0">
+            <div role="button" type="button" @onclick="@(() => locked = !locked)" title="Bearbeitung sperren"
+                class="col-12 p-0 text-center p-3 custom-button text-warning" alt="lock">
+                @if (locked)
+                {
+                    <i class="fas fa-lg fa-lock"></i>
+                }
+                else
+                {
+                    <i class="fas fa-lg fa-lock-open"></i>
+                }
+            </div>
+            <div role="button" type="button" @onclick="@(() => markedAsControlled = !markedAsControlled)"
+                class="col-12 p-0 text-center p-3 custom-button" alt="mark as checked" title="Als überprüft markieren">
+                @if (markedAsControlled)
+                {
+                    <i class="text-success fa-lg fas fa-check"></i>
+                }
+                else
+                {
+                    <i class="text-danger fa-lg fas fa-times"></i>
+                }
+            </div>
+            <div role="button" type="button" class="col-12 p-0 text-center p-3 custom-button text-danger" alt="delete"
+                title="Löschen" @onclick="() => OnDeleteEvent.InvokeAsync(null)">
+                <i class="fas fa-lg fa-trash"></i></div>
         </div>
     </div>
-    <div class="card-body-no-padding">
-        <EditForm Model="Paragraph">
-            <InputTextArea @bind-Value="Paragraph.Text" class="form-control" />
-        </EditForm>
 
-    </div>
+    @* Status Footer *@
     <div class="card-footer">
-        <div class="text-warning">Der Preamble Paragraph enthält keinen gültigen Operator.</div>
+        <div class="text-warning"><i class="fas fa-info-circle mr-2"></i>Der Präambel Paragraph enthält keinen gültigen
+            Operator.</div>
         Aktuelle Bearbeiter:
         <div class="badge badge-info">Nutzer 1</div>
         <div class="badge badge-info">Nutzer 2</div>
@@ -25,6 +60,9 @@
         <div class="badge badge-success">Vom Sek kontrolliert.</div>
     </div>
 </div>
+
+
+
 @code {
     [Parameter]
     public Resolution Resolution { get; set; }
@@ -32,10 +70,40 @@
     [Parameter]
     public PreambleParagraph Paragraph { get; set; }
 
+
+    [Parameter]
+    //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
+    public EventCallback<Boolean> OnMoveEvent { get; set; }
+
+    [Parameter]
+    //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
+    public EventCallback OnDeleteEvent { get; set; }
+
     public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
+
+    public Boolean locked = false;
+    public Boolean markedAsControlled = false;
 
     public PreambleParagraphEditor()
     {
-        
+
     }
 }
+
+
+<style>
+    .custom-button {
+        border-width: 0px;
+        background-color: #00000000;
+        transition: .3s;
+    }
+
+    .custom-button:hover {
+        background-color: #88888826;
+    }
+
+    .custom-input-field {
+        border: 0px;
+        resize: none;
+    }
+</style>
