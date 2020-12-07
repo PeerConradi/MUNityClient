@@ -9,7 +9,7 @@
         <h3>Präambel</h3>
         @foreach (var preamble in this.Resolution.Preamble.Paragraphs)
         {
-            <MUNityClient.Shared.Resa.PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preamble" />
+            <MUNityClient.Shared.Resa.PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preamble" ></MUNityClient.Shared.Resa.PreambleParagraphEditor>
         }
 
         <button class="btn btn-success btn-block" @onclick="AddPreambleParagraph">Neuer Präambel Paragraph</button>
@@ -99,6 +99,14 @@
         this.AddAmendmentModal.Close();
     }
 
+    /// <summary>
+    /// List of amendments in visible order. This is the order of all the amendments
+    /// first of by the paragraph they address from top to bottom. 
+    /// Then Amendments to delete are shown first, after that amendments to change the paragraph, after that
+    /// amendments to move the paragraph.
+    /// 
+    /// Amendments to add a new paragraph are shown last!
+    /// </summary>
     private IEnumerable<IAmendment> OrderedAmendments
     {
         get
