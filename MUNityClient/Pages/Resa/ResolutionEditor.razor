@@ -1,66 +1,68 @@
-﻿@page "/resa/edit"
+﻿<!-- Navigate to id test /resa/edit/test to show a test resolution without anything -->
+@page "/resa/edit/{id}"
 @using MUNityClient.Models.Resolution;
+@using MUNityClient.Extensions;
+@using MUNityClient.Shared.Resa;
+@inject MUNityClient.Services.ResolutionService resolutionService;
 
 
-<div class="row justify-content-center">
-    <div class="col-11">
-        @* Preamble *@
-        <div>
-            <h3 class="font-weight-bold">Präambel</h3>
-            @* Preamble paragraphs *@
-            @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
-            {
-                <MUNityClient.Shared.Resa.PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preambleParagraph"
-                    OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
-                    OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
-            }
-            <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
-                <i class="fas fa-plus mr-3"></i>Neuer Präambel
-                Paragraph</button>
-        </div>
-    </div>
-</div>
-
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<!--  and Operative Section-->
-
-<h3>Operativer Abschnitt</h3>
-@foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+@if (this.Resolution != null)
 {
-    <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative" />
-}
-
-<button class="btn btn-success btn-block" @onclick="AddOperativeParagraph">Neuer Operativer Absatz</button>
-
-<!-- Amendments -->
-<div class="col-lg-4">
-    <div class="card">
-        <div class="card-header">
-            <h3>Änderungsanträge</h3>
-            <button class="btn btn-block btn-success" @onclick="ShowNewAmendmentModal">Neuer
-                Änderungsantrag</button>
-        </div>
-        <div class="card-body">
-            @foreach (var amendment in OrderedAmendments)
-            {
-                <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
-                    Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
-            }
+    <div class="row justify-content-center">
+        <div class="col-11">
+            @* Preamble *@
+            <div>
+                <h3 class="font-weight-bold">Präambel</h3>
+                @* Preamble paragraphs *@
+                @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
+                {
+                    <PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preambleParagraph"
+                                                                      OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
+                                                                      OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
+                }
+                <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
+                    <i class="fas fa-plus mr-3"></i>Neuer Präambel
+                    Paragraph
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <MUNityClient.Shared.Resa.ResolutionReader Resolution="this.Resolution">
-            </MUNityClient.Shared.Resa.ResolutionReader>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <!--  and Operative Section-->
+
+    <h3>Operativer Abschnitt</h3>
+    @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+    {
+        <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative" />
+    }
+
+    <button class="btn btn-success btn-block" @onclick="AddOperativeParagraph">Neuer Operativer Absatz</button>
+
+    <!-- Amendments -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Änderungsanträge</h3>
+                <button class="btn btn-block btn-success" @onclick="ShowNewAmendmentModal">
+                    Neuer
+                    Änderungsantrag
+                </button>
+            </div>
+            <div class="card-body">
+                @foreach (var amendment in OrderedAmendments)
+                {
+                    <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                                                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                }
+            </div>
         </div>
     </div>
 
@@ -73,11 +75,18 @@
         <MUNityClient.Shared.Resa.NewAmendmentForm Resolution="this.Resolution" @ref="NewAmendmentForm">
         </MUNityClient.Shared.Resa.NewAmendmentForm>
     </MUNityClient.Shared.Bootstrap.Modal>
+}
+else
+{
+    <p>Resolution wird geladen oder nicht gefunden...</p>
+}
 
 
-    @code {
-    //[Parameter]
-    //public string Id { get; set; }
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
 
     private MUNityClient.Shared.Bootstrap.Modal AddAmendmentModal { get; set; }
     private MUNityClient.Shared.Bootstrap.Modal DeletePreambleParagraphModal { get; set; }
@@ -90,36 +99,44 @@
 
     public ResolutionEditor()
     {
-        this.Resolution = new Resolution();
-        Resolution.Header.Topic = "Thema";
-        Resolution.Header.SubmitterName = "Landname";
-        Resolution.Header.CommitteeName = "Gremiumname";
-        this.Resolution.OperativeSection.Paragraphs.Add(new OperativeParagraph() { Text = "Dies ist ein Test Paragraph" });
 
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.Resolution = await this.resolutionService.GetPublicResolution(Id);
+    }
+
+    private async void SaveResolution()
+    {
+        if (this.Resolution.ResolutionId == "test") return;
+
+        var result = await this.resolutionService.UpdatePublicResolution(this.Resolution);
+        if (result.IsSuccessStatusCode)
+        {
+            // TODO: Save success notification!
+            // currently the whole document will be saved as one.
+        }
+        else
+        {
+            // TODO: Save failure notification!
+        }
     }
 
     public void removePreambleParagraph()
     {
         this.Resolution?.Preamble?.Paragraphs?.Remove(MarkedForDeletion);
+        SaveResolution();
     }
 
     //Move a preamble section in the given direction. It's called by the move event from the preambleParagraph child
     //component
     public void MovePreambleParagraph(Boolean up, PreambleParagraph preambleParagraph)
     {
-        //TODO: Cleanup
         int originalIndex = this.Resolution?.Preamble?.Paragraphs?.IndexOf(preambleParagraph) ?? -1;
-        int movedIndex = up ? originalIndex - 1 : originalIndex + 1;
-        if (movedIndex >= this.Resolution?.Preamble?.Paragraphs.Count)
-        {
-            movedIndex--;
-        }
-        else if (movedIndex < 0)
-        {
-            movedIndex++;
-        }
-
-        Swap<PreambleParagraph>(this.Resolution.Preamble.Paragraphs, originalIndex, movedIndex);
+        this.Resolution.Preamble.Paragraphs.Move(originalIndex, up ? MoveDirection.Up : MoveDirection.Down);
+        SaveResolution();
     }
 
     public void AmendmentInteracted()
@@ -130,11 +147,13 @@
     private void AddPreambleParagraph()
     {
         this.Resolution.Preamble.Paragraphs.Add(new PreambleParagraph());
+        SaveResolution();
     }
 
     private void AddOperativeParagraph()
     {
         this.Resolution.OperativeSection.Paragraphs.Add(new OperativeParagraph());
+        SaveResolution();
     }
 
     private void ShowNewAmendmentModal()
@@ -150,14 +169,15 @@
             this.Resolution.OperativeSection.ChangeAmendments.Add(changeAmendment);
         }
         this.AddAmendmentModal.Close();
+        SaveResolution();
     }
 
     /// <summary>
     /// List of amendments in visible order. This is the order of all the amendments
-    /// first of by the paragraph they address from top to bottom. 
+    /// first of by the paragraph they address from top to bottom.
     /// Then Amendments to delete are shown first, after that amendments to change the paragraph, after that
     /// amendments to move the paragraph.
-    /// 
+    ///
     /// Amendments to add a new paragraph are shown last!
     /// </summary>
     private IEnumerable<IAmendment> OrderedAmendments
@@ -186,13 +206,6 @@
             list.AddRange(this.Resolution.OperativeSection.AddAmendments);
             return list;
         }
-    }
-
-    public static void Swap<T>(IList<T> list, int indexA, int indexB)
-    {
-        T tmp = list[indexA];
-        list[indexA] = list[indexB];
-        list[indexB] = tmp;
     }
 
 }

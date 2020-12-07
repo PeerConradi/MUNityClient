@@ -13,12 +13,16 @@ namespace MUNityClient
 {
     public class Program
     {
+        public static readonly string API_URL = "https://localhost:44349";
+
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            // builder.HostEnvironment.BaseAddress
+            builder.Services.AddSingleton(sp => new HttpClient { BaseAddress = new Uri(API_URL) });
+            builder.Services.AddSingleton<Services.ResolutionService>();
             builder.Services.AddScoped<IHtmlSanitizer, HtmlSanitizer>(x =>
             {
                 // Configure sanitizer rules as needed here.

@@ -1,9 +1,20 @@
 ﻿@page "/resa/home"
+@inject MUNityClient.Services.ResolutionService resolutionService;
+@inject NavigationManager navigationManager;
 
 <h3>MUNity Resolutions-Editor</h3>
 
-<NavLink href="resa/edit">Editor</NavLink>
+<button @onclick="CreatePublicResolution">Öffentliche Resolution erstellen (Mit Server)</button>
+
+<NavLink href="resa/edit/test">Open Resolution Editor with Test</NavLink>
 
 @code {
-
+    private async Task CreatePublicResolution()
+    {
+        var resolution = await this.resolutionService.CreatePublicResolution("NoTitle");
+        if (resolution != null)
+        {
+            navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}");
+        }
+    }
 }
