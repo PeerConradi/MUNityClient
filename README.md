@@ -27,4 +27,13 @@ This application is under development and cannot be used at the moment. Please c
 Requiered: 
 * Visual Studio Community Edtion 2019 or higher or Visual Studio Code https://visualstudio.microsoft.com/de/downloads/
 
+To have an easier workflow with Visual Studio goto Tools (Extras) -> Command Prompt (Befehlszeile) -> Developer-Command-Prompt (Entwickler-EIngabeaufforderung)
+and type in
+```
+cd MUNityClient
+dotnet watch run
+```
+
+This will allow a Hot-Reload function
+
 
