@@ -1,64 +1,92 @@
 ﻿@page "/resa/edit"
 @using MUNityClient.Models.Resolution;
 
-<h3>ResolutionEditor</h3>
 
-<div class="row">
-    <!-- Preamble and Operative Section-->
-    <div class="col-lg-8">
-        <h3>Präambel</h3>
-        @foreach (var preamble in this.Resolution.Preamble.Paragraphs)
-        {
-            <MUNityClient.Shared.Resa.PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preamble" ></MUNityClient.Shared.Resa.PreambleParagraphEditor>
-        }
-
-        <button class="btn btn-success btn-block" @onclick="AddPreambleParagraph">Neuer Präambel Paragraph</button>
-
-        <h3>Operativer Abschnitt</h3>
-        @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
-        {
-            <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative" />
-        }
-
-        <button class="btn btn-success btn-block" @onclick="AddOperativeParagraph">Neuer Operativer Absatz</button>
-    </div>
-
-    <!-- Amendments -->
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h3>Änderungsanträge</h3>
-                <button class="btn btn-block btn-success" @onclick="ShowNewAmendmentModal">Neuer Änderungsantrag</button>
-            </div>
-            <div class="card-body">
-                @foreach(var amendment in OrderedAmendments)
-                {
-                    <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution" Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
-                }
-            </div>
+<div class="row justify-content-center">
+    <div class="col-11">
+        @* Preamble *@
+        <div>
+            <h3 class="font-weight-bold">Präambel</h3>
+            @* Preamble paragraphs *@
+            @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
+            {
+                <MUNityClient.Shared.Resa.PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preambleParagraph"
+                    OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
+                    OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
+            }
+            <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
+                <i class="fas fa-plus mr-3"></i>Neuer Präambel
+                Paragraph</button>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <MUNityClient.Shared.Resa.ResolutionReader Resolution="this.Resolution"></MUNityClient.Shared.Resa.ResolutionReader>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<!--  and Operative Section-->
+
+<h3>Operativer Abschnitt</h3>
+@foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+{
+    <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative" />
+}
+
+<button class="btn btn-success btn-block" @onclick="AddOperativeParagraph">Neuer Operativer Absatz</button>
+
+<!-- Amendments -->
+<div class="col-lg-4">
+    <div class="card">
+        <div class="card-header">
+            <h3>Änderungsanträge</h3>
+            <button class="btn btn-block btn-success" @onclick="ShowNewAmendmentModal">Neuer
+                Änderungsantrag</button>
+        </div>
+        <div class="card-body">
+            @foreach (var amendment in OrderedAmendments)
+            {
+                <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                    Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+            }
+            </div>
+        </div>
     </div>
-</div>
 
-<MUNityClient.Shared.Bootstrap.Modal @ref="AddAmendmentModal" OnSubmitCallback="NewAmendment">
-    <MUNityClient.Shared.Resa.NewAmendmentForm Resolution="this.Resolution" @ref="NewAmendmentForm"></MUNityClient.Shared.Resa.NewAmendmentForm>
-</MUNityClient.Shared.Bootstrap.Modal>
+    <div class="row">
+        <div class="col-12">
+            <MUNityClient.Shared.Resa.ResolutionReader Resolution="this.Resolution">
+            </MUNityClient.Shared.Resa.ResolutionReader>
+        </div>
+    </div>
 
-@code {
+    @* Preamble Paragraph Delete Modal *@
+    <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeletePreambleParagraphModal" OnSubmitCallback="removePreambleParagraph">
+        Bist du sicher, dass du den Paragraphen löschen möchtest?
+    </MUNityClient.Shared.Bootstrap.Modal>
+
+    <MUNityClient.Shared.Bootstrap.Modal Title="Neuer Änderungsantrag" @ref="AddAmendmentModal" OnSubmitCallback="NewAmendment">
+        <MUNityClient.Shared.Resa.NewAmendmentForm Resolution="this.Resolution" @ref="NewAmendmentForm">
+        </MUNityClient.Shared.Resa.NewAmendmentForm>
+    </MUNityClient.Shared.Bootstrap.Modal>
+
+
+    @code {
     //[Parameter]
     //public string Id { get; set; }
 
     private MUNityClient.Shared.Bootstrap.Modal AddAmendmentModal { get; set; }
+    private MUNityClient.Shared.Bootstrap.Modal DeletePreambleParagraphModal { get; set; }
 
     private MUNityClient.Shared.Resa.NewAmendmentForm NewAmendmentForm { get; set; }
 
     public Resolution Resolution { get; set; }
+
+    private PreambleParagraph MarkedForDeletion { get; set; }
 
     public ResolutionEditor()
     {
@@ -67,6 +95,31 @@
         Resolution.Header.SubmitterName = "Landname";
         Resolution.Header.CommitteeName = "Gremiumname";
         this.Resolution.OperativeSection.Paragraphs.Add(new OperativeParagraph() { Text = "Dies ist ein Test Paragraph" });
+
+    }
+
+    public void removePreambleParagraph()
+    {
+        this.Resolution?.Preamble?.Paragraphs?.Remove(MarkedForDeletion);
+    }
+
+    //Move a preamble section in the given direction. It's called by the move event from the preambleParagraph child
+    //component
+    public void MovePreambleParagraph(Boolean up, PreambleParagraph preambleParagraph)
+    {
+        //TODO: Cleanup
+        int originalIndex = this.Resolution?.Preamble?.Paragraphs?.IndexOf(preambleParagraph) ?? -1;
+        int movedIndex = up ? originalIndex - 1 : originalIndex + 1;
+        if (movedIndex >= this.Resolution?.Preamble?.Paragraphs.Count)
+        {
+            movedIndex--;
+        }
+        else if (movedIndex < 0)
+        {
+            movedIndex++;
+        }
+
+        Swap<PreambleParagraph>(this.Resolution.Preamble.Paragraphs, originalIndex, movedIndex);
     }
 
     public void AmendmentInteracted()
@@ -114,15 +167,18 @@
             var list = new List<IAmendment>();
             foreach (var paragraph in this.Resolution.OperativeSection.Paragraphs)
             {
-                var deleteAmendments = this.Resolution.OperativeSection.DeleteAmendments.Where(n => n.TargetSectionId == paragraph.OperativeParagraphId);
+                var deleteAmendments = this.Resolution.OperativeSection.DeleteAmendments.Where(n => n.TargetSectionId ==
+                paragraph.OperativeParagraphId);
                 if (deleteAmendments.Any())
                     list.AddRange(deleteAmendments);
 
-                var changeAmendments = this.Resolution.OperativeSection.ChangeAmendments.Where(n => n.TargetSectionId == paragraph.OperativeParagraphId);
+                var changeAmendments = this.Resolution.OperativeSection.ChangeAmendments.Where(n => n.TargetSectionId ==
+                paragraph.OperativeParagraphId);
                 if (changeAmendments.Any())
                     list.AddRange(changeAmendments);
 
-                var moveAmendments = this.Resolution.OperativeSection.MoveAmendments.Where(n => n.TargetSectionId == paragraph.OperativeParagraphId);
+                var moveAmendments = this.Resolution.OperativeSection.MoveAmendments.Where(n => n.TargetSectionId ==
+                paragraph.OperativeParagraphId);
                 if (moveAmendments.Any())
                     list.AddRange(moveAmendments);
             }
@@ -130,6 +186,13 @@
             list.AddRange(this.Resolution.OperativeSection.AddAmendments);
             return list;
         }
+    }
+
+    public static void Swap<T>(IList<T> list, int indexA, int indexB)
+    {
+        T tmp = list[indexA];
+        list[indexA] = list[indexB];
+        list[indexB] = tmp;
     }
 
 }
