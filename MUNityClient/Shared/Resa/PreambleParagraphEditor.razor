@@ -16,7 +16,7 @@
         @* Input Field *@
         <div class="col-6 col-sm-8 col-md-10 p-0">
             <EditForm Model="Paragraph" class="h-100">
-                <InputTextArea @bind-Value="Paragraph.Text" disabled="@this.Paragraph.IsLocked" placeholder="Text..."
+                <textarea value="@Paragraph.Text" @oninput="@OnInputChange" disabled="@this.Paragraph.IsLocked" placeholder="Text..."
                     class="form-control h-100 custom-input-field px-0 p-2" />
             </EditForm>
         </div>
@@ -75,7 +75,8 @@
     [Parameter]
     public PreambleParagraph Paragraph { get; set; }
 
-    private Resolution Resolution {get; set; }
+    [Parameter]
+    public Resolution Resolution {get; set; }
 
     [Parameter]
     //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
@@ -91,14 +92,20 @@
     public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
     public PreambleParagraphEditor(){}
 
-    protected override async Task OnInitializedAsync()
-    {
-        this.Resolution = await this.resolutionService.GetResolutionOfPreambleParagraph(this.Paragraph);
-    }
 
-    private void KeyDown()
+    private async void OnInputChange(ChangeEventArgs args)
     {
-        Console.WriteLine(this.Paragraph.Text);
+        // This should only happen when we are online!
+        this.Paragraph.Text = (string)args.Value;
+
+        //this.Paragraph.Text = (string)args.Value;
+        if (this.Resolution != null)
+        {
+            if (await this.resolutionService.IsOnline())
+            {
+                await this.resolutionService.UpdatePublicResolutionPreambleParagraph(this.Resolution.ResolutionId, this.Paragraph);
+            }
+        }
     }
 }
 

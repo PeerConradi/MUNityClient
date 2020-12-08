@@ -17,8 +17,7 @@
                 @* Preamble paragraphs *@
                 @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
                 {
-                    preambleParagraph.TextChanged += this.PreambleTextChanged;
-                    <PreambleParagraphEditor Paragraph="preambleParagraph"
+                    <PreambleParagraphEditor Paragraph="preambleParagraph" Resolution="this.Resolution"
                                              OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
                                              OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})"/>
                 }

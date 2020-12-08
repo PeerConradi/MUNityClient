@@ -16,6 +16,27 @@ namespace MUNityClient.Services
 
         private readonly HttpClient _httpClient;
 
+        private bool? _isOnline = null;
+
+        private DateTime? _lastOnlineChecked;
+
+        /// <summary>
+        /// Checks if the Resolution Controller of the API is available.
+        /// Will store the value for 30 Seconds and refresh when called 30 seconds after
+        /// the last call. You can also set forceRefresh to true to force a new IsUp call to the API
+        /// </summary>
+        /// <returns></returns>
+        public async Task<bool> IsOnline(bool forceRefresh = false)
+        {
+            if (forceRefresh || _isOnline == null || _lastOnlineChecked == null || (DateTime.Now - _lastOnlineChecked.Value).TotalSeconds > 30)
+            {
+                var result = await this._httpClient.GetAsync($"/api/Resolution/IsUp");
+                _isOnline = result.IsSuccessStatusCode;
+                _lastOnlineChecked = DateTime.Now;
+            }
+            return _isOnline.Value;
+        }
+
         public async Task<List<Resolution>> GetStoredResolutions()
         {
             var resolutions = await this._localStorage.GetItemAsync<List<Resolution>>("munity_resolutions");
@@ -210,7 +231,7 @@ namespace MUNityClient.Services
                     if (targetParagraph != null)
                     {
                         targetParagraph.Text = paragraph.Text;
-                        Console.WriteLine("Change Text");
+                        Console.WriteLine("Change Text!");
                     }
                 }
             });
