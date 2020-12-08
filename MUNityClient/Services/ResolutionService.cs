@@ -6,35 +6,89 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using MUNityClient.Models.Resolution;
+using Blazored.LocalStorage;
 
 namespace MUNityClient.Services
 {
     public class ResolutionService
     {
-        public List<Resolution> Resolutions { get; set; }
+        private readonly ILocalStorageService _localStorage;
+
+
+        public async Task<List<Resolution>> GetStoredResolutions()
+        {
+            var resolutions = await this._localStorage.GetItemAsync<List<Resolution>>("munity_resolutions");
+            if (resolutions == null) return new List<Resolution>();
+            return resolutions;
+        }
+
+        private async Task StoreResolutions()
+        {
+            var resolutions = await this._localStorage.GetItemAsync<List<Resolution>>("munity_resolutions");
+            if (resolutions == null) resolutions = new List<Resolution>();
+            await this._localStorage.SetItemAsync("munity_resolutions", resolutions);
+        }
+
+        private async Task StoreResolution(Resolution resolution)
+        {
+            var resolutions = await this._localStorage.GetItemAsync<List<Resolution>>("munity_resolutions");
+            if (resolutions == null) resolutions = new List<Resolution>();
+            var resolutionClone = resolutions.FirstOrDefault(n => n.ResolutionId == resolution.ResolutionId);
+
+            if (resolutionClone != null)
+            {
+                // Found a matchin Resolution but its not the same instance
+                if (resolutionClone != resolution)
+                {
+                    // Store all values
+                    resolutionClone.Header = resolution.Header;
+                    resolutionClone.Preamble = resolution.Preamble;
+                    resolutionClone.OperativeSection = resolution.OperativeSection;
+                    resolutionClone.Date = resolution.Date;
+                }
+            }
+            else
+            {
+                resolutions.Add(resolution);
+            }
+            await this._localStorage.SetItemAsync("munity_resolutions", resolutions);
+        }
+
 
         private readonly HttpClient _httpClient;
 
         HubConnection hubConnection;
 
-        public Resolution GetResolutionOfOperativeParagraph(OperativeParagraph paragraph)
+        public async Task<Resolution> GetResolutionOfOperativeParagraph(OperativeParagraph paragraph)
         {
-            return this.Resolutions?.FirstOrDefault(n => n.OperativeSection.Paragraphs.Contains(paragraph));
+            var resolutions = await GetStoredResolutions();
+            return resolutions.FirstOrDefault(n => n.OperativeSection.Paragraphs.Contains(paragraph));
         }
 
-        public Resolution GetResolutionOfOperativeParagraph(string id)
+        public async Task<Resolution> GetResolutionOfOperativeParagraph(string id)
         {
-            return this.Resolutions?.FirstOrDefault(n => n.OperativeSection.Paragraphs.Any(a => a.OperativeParagraphId == id));
+            var resolutions = await GetStoredResolutions();
+            return resolutions.FirstOrDefault(n => n.OperativeSection.Paragraphs.Any(a => a.OperativeParagraphId == id));
         }
 
-        public Resolution GetResolutionOfPreambleParagraph(PreambleParagraph paragraph)
+        public async Task<Resolution> GetResolutionOfPreambleParagraph(PreambleParagraph paragraph)
         {
-            return this.Resolutions?.FirstOrDefault(n => n.Preamble.Paragraphs.Contains(paragraph));
+            var resolutions = await GetStoredResolutions();
+            return resolutions.FirstOrDefault(n => n.Preamble.Paragraphs.Contains(paragraph));
         }
 
-        public Resolution GetResolutionOfPreambleParagraph(string id)
+        public async Task<Resolution> GetResolutionOfPreambleParagraph(string id)
         {
-            return this.Resolutions?.FirstOrDefault(n => n.Preamble.Paragraphs.Any(a => a.PreambleParagraphId == id));
+            var resolutions = await GetStoredResolutions();
+            return resolutions.FirstOrDefault(n => n.Preamble.Paragraphs.Any(a => a.PreambleParagraphId == id));
+        }
+
+        public async Task<Resolution> CreateOffline()
+        {
+            var resolution = new Resolution();
+            resolution.Header.Topic = "No Title";
+            await this.StoreResolution(resolution);
+            return resolution;
         }
 
         /// <summary>
@@ -48,8 +102,15 @@ namespace MUNityClient.Services
             if (resolution == null)
                 return null;
             FixResolution(resolution);
-            this.Resolutions.Add(resolution);
+            await this.StoreResolution(resolution);
             return resolution;
+        }
+
+        public async Task<Resolution> GetOfflineResolution(string id)
+        {
+            // Look into the local Storage for the resolution
+            var resolutionsLocal = await this.GetStoredResolutions();
+            return resolutionsLocal.FirstOrDefault(n => n.ResolutionId == id);
         }
 
         public async Task<Resolution> GetPublicResolution(string id)
@@ -57,21 +118,28 @@ namespace MUNityClient.Services
             if (id == "test")
             {
                 var testResolution = Mocking.Resolution.CreateTestResolution();
-                this.Resolutions.Add(testResolution);
+                await this.StoreResolution(testResolution);
                 return testResolution;
             }
 
-            var resolution = await this._httpClient.GetFromJsonAsync<Resolution>($"/api/Resolution/GetPublic?id={id}");
-            if (resolution == null)
+            try
             {
-                Console.WriteLine($"Resolution with the id {id} not found!");
-                return null;
+                var resolution = await this._httpClient.GetFromJsonAsync<Resolution>($"/api/Resolution/GetPublic?id={id}");
+                if (resolution != null)
+                {
+                    FixResolution(resolution);
+
+                    await this.StoreResolution(resolution);
+                    return resolution;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Unable to reach the server!");
+                
             }
 
-            FixResolution(resolution);
-
-            this.Resolutions.Add(resolution);
-            return resolution;
+            return null;
         }
 
         private void FixResolution(Resolution resolution)
@@ -94,6 +162,11 @@ namespace MUNityClient.Services
             return this._httpClient.PatchAsync($"/api/Resolution/UpdatePublicResolution", content);
         }
 
+        public async void SaveOfflineResolution(Resolution resolution)
+        {
+            await this.StoreResolution(resolution);
+        }
+
         public async Task Subscribe(Resolution resolution)
         {
             if (hubConnection == null)
@@ -108,9 +181,10 @@ namespace MUNityClient.Services
             await this._httpClient.GetAsync($"/api/Resolution/SubscribeToResolution?resolutionid={resolution.ResolutionId}&connectionid={hubConnection.ConnectionId}");
         }
 
-        private void SocketResolutionChanged(Resolution resolution)
+        private async Task SocketResolutionChanged(Resolution resolution)
         {
-            var resolutionInService = this.Resolutions.FirstOrDefault(n => n.ResolutionId == resolution.ResolutionId);
+            var resolutions = await this.GetStoredResolutions();
+            var resolutionInService = resolutions.FirstOrDefault(n => n.ResolutionId == resolution.ResolutionId);
             if (resolutionInService == null)
                 return;
 
@@ -120,10 +194,10 @@ namespace MUNityClient.Services
         }
 
 
-        public ResolutionService(HttpClient client)
+        public ResolutionService(HttpClient client, ILocalStorageService localStorage)
         {
             this._httpClient = client;
-            this.Resolutions = new List<Resolution>();
+            this._localStorage = localStorage;
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿<!-- Navigate to id test /resa/edit/test to show a test resolution without anything -->
 @page "/resa/edit/{id}"
+@page "/resa/edit/{id}/{mode}"
 @using MUNityClient.Models.Resolution;
 @using MUNityClient.Extensions;
 @using MUNityClient.Shared.Resa;
@@ -17,8 +18,8 @@
                 @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
                 {
                     <PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preambleParagraph"
-                                                                      OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
-                                                                      OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
+                                             OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
+                                             OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
                 }
                 <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
                     <i class="fas fa-plus mr-3"></i>Neuer Präambel
@@ -87,6 +88,9 @@ else
     [Parameter]
     public string Id { get; set; }
 
+    [Parameter]
+    public string Mode { get; set; }
+
 
     private MUNityClient.Shared.Bootstrap.Modal AddAmendmentModal { get; set; }
     private MUNityClient.Shared.Bootstrap.Modal DeletePreambleParagraphModal { get; set; }
@@ -100,27 +104,41 @@ else
     public ResolutionEditor()
     {
 
-
     }
 
     protected override async Task OnInitializedAsync()
     {
-        this.Resolution = await this.resolutionService.GetPublicResolution(Id);
+        if (string.IsNullOrEmpty(Mode))
+        {
+            this.Resolution = await this.resolutionService.GetPublicResolution(Id);
+        }
+        else if (Mode == "offline")
+        {
+            this.Resolution = await this.resolutionService.GetOfflineResolution(Id);
+        }
+
     }
 
     private async void SaveResolution()
     {
         if (this.Resolution.ResolutionId == "test") return;
 
-        var result = await this.resolutionService.UpdatePublicResolution(this.Resolution);
-        if (result.IsSuccessStatusCode)
+        if (string.IsNullOrEmpty(Mode))
         {
-            // TODO: Save success notification!
-            // currently the whole document will be saved as one.
+            var result = await this.resolutionService.UpdatePublicResolution(this.Resolution);
+            if (result.IsSuccessStatusCode)
+            {
+                // TODO: Save success notification!
+                // currently the whole document will be saved as one.
+            }
+            else
+            {
+                // TODO: Save failure notification!
+            }
         }
-        else
+        else if (Mode == "offline")
         {
-            // TODO: Save failure notification!
+            this.resolutionService.SaveOfflineResolution(this.Resolution);
         }
     }
 

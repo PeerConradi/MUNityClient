@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Ganss.XSS;
+using Blazored.LocalStorage;
 
 namespace MUNityClient
 {
@@ -21,8 +22,9 @@ namespace MUNityClient
             builder.RootComponents.Add<App>("app");
 
             // builder.HostEnvironment.BaseAddress
-            builder.Services.AddSingleton(sp => new HttpClient { BaseAddress = new Uri(API_URL) });
-            builder.Services.AddSingleton<Services.ResolutionService>();
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(API_URL) });
+            builder.Services.AddBlazoredLocalStorage();
+            builder.Services.AddScoped<Services.ResolutionService>();
             builder.Services.AddScoped<IHtmlSanitizer, HtmlSanitizer>(x =>
             {
                 // Configure sanitizer rules as needed here.
