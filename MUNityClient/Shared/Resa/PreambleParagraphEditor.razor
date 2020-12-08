@@ -51,7 +51,7 @@
 
     @* Status Footer *@
     <div class="card-footer">
-        <div class="text-warning"><i class="fas fa-info-circle mr-2"></i>Der Präambel Paragraph enthält keinen gültigen
+        <div class="text-warning"><i class="fas fa-info-circle mr-2"></i>Der Paragraph enthält keinen gültigen
             Operator.</div>
         Aktuelle Bearbeiter:
         <div class="badge badge-info">Nutzer 1</div>
@@ -70,7 +70,6 @@
     [Parameter]
     public PreambleParagraph Paragraph { get; set; }
 
-
     [Parameter]
     //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
     public EventCallback<Boolean> OnMoveEvent { get; set; }
@@ -79,15 +78,11 @@
     //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
     public EventCallback OnDeleteEvent { get; set; }
 
-    public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
-
     public Boolean locked = false;
     public Boolean markedAsControlled = false;
 
-    public PreambleParagraphEditor()
-    {
-
-    }
+    public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
+    public PreambleParagraphEditor(){}
 }
 
 

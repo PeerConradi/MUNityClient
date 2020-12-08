@@ -79,7 +79,28 @@
 }
 else
 {
-    <p>Resolution wird geladen oder nicht gefunden...</p>
+    if(!fetchingResolutionErrored){
+        
+    <div class="row d-flex w-100 justify-content-center mt-5">
+            <div class="d-flex w-100 justify-content-center">
+                <div class="spinner-border text-primary p-4" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center mt-5">
+                Lade Resolution, einen Moment bitte...
+            </div>
+        </div>
+    } else {
+    <div class="row d-flex w-100 justify-content-center mt-5">
+            <div class="d-flex w-100 justify-content-center">
+                <i class="fas fa-6x fa-exclamation-circle text-danger"></i>
+            </div>
+            <div class="d-flex justify-content-center mt-5 text-center">
+                Beim Laden der Resolution ist ein Fehler aufgetreten! <br> Bitte vergewissere dich, dass die angeforderte Resolution existiert!
+            </div>
+        </div>
+    }
 }
 
 
@@ -100,6 +121,8 @@ else
     public Resolution Resolution { get; set; }
 
     private PreambleParagraph MarkedForDeletion { get; set; }
+
+    private Boolean fetchingResolutionErrored = false;
 
     public ResolutionEditor()
     {
