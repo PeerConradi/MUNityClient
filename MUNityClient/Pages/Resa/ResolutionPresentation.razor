@@ -23,7 +23,7 @@ else
 
     public Resolution Resolution { get; set; }
 
-    public async Task OnInitializedAsync()
+    override protected async Task OnInitializedAsync()
     {
         this.Resolution = await this.resolutionService.GetPublicResolution(this.Id);
     }
