@@ -26,5 +26,12 @@ else
     protected override async Task OnInitializedAsync()
     {
         this.Resolution = await this.resolutionService.GetPublicResolution(this.Id);
+
+        if (this.Resolution != null)
+        {
+            await this.resolutionService.Subscribe(this.Resolution);
+            this.Resolution.ResolutionChanged += () => this.StateHasChanged();
+        }
+
     }
 }

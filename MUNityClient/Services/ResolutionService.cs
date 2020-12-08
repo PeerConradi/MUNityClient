@@ -14,6 +14,7 @@ namespace MUNityClient.Services
     {
         private readonly ILocalStorageService _localStorage;
 
+        private readonly HttpClient _httpClient;
 
         public async Task<List<Resolution>> GetStoredResolutions()
         {
@@ -53,11 +54,6 @@ namespace MUNityClient.Services
             }
             await this._localStorage.SetItemAsync("munity_resolutions", resolutions);
         }
-
-
-        private readonly HttpClient _httpClient;
-
-        HubConnection hubConnection;
 
         public async Task<Resolution> GetResolutionOfOperativeParagraph(OperativeParagraph paragraph)
         {
@@ -142,6 +138,11 @@ namespace MUNityClient.Services
             return null;
         }
 
+        /// <summary>
+        /// This is needed because when the model comes without/or with an empty Paragraph list it is set to null
+        /// and not to an empty list/array.
+        /// </summary>
+        /// <param name="resolution"></param>
         private void FixResolution(Resolution resolution)
         {
             if (resolution.Header == null) resolution.Header = new ResolutionHeader();
@@ -149,6 +150,16 @@ namespace MUNityClient.Services
             if (resolution.Preamble.Paragraphs == null) resolution.Preamble.Paragraphs = new List<PreambleParagraph>();
             if (resolution.OperativeSection == null) resolution.OperativeSection = new OperativeSection();
             if (resolution.OperativeSection.Paragraphs == null) resolution.OperativeSection.Paragraphs = new List<OperativeParagraph>();
+            if (resolution.OperativeSection.DeleteAmendments == null) resolution.OperativeSection.DeleteAmendments = new List<DeleteAmendment>();
+            if (resolution.OperativeSection.AddAmendments == null) resolution.OperativeSection.AddAmendments = new List<AddAmendment>();
+            if (resolution.OperativeSection.MoveAmendments == null) resolution.OperativeSection.MoveAmendments = new List<MoveAmendment>();
+            if (resolution.OperativeSection.ChangeAmendments == null) resolution.OperativeSection.ChangeAmendments = new List<ChangeAmendment>();
+            resolution.OperativeSection.Paragraphs.RemoveAll(n => n == null);
+            resolution.Preamble.Paragraphs.RemoveAll(n => n == null);
+            resolution.OperativeSection.AddAmendments.RemoveAll(n => n == null);
+            resolution.OperativeSection.ChangeAmendments.RemoveAll(n => n == null);
+            resolution.OperativeSection.DeleteAmendments.RemoveAll(n => n == null);
+            resolution.OperativeSection.MoveAmendments.RemoveAll(n => n == null);
         }
 
         /// <summary>
@@ -162,35 +173,71 @@ namespace MUNityClient.Services
             return this._httpClient.PatchAsync($"/api/Resolution/UpdatePublicResolution", content);
         }
 
+        public Task<HttpResponseMessage> UpdatePublicResolutionPreambleParagraph(string resolutionid, PreambleParagraph paragraph)
+        {
+            var content = JsonContent.Create(paragraph);
+            return this._httpClient.PatchAsync($"/api/Resolution/UpdatePublicResolutionPreambleParagraph?resolutionid={resolutionid}", content);
+        }
+
         public async void SaveOfflineResolution(Resolution resolution)
         {
             await this.StoreResolution(resolution);
         }
 
-        public async Task Subscribe(Resolution resolution)
+        public async Task<HubConnection> Subscribe(Resolution resolution)
         {
-            if (hubConnection == null)
+            var hub = new HubConnectionBuilder().WithUrl($"{Program.API_URL}/resasocket").Build();
+
+            hub.On<Resolution>("ResolutionChanged", (newREsolution) =>
             {
-                hubConnection = new HubConnectionBuilder().WithUrl($"{Program.API_URL}/resasocket").Build();
+                if (resolution.ResolutionId == newREsolution.ResolutionId)
+                {
+                    resolution.Preamble = newREsolution.Preamble ?? new ResolutionPreamble();
+                    if (resolution.OperativeSection != null && newREsolution.OperativeSection != null)
+                    {
+                        Console.WriteLine("Operative Paragraph changed");
+                        resolution.OperativeSection.Paragraphs = newREsolution.OperativeSection.Paragraphs ?? new List<OperativeParagraph>();
+                    }
+                    resolution.Header = newREsolution.Header ?? new ResolutionHeader();
+                }
+            });
 
-                hubConnection.On<Resolution>("ResolutionChanged", SocketResolutionChanged);
+            hub.On<string, PreambleParagraph>("PreambleParagraphChanged", (resolutionId, paragraph) =>
+            {
+                if (resolutionId == resolution.ResolutionId)
+                {
+                    var targetParagraph = resolution.Preamble.Paragraphs.FirstOrDefault(n => n.PreambleParagraphId == paragraph.PreambleParagraphId);
+                    if (targetParagraph != null)
+                    {
+                        targetParagraph.Text = paragraph.Text;
+                        Console.WriteLine("Change Text");
+                    }
+                }
+            });
 
-                await hubConnection.StartAsync();
-            }
-
-            await this._httpClient.GetAsync($"/api/Resolution/SubscribeToResolution?resolutionid={resolution.ResolutionId}&connectionid={hubConnection.ConnectionId}");
+            await hub.StartAsync();
+            await this._httpClient.GetAsync($"/api/Resolution/SubscribeToResolution?resolutionid={resolution.ResolutionId}&connectionid={hub.ConnectionId}");
+            return hub;
         }
 
-        private async Task SocketResolutionChanged(Resolution resolution)
+        private async Task SocketResolutionChanged(Resolution targetResolution, Resolution resolution)
         {
-            var resolutions = await this.GetStoredResolutions();
-            var resolutionInService = resolutions.FirstOrDefault(n => n.ResolutionId == resolution.ResolutionId);
-            if (resolutionInService == null)
-                return;
+            if (resolution.ResolutionId != targetResolution.ResolutionId) return;
+            
+            await StoreResolution(targetResolution);
+            Console.WriteLine("Socket updated this resolution!");
+        }
 
-            resolutionInService.Preamble = resolution.Preamble;
-            resolutionInService.OperativeSection = resolution.OperativeSection;
-            resolutionInService.Header = resolution.Header;
+        public bool HasValidOperator(PreambleParagraph paragraph)
+        {
+            // TODO
+            return false;
+        }
+
+        public bool HasValidOperator(OperativeParagraph paragraph)
+        {
+            // TODO
+            return false;
         }
 
 

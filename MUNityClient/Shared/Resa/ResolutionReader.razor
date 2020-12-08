@@ -1,5 +1,6 @@
 ﻿@using MUNityClient.Models.Resolution;
 
+@inject MUNityClient.Services.ResolutionService resolutionService;
 @if (Resolution != null)
 {
 
@@ -7,15 +8,34 @@
     <div class="row">
         <div class="col-12">
             <h3>@Resolution.Header.Topic</h3>
-            <h4>EINBRINGER: @Resolution.Header.SubmitterName.ToUpper()</h4>
-            <h4>@Resolution.Header.CommitteeName.ToUpper(),</h4>
+            @if (!string.IsNullOrEmpty(this.Resolution.Header.SubmitterName))
+            {
+                <h4>EINBRINGER: @Resolution.Header.SubmitterName.ToUpper()</h4>
+            }
+            else
+            {
+                <h4>Kein Einbringer</h4>
+            }
+
+            @if (!string.IsNullOrEmpty(this.Resolution.Header.CommitteeName))
+            {
+                <h4>@Resolution.Header.CommitteeName.ToUpper(),</h4>
+            }
+            else
+            {
+                <h4>UNBEKANNTES GREMIUM!,</h4>
+            }
+
         </div>
     </div>
 
 
     <!-- Preamble -->
     <div class="row">
-
+        @foreach(var pp in this.Resolution.Preamble.Paragraphs)
+        {   
+            <MUNityClient.Shared.Resa.Reader.ResaReaderPreambleParagraph Paragraph="pp"></MUNityClient.Shared.Resa.Reader.ResaReaderPreambleParagraph>
+        }
     </div>
 
     <!-- Operative Section -->
@@ -45,8 +65,10 @@ else
 }
 
 @code {
+
     [Parameter]
     public Resolution Resolution { get; set; }
+
 
     public ResolutionReader()
     {

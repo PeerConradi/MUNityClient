@@ -1,29 +1,30 @@
 ﻿@using MUNityClient.Models.Resolution;
+@inject MUNityClient.Services.ResolutionService resolutionService;
 
 
-<div class="card my-2 @(markedAsControlled ? "border border-success" : "")">
+<div class="card my-2 @(Paragraph.Corrected ? "border border-success" : "")">
     <div class="row">
         @* Up/Down Buttons *@
         <div class="col-3 col-sm-2 col-md-1 justify-content-center pr-0">
             <button disabled="@(Index == 0)" class="col-12 p-0 text-center p-4 custom-button h-50"
                 @onclick="() => OnMoveEvent.InvokeAsync(true)" title="Nach oben verschieben" alt="put higher"><i
                     class="fas fa-lg fa-caret-up"></i></button>
-            <button disabled="@(Index == Resolution.Preamble.Paragraphs.Count - 1)"
+            <button disabled="@(Resolution != null && Index == Resolution.Preamble.Paragraphs.Count - 1)"
                 class="col-12 p-0 text-center p-4 custom-button h-50" @onclick="() => OnMoveEvent.InvokeAsync(false)"
                 title="Nach unten verschieben" alt="put lower"><i class="fas fa-lg fa-caret-down"></i></button>
         </div>
         @* Input Field *@
         <div class="col-6 col-sm-8 col-md-10 p-0">
             <EditForm Model="Paragraph" class="h-100">
-                <InputTextArea @bind-Value="Paragraph.Text" disabled="@locked" placeholder="Text..."
+                <InputTextArea @bind-Value="Paragraph.Text" disabled="@this.Paragraph.IsLocked" placeholder="Text..."
                     class="form-control h-100 custom-input-field px-0 p-2" />
             </EditForm>
         </div>
         @* Option Buttons *@
         <div class="col-3 col-sm-2 col-md-1 pl-0">
-            <div role="button" type="button" @onclick="@(() => locked = !locked)" title="Bearbeitung sperren"
+            <div role="button" type="button" @onclick="@(() => this.Paragraph.IsLocked = !this.Paragraph.IsLocked)" title="Bearbeitung sperren"
                 class="col-12 p-0 text-center p-3 custom-button text-warning" alt="lock">
-                @if (locked)
+                @if (this.Paragraph.IsLocked)
                 {
                     <i class="fas fa-lg fa-lock"></i>
                 }
@@ -32,9 +33,9 @@
                     <i class="fas fa-lg fa-lock-open"></i>
                 }
             </div>
-            <div role="button" type="button" @onclick="@(() => markedAsControlled = !markedAsControlled)"
+            <div role="button" type="button" @onclick="@(() => Paragraph.Corrected = !Paragraph.Corrected)"
                 class="col-12 p-0 text-center p-3 custom-button" alt="mark as checked" title="Als überprüft markieren">
-                @if (markedAsControlled)
+                @if (Paragraph.Corrected)
                 {
                     <i class="text-success fa-lg fas fa-check"></i>
                 }
@@ -50,25 +51,31 @@
     </div>
 
     @* Status Footer *@
-    <div class="card-footer">
-        <div class="text-warning"><i class="fas fa-info-circle mr-2"></i>Der Paragraph enthält keinen gültigen
-            Operator.</div>
-        Aktuelle Bearbeiter:
-        <div class="badge badge-info">Nutzer 1</div>
-        <div class="badge badge-info">Nutzer 2</div>
-        Status:
-        <div class="badge badge-success">Vom Sek kontrolliert.</div>
-    </div>
+<div class="card-footer">
+    @if (resolutionService.HasValidOperator(this.Paragraph))
+    {
+        <div class="text-warning">
+            <i class="fas fa-info-circle mr-2"></i>Der Paragraph enthält keinen gültigen
+            Operator.
+        </div>
+    }
+
+    Aktuelle Bearbeiter:
+    <div class="badge badge-info">Nutzer 1</div>
+    <div class="badge badge-info">Nutzer 2</div>
+    Status:
+    <div class="badge badge-success">Vom Sek kontrolliert.</div>
+</div>
 </div>
 
 
 
 @code {
-    [Parameter]
-    public Resolution Resolution { get; set; }
 
     [Parameter]
     public PreambleParagraph Paragraph { get; set; }
+
+    private Resolution Resolution {get; set; }
 
     [Parameter]
     //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
@@ -78,11 +85,21 @@
     //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
     public EventCallback OnDeleteEvent { get; set; }
 
-    public Boolean locked = false;
-    public Boolean markedAsControlled = false;
+    [Parameter]
+    public EventCallback OnTextChanged { get; set; }
 
     public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
     public PreambleParagraphEditor(){}
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.Resolution = await this.resolutionService.GetResolutionOfPreambleParagraph(this.Paragraph);
+    }
+
+    private void KeyDown()
+    {
+        Console.WriteLine(this.Paragraph.Text);
+    }
 }
 
 

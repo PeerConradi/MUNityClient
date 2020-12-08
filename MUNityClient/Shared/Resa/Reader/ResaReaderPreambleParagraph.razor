@@ -1,0 +1,38 @@
+﻿@using MUNityClient.Models.Resolution;
+
+@if (Paragraph != null)
+{
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <MUNityClient.Shared.General.MarkdownView Content="@Paragraph.Text"></MUNityClient.Shared.General.MarkdownView>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <p>Preamble Paragraph nicht gefunden!</p>
+}
+
+
+@code {
+
+    private PreambleParagraph _paragraph;
+    [Parameter]
+    public PreambleParagraph Paragraph
+    {
+        get => _paragraph;
+        set
+        {
+            if (_paragraph != null) _paragraph.TextChanged -= TextChanged;
+            _paragraph = value;
+            _paragraph.TextChanged += TextChanged;
+        }
+    }
+
+    private void TextChanged(PreambleParagraph sender, string oldText, string newText)
+    {
+        StateHasChanged();
+    }
+}

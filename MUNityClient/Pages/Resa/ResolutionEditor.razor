@@ -17,9 +17,10 @@
                 @* Preamble paragraphs *@
                 @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
                 {
-                    <PreambleParagraphEditor Resolution="this.Resolution" Paragraph="preambleParagraph"
+                    preambleParagraph.TextChanged += this.PreambleTextChanged;
+                    <PreambleParagraphEditor Paragraph="preambleParagraph"
                                              OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
-                                             OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
+                                             OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})"/>
                 }
                 <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
                     <i class="fas fa-plus mr-3"></i>Neuer Präambel
@@ -135,6 +136,12 @@ else
         {
             this.Resolution = await this.resolutionService.GetPublicResolution(Id);
             if (this.Resolution == null) this.fetchingResolutionErrored = true;
+            else
+            {
+                // Register WebSocket!
+                var signalRHub = await this.resolutionService.Subscribe(this.Resolution);
+            }
+
         }
         else if (Mode == "offline")
         {
@@ -142,6 +149,16 @@ else
             if (this.Resolution == null) this.fetchingResolutionErrored = true;
         }
 
+    }
+
+    private void PreambleTextChanged(PreambleParagraph sender, string oldText, string newText)
+    {
+        // For now we save everything later only the PreambleChanged should be send to the server!
+        //SaveResolution();
+        if (string.IsNullOrEmpty(Mode))
+        {
+            this.resolutionService.UpdatePublicResolutionPreambleParagraph(this.Resolution.ResolutionId, sender);
+        }
     }
 
     private async void SaveResolution()
@@ -155,6 +172,7 @@ else
             {
                 // TODO: Save success notification!
                 // currently the whole document will be saved as one.
+
             }
             else
             {
