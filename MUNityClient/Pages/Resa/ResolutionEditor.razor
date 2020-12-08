@@ -134,10 +134,12 @@ else
         if (string.IsNullOrEmpty(Mode))
         {
             this.Resolution = await this.resolutionService.GetPublicResolution(Id);
+            if (this.Resolution == null) this.fetchingResolutionErrored = true;
         }
         else if (Mode == "offline")
         {
             this.Resolution = await this.resolutionService.GetOfflineResolution(Id);
+            if (this.Resolution == null) this.fetchingResolutionErrored = true;
         }
 
     }
