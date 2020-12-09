@@ -1,0 +1,42 @@
+﻿@inject MUNityClient.Services.UserService userService;
+
+
+<EditForm Model="@this.Request" OnSubmit="@Login">
+    <label>Username</label>
+    <InputText @bind-Value="this.Request.Username" />
+
+    <label>Password</label>
+    <InputText type="password" @bind-Value="this.Request.Password" />
+    @if (this.LoginState != ELoginStates.LOGGING_IN)
+    {
+        <button type="submit">Einloggen</button>
+    }
+</EditForm>
+
+
+@if (this.LoginState == ELoginStates.FAILED)
+{
+    <p>Login Fehlgeschlagen</p>
+}
+
+@code {
+
+    public MUNityClient.Models.User.AuthenticateRequest Request { get; set; } = new Models.User.AuthenticateRequest();
+
+    private enum ELoginStates
+    {
+        NOT_TRIED,
+        LOGGING_IN,
+        FAILED,
+        SUCCESS
+    }
+
+    private ELoginStates LoginState = ELoginStates.NOT_TRIED;
+
+    private async Task Login()
+    {
+        this.LoginState = ELoginStates.LOGGING_IN;
+        var response = await userService.Login(this.Request);
+        this.LoginState = (response == null) ? ELoginStates.FAILED : ELoginStates.SUCCESS;
+    }
+}
