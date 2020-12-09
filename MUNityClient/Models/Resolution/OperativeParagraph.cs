@@ -13,6 +13,7 @@ namespace MUNityClient.Models.Resolution
         public bool IsVirtual { get; set; } = false;
         public string Text { get; set; } = "";
         public bool Visible { get; set; } = true;
+        public bool Corrected { get; set; }//ADDED ~Felix
 
         public List<OperativeParagraph> Children { get; set; }
 

@@ -1,4 +1,4 @@
-<!-- Navigate to id test /resa/edit/test to show a test resolution without anything -->
+﻿<!-- Navigate to id test /resa/edit/test to show a test resolution without anything -->
 @page "/resa/edit/{id}"
 @page "/resa/edit/{id}/{mode}"
 @using MUNityClient.Models.Resolution;
@@ -8,43 +8,40 @@
 
 @if (this.Resolution != null)
 {
-    <div class="row justify-content-center">
+    <div class="row justify-content-center col-12">
         <div class="col-11">
             @* Preamble *@
-            <div>
+            <div class="mb-5">
                 <h3 class="font-weight-bold">Präambel</h3>
                 @* Preamble paragraphs *@
                 @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
                 {
                     <PreambleParagraphEditor Paragraph="preambleParagraph" Resolution="this.Resolution"
-                                             OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
-                                             OnDeleteEvent="@(() => {MarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})"/>
+                        OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
+                        OnDeleteEvent="@(() => {PreambleMarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
                 }
                 <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
                     <i class="fas fa-plus mr-3"></i>Neuer Präambel
                     Paragraph
                 </button>
             </div>
+
+            @* Operative section *@
+            <div class="bt-5">
+                <h3 class="font-weight-bold">Operativer Abschnitt</h3>
+                @* Operative paragraphs *@
+                @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+                {
+                    <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative"
+                        OnMoveEvent="@((up)=> MoveOperativeParagraph(up, operative))"
+                        OnDeleteEvent="@(() => {OperativeMarkedForDeletion = operative; DeleteOperativeParagraphModal.Open();})" />
+                }
+                <button class="btn btn-dark-green btn-block mt-4" @onclick="AddOperativeParagraph">
+                    <i class="fas fa-plus mr-3"></i>Neuer operativer Absatz
+                </button>
+            </div>
         </div>
     </div>
-
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <!--  and Operative Section-->
-
-    <h3>Operativer Abschnitt</h3>
-    @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
-    {
-        <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative" />
-    }
-
-    <button class="btn btn-success btn-block" @onclick="AddOperativeParagraph">Neuer Operativer Absatz</button>
 
     <!-- Amendments -->
     <div class="col-lg-4">
@@ -60,15 +57,21 @@
                 @foreach (var amendment in OrderedAmendments)
                 {
                     <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
-                                                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                        Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
                 }
+                </div>
             </div>
         </div>
-    </div>
 
     @* Preamble Paragraph Delete Modal *@
     <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeletePreambleParagraphModal"
         OnSubmitCallback="removePreambleParagraph">
+        Bist du sicher, dass du den Paragraphen löschen möchtest?
+    </MUNityClient.Shared.Bootstrap.Modal>
+
+    @* Operative Paragraph Delete Modal *@
+    <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeleteOperativeParagraphModal"
+        OnSubmitCallback="removeOperativeParagraph">
         Bist du sicher, dass du den Paragraphen löschen möchtest?
     </MUNityClient.Shared.Bootstrap.Modal>
 
@@ -81,24 +84,27 @@
 else
 {
     if(!fetchingResolutionErrored){
-        
-    <div class="row d-flex w-100 justify-content-center mt-5">
-            <div class="d-flex w-100 justify-content-center">
-                <div class="spinner-border text-primary p-4" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-            </div>
-            <div class="d-flex justify-content-center mt-5">
-                Lade Resolution, einen Moment bitte...
+
+        <div class="row d-flex w-100 justify-content-center mt-5">
+        <div class="d-flex w-100 justify-content-center">
+            <div class="spinner-border text-primary p-4" role="status">
+                <span class="sr-only">Loading...</span>
             </div>
         </div>
-    } else {
-    <div class="row d-flex w-100 justify-content-center mt-5">
+        <div class="d-flex justify-content-center mt-5">
+            Lade Resolution, einen Moment bitte...
+        </div>
+    </div>
+    }
+    else
+    {
+        <div class="row d-flex w-100 justify-content-center mt-5">
             <div class="d-flex w-100 justify-content-center">
                 <i class="fas fa-6x fa-exclamation-circle text-danger"></i>
             </div>
             <div class="d-flex justify-content-center mt-5 text-center">
-                Beim Laden der Resolution ist ein Fehler aufgetreten! <br> Bitte vergewissere dich, dass die angeforderte Resolution existiert!
+                Beim Laden der Resolution ist ein Fehler aufgetreten! <br> Bitte vergewissere dich, dass die angeforderte
+                Resolution existiert!
             </div>
         </div>
     }
@@ -116,12 +122,11 @@ else
 
     private MUNityClient.Shared.Bootstrap.Modal AddAmendmentModal { get; set; }
     private MUNityClient.Shared.Bootstrap.Modal DeletePreambleParagraphModal { get; set; }
-
+    private MUNityClient.Shared.Bootstrap.Modal DeleteOperativeParagraphModal { get; set; }
     private MUNityClient.Shared.Resa.NewAmendmentForm NewAmendmentForm { get; set; }
-
     public Resolution Resolution { get; set; }
-
-    private PreambleParagraph MarkedForDeletion { get; set; }
+    private PreambleParagraph PreambleMarkedForDeletion { get; set; }
+    private OperativeParagraph OperativeMarkedForDeletion { get; set; }
 
     private Boolean fetchingResolutionErrored = false;
 
@@ -187,7 +192,13 @@ else
 
     public void removePreambleParagraph()
     {
-        this.Resolution?.Preamble?.Paragraphs?.Remove(MarkedForDeletion);
+        this.Resolution?.Preamble?.Paragraphs?.Remove(PreambleMarkedForDeletion);
+        SaveResolution();
+    }
+
+    public void removeOperativeParagraph()
+    {
+        this.Resolution?.OperativeSection?.Paragraphs?.Remove(OperativeMarkedForDeletion);
         SaveResolution();
     }
 
@@ -197,6 +208,15 @@ else
     {
         int originalIndex = this.Resolution?.Preamble?.Paragraphs?.IndexOf(preambleParagraph) ?? -1;
         this.Resolution.Preamble.Paragraphs.Move(originalIndex, up ? MoveDirection.Up : MoveDirection.Down);
+        SaveResolution();
+    }
+
+    //Move an operative section in the given direction. It's called by the move event from the operativeParagraph child
+    //component
+    public void MoveOperativeParagraph(Boolean up, OperativeParagraph preambleParagraph)
+    {
+        int originalIndex = this.Resolution?.OperativeSection?.Paragraphs?.IndexOf(preambleParagraph) ?? -1;
+        this.Resolution.OperativeSection.Paragraphs.Move(originalIndex, up ? MoveDirection.Up : MoveDirection.Down);
         SaveResolution();
     }
 
