@@ -1,4 +1,4 @@
-@using MUNityClient.Models.Resolution;
+﻿@using MUNityClient.Models.Resolution;
 @inject MUNityClient.Services.ResolutionService resolutionService;
 
 
@@ -16,13 +16,7 @@
         @* Input Field *@
         <div class="col-6 col-sm-8 col-md-10 p-0">
             <EditForm Model="Paragraph" class="h-100">
-                <textarea value="@Paragraph.Text" @oninput="@OnInputChange" disabled="@this.Paragraph.Is
-                                                                                      
-                                                                                      
-                                                                                      
-                                                                                      
-                                                                                      
-                                                                                      " placeholder="Text..."
+                <textarea value="@Paragraph.Text" @oninput="@OnInputChange" disabled="@this.Paragraph.IsLocked" placeholder="Text..."
                     class="form-control h-100 custom-input-field px-0 p-2" />
             </EditForm>
         </div>
@@ -30,9 +24,7 @@
         <div class="col-3 col-sm-2 col-md-1 pl-0">
             <div role="button" type="button" @onclick="@(() => this.Paragraph.IsLocked = !this.Paragraph.IsLocked)" title="Bearbeitung sperren"
                 class="col-12 p-0 text-center p-3 custom-button text-warning" alt="lock">
-                @if (this.Paragraph.Is
-              
-      )
+                @if (this.Paragraph.IsLocked)
                 {
                     <i class="fas fa-lg fa-lock"></i>
                 }
