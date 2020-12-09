@@ -1,7 +1,8 @@
-﻿@using MUNityClient.Models.Resolution;
-@inject MUNityClient.Services.ResolutionService resolutionService;
+@*
+TODO: Die beiden Paragraphen Editoren in einer Component zusammenfassen
+Als Vorlage sollte die Präambel Komponente dienen
 
-<div class="row my-2 p-0 d-flex justify-content-center">
+ <div class="row my-2 p-0 d-flex justify-content-center">
     <div class="card px-0 col @(Paragraph.Corrected ? "border border-success" : "")">
         <div class="row">
             @* Up/Down Buttons *@
@@ -83,79 +84,5 @@
 
 @code {
     [Parameter]
-    public PreambleParagraph Paragraph { get; set; }
-
-    [Parameter]
-    public Resolution Resolution { get; set; }
-
-    [Parameter]
-    //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
-    public EventCallback<Boolean> OnMoveEvent { get; set; }
-
-    [Parameter]
-    //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
-    public EventCallback OnDeleteEvent { get; set; }
-
-    [Parameter]
-    public EventCallback OnTextChanged { get; set; }
-
-    public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
-    public Boolean commentsExpanded = false;
-    public PreambleParagraphEditor() { }
-    private async void OnInputChange(ChangeEventArgs args)
-    {
-        // This should only happen when we are online!
-        this.Paragraph.Text = (string)args.Value;
-
-        //this.Paragraph.Text = (string)args.Value;
-        if (this.Resolution != null)
-        {
-            if (await this.resolutionService.IsOnline())
-            {
-                await this.resolutionService.UpdatePublicResolutionPreambleParagraph(this.Resolution.ResolutionId, this.Paragraph);
-            }
-        }
-    }
-}
-
-
-<style>
-    .card {
-        transition: max-width .3s ease-in-out;
-    }
-
-    .comments {
-        transition: .3s ease-in-out;
-        max-width: 0%;
-        overflow: hidden;
-    }
-
-    .comments-expanded {
-        max-width: 25%;
-        overflow: auto;
-    }
-
-    .custom-button {
-        border-width: 0px;
-        background-color: #00000000;
-        transition: .3s;
-    }
-
-    .custom-button:hover {
-        background-color: #88888826;
-    }
-
-    .custom-input-field {
-        border: 0px;
-        resize: none;
-    }
-
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
-    }
-
-    .no-scrollbar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-</style>
+    public Paragr Paragraph { get; set; }
+} *@
