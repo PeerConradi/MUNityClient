@@ -57,10 +57,15 @@
         <div class="card-footer">
             <div class="row">
                 <div class="col">
-                    <div class="text-warning"><i class="fas fa-info-circle mr-2"></i>Der Präambel Paragraph enthält
-                        keinen
-                        gültigen
-                        Operator.</div>
+                    @if (!this.resolutionService.HasValidOperator(this.Paragraph))
+                    {
+                        <div class="text-warning">
+                            <i class="fas fa-info-circle mr-2"></i>Der Präambel Paragraph enthält
+                            keinen
+                            gültigen
+                            Operator.
+                        </div>
+                    }
                     Aktuelle Bearbeiter:
                     <div class="badge badge-info">Nutzer 1</div>
                     <div class="badge badge-info">Nutzer 2</div>

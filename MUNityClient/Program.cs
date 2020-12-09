@@ -20,10 +20,10 @@ namespace MUNityClient
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
-
-            // builder.HostEnvironment.BaseAddress
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(API_URL) });
             builder.Services.AddBlazoredLocalStorage();
+            builder.Services.AddScoped<Services.HttpService>();
+            builder.Services.AddScoped<Services.UserService>();
             builder.Services.AddScoped<Services.ResolutionService>();
             builder.Services.AddScoped<IHtmlSanitizer, HtmlSanitizer>(x =>
             {

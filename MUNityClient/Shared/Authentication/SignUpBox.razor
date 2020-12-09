@@ -1,0 +1,80 @@
+﻿@inject MUNityClient.Services.UserService userService;
+
+<h3>SignUpBox</h3>
+<EditForm Model="@this.Request" OnSubmit="@Register">
+    <label>Benutzername</label>
+    <InputText @bind-Value="this.Request.Username" />
+
+    <label>Vorname</label>
+    <InputText @bind-Value="this.Request.Forename" />
+
+    <label>Nachname</label>
+    <InputText @bind-Value="this.Request.Lastname" />
+
+    <label>E-Mail</label>
+    <InputText @bind-Value="this.Request.Mail" />
+
+    <label>Geburtstag</label>
+    <InputDate @bind-Value="this.Request.Birthday" />
+
+    <label>Passwort</label>
+    <InputText type="password" @bind-Value="this.Request.Password" />
+
+    <label>Passwort wiederholen</label>
+    <InputText type="password" @bind-Value="this.RepeatPassword" />
+
+    @if (this.RegisterState != ERegisterState.InProgress)
+    {
+        <button type="submit">Account erstellen</button>
+    }
+
+</EditForm>
+
+@if (this.RegisterState == ERegisterState.Failed)
+{
+    <p>Fehler bei der Registrierung.</p>
+}
+else if (this.RegisterState == ERegisterState.Success)
+{
+    <p>Registrierung erfolgreich</p>
+}
+else if (this.RegisterState == ERegisterState.PasswordsDontMatch)
+{
+    <p>Die eingegebenen Passwörter stimmen nicht überein!</p>
+}
+
+@code {
+    public MUNityClient.Models.User.RegisterRequest Request { get; set; } = new Models.User.RegisterRequest();
+
+    public string RepeatPassword { get; set; }
+
+    private enum ERegisterState
+    {
+        NotTried,
+        InProgress,
+        PasswordsDontMatch,
+        Failed,
+        Success
+    }
+
+    private ERegisterState RegisterState = ERegisterState.NotTried;
+
+    private async Task Register()
+    {
+        this.RegisterState = ERegisterState.InProgress;
+        if (this.Request.Password != RepeatPassword)
+        {
+            this.RegisterState = ERegisterState.PasswordsDontMatch;
+            return;
+        }
+
+        var result = await this.userService.Register(Request);
+        if (result.IsSuccessStatusCode)
+        {
+            this.RegisterState = ERegisterState.Success;
+            return;
+        }
+
+        this.RegisterState = ERegisterState.Failed;
+    }
+}
