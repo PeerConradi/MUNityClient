@@ -1,4 +1,4 @@
-﻿@using MUNityClient.Models.Resolution;
+@using MUNityClient.Models.Resolution;
 @inject MUNityClient.Services.ResolutionService resolutionService;
 
 
@@ -16,7 +16,13 @@
         @* Input Field *@
         <div class="col-6 col-sm-8 col-md-10 p-0">
             <EditForm Model="Paragraph" class="h-100">
-                <textarea value="@Paragraph.Text" @oninput="@OnInputChange" disabled="@this.Paragraph.IsLocked" placeholder="Text..."
+                <textarea value="@Paragraph.Text" @oninput="@OnInputChange" disabled="@this.Paragraph.Is
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      " placeholder="Text..."
                     class="form-control h-100 custom-input-field px-0 p-2" />
             </EditForm>
         </div>
@@ -24,7 +30,9 @@
         <div class="col-3 col-sm-2 col-md-1 pl-0">
             <div role="button" type="button" @onclick="@(() => this.Paragraph.IsLocked = !this.Paragraph.IsLocked)" title="Bearbeitung sperren"
                 class="col-12 p-0 text-center p-3 custom-button text-warning" alt="lock">
-                @if (this.Paragraph.IsLocked)
+                @if (this.Paragraph.Is
+              
+      )
                 {
                     <i class="fas fa-lg fa-lock"></i>
                 }
@@ -44,31 +52,37 @@
                     <i class="text-danger fa-lg fas fa-times"></i>
                 }
             </div>
-            <div role="button" type="button" class="col-12 p-0 text-center p-3 custom-button text-danger" alt="delete"
-                title="Löschen" @onclick="() => OnDeleteEvent.InvokeAsync(null)">
-                <i class="fas fa-lg fa-trash"></i></div>
+        </div>
+        @* Status Footer *@
+        <div class="card-footer">
+            <div class="row">
+                <div class="col">
+                    <div class="text-warning"><i class="fas fa-info-circle mr-2"></i>Der Präambel Paragraph enthält
+                        keinen
+                        gültigen
+                        Operator.</div>
+                    Aktuelle Bearbeiter:
+                    <div class="badge badge-info">Nutzer 1</div>
+                    <div class="badge badge-info">Nutzer 2</div>
+                    Status:
+                    <div class="badge badge-success">Vom Sek kontrolliert.</div>
+                </div>
+                <div class="col-1 d-flex align-items-center justify-content-end">
+                    <div type="button" role="button" @onclick="@(() => commentsExpanded = !commentsExpanded)">
+                        <i class="fas fa-comment fa-lg text-primary"></i>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-    @* Status Footer *@
-<div class="card-footer">
-    @if (resolutionService.HasValidOperator(this.Paragraph))
-    {
-        <div class="text-warning">
-            <i class="fas fa-info-circle mr-2"></i>Der Paragraph enthält keinen gültigen
-            Operator.
-        </div>
-    }
-
-    Aktuelle Bearbeiter:
-    <div class="badge badge-info">Nutzer 1</div>
-    <div class="badge badge-info">Nutzer 2</div>
-    Status:
-    <div class="badge badge-success">Vom Sek kontrolliert.</div>
+    @* Comment Panel *@
+    <div class="card @(commentsExpanded ? "comments-expanded m-2" : "comments") p-0">
+        <EditForm Model="Paragraph" class="h-100">
+            <InputTextArea @bind-Value="Paragraph.Text" disabled="@this.Paragraph.IsLocked" placeholder="Kommentare..."
+                class="md-textarea form-control h-100 custom-input-field px-0 p-2" />
+        </EditForm>
+    </div>
 </div>
-</div>
-
-
 
 @code {
 
@@ -92,6 +106,7 @@
     public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
     public PreambleParagraphEditor(){}
 
+    public Boolean commentsExpanded = false;
 
     private async void OnInputChange(ChangeEventArgs args)
     {
@@ -111,6 +126,21 @@
 
 
 <style>
+    .card {
+        transition: max-width .3s ease-in-out;
+    }
+
+    .comments {
+        transition: .3s ease-in-out;
+        max-width: 0%;
+        overflow: hidden;
+    }
+
+    .comments-expanded {
+        max-width: 25%;
+        overflow: auto;
+    }
+
     .custom-button {
         border-width: 0px;
         background-color: #00000000;

@@ -1,11 +1,10 @@
-﻿<!-- Navigate to id test /resa/edit/test to show a test resolution without anything -->
+<!-- Navigate to id test /resa/edit/test to show a test resolution without anything -->
 @page "/resa/edit/{id}"
 @page "/resa/edit/{id}/{mode}"
 @using MUNityClient.Models.Resolution;
 @using MUNityClient.Extensions;
 @using MUNityClient.Shared.Resa;
 @inject MUNityClient.Services.ResolutionService resolutionService;
-
 
 @if (this.Resolution != null)
 {
@@ -68,11 +67,13 @@
     </div>
 
     @* Preamble Paragraph Delete Modal *@
-    <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeletePreambleParagraphModal" OnSubmitCallback="removePreambleParagraph">
+    <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeletePreambleParagraphModal"
+        OnSubmitCallback="removePreambleParagraph">
         Bist du sicher, dass du den Paragraphen löschen möchtest?
     </MUNityClient.Shared.Bootstrap.Modal>
 
-    <MUNityClient.Shared.Bootstrap.Modal Title="Neuer Änderungsantrag" @ref="AddAmendmentModal" OnSubmitCallback="NewAmendment">
+    <MUNityClient.Shared.Bootstrap.Modal Title="Neuer Änderungsantrag" @ref="AddAmendmentModal"
+        OnSubmitCallback="NewAmendment">
         <MUNityClient.Shared.Resa.NewAmendmentForm Resolution="this.Resolution" @ref="NewAmendmentForm">
         </MUNityClient.Shared.Resa.NewAmendmentForm>
     </MUNityClient.Shared.Bootstrap.Modal>
