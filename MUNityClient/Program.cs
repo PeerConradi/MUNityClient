@@ -8,17 +8,23 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Ganss.XSS;
+using Blazored.LocalStorage;
 
 namespace MUNityClient
 {
     public class Program
     {
+        public static readonly string API_URL = "https://localhost:44349";
+
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            // builder.HostEnvironment.BaseAddress
+            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(API_URL) });
+            builder.Services.AddBlazoredLocalStorage();
+            builder.Services.AddScoped<Services.ResolutionService>();
             builder.Services.AddScoped<IHtmlSanitizer, HtmlSanitizer>(x =>
             {
                 // Configure sanitizer rules as needed here.

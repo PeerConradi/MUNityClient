@@ -12,11 +12,11 @@
     </div>
 
 
-    @if (this.NewAmendmentModel.AmendmentType == "change")
+    @if (this.NewAmendmentModel.AmendmentType == "change" || this.NewAmendmentModel.AmendmentType == "delete" || this.NewAmendmentModel.AmendmentType == "move")
     {
         <div class="form-group">
             <label>Operativer Absatz</label>
-            // Input Target Section
+            <!-- Input the Target Section when type is change, delete or move -->
             <InputSelect @bind-Value="NewAmendmentModel.TargetSectionId" class="form-control">
                 @foreach (var paragraph in this.Resolution.OperativeSection.Paragraphs)
                     {
@@ -25,15 +25,21 @@
             </InputSelect>
         </div>
 
+    }
+
+    <!-- Display Submitter Selection in any case! -->
+    @if (this.NewAmendmentModel.AmendmentType == "change" || this.NewAmendmentModel.AmendmentType == "delete" || this.NewAmendmentModel.AmendmentType == "move" || this.NewAmendmentModel.AmendmentType == "add")
+    {
         <div class="form-group">
             <label>EinbringerIn</label>
             <InputText @bind-Value="NewAmendmentModel.Submitter" class="form-control"></InputText>
         </div>
     }
 
+    <!-- TODO: New Position field for add Amendments and move amendments -->
 
 
-    @if (this.NewAmendmentModel.AmendmentType == "change" && !string.IsNullOrEmpty(this.NewAmendmentModel.TargetSectionId))
+    @if (this.NewAmendmentModel.AmendmentType == "change" && !string.IsNullOrEmpty(this.NewAmendmentModel.TargetSectionId) || this.NewAmendmentModel.AmendmentType == "add")
     {
         <div class="form-group">
             <label>Neuer Text</label>
@@ -105,6 +111,16 @@
             changeAmendment.SubmitterName = this.NewAmendmentModel.Submitter;
             changeAmendment.SubmitTime = DateTime.Now;
             return changeAmendment;
+        }
+        else if (this.NewAmendmentModel.AmendmentType == "delete")
+        {
+            var deleteAmendment = new DeleteAmendment()
+            {
+                TargetSectionId = this.NewAmendmentModel.TargetSectionId,
+                SubmitterName = this.NewAmendmentModel.Submitter,
+                SubmitTime = DateTime.Now
+            };
+            return deleteAmendment;
         }
 
         return null;

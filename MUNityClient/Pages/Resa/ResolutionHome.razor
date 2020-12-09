@@ -1,9 +1,73 @@
 ﻿@page "/resa/home"
+@inject MUNityClient.Services.ResolutionService resolutionService;
+@inject NavigationManager navigationManager;
 
 <h3>MUNity Resolutions-Editor</h3>
 
-<NavLink href="resa/edit">Editor</NavLink>
+<button @onclick="CreatePublicResolution">Öffentliche Resolution erstellen (Mit Server)</button>
+
+<button @onclick="CreateOfflineResolution">Erstelle offline Resolution</button>
+
+<NavLink href="resa/edit/test">Open Resolution Editor with Test</NavLink>
+
+
+<h1>Lokal gespeicherte Resolutionen:</h1>
+
+@if (localResolutions != null)
+{
+    <ul>
+        @foreach (var resa in localResolutions)
+        {
+            <li><button @onclick="() => OpenOffline(resa.ResolutionId)">Open @resa.Header.Topic</button></li>
+        }
+    </ul>
+}
+else
+{
+    if (loadingLocalsDone)
+    {
+        <p>Es wurden keine Lokal gespeicherten Resolutionen gefunden</p>
+    }
+    else
+    {
+        <p>Lokale Resolutionen werden geladen</p>
+    }
+
+}
+
 
 @code {
+    private bool loadingLocalsDone = false;
 
+    private List<MUNityClient.Models.Resolution.Resolution> localResolutions;
+
+    private async Task CreatePublicResolution()
+    {
+        var resolution = await this.resolutionService.CreatePublicResolution("NoTitle");
+        if (resolution != null)
+        {
+            navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}");
+        }
+    }
+
+    private async Task CreateOfflineResolution()
+    {
+        var resolution = await this.resolutionService.CreateOffline();
+        if (resolution != null)
+        {
+            navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}/offline");
+        }
+    }
+
+    private EventCallback OpenOffline(string id)
+    {
+        navigationManager.NavigateTo($"resa/edit/{id}/offline");
+        return EventCallback.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.localResolutions = await resolutionService.GetStoredResolutions();
+        this.loadingLocalsDone = true;
+    }
 }

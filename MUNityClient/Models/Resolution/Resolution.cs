@@ -7,6 +7,9 @@ namespace MUNityClient.Models.Resolution
 {
     public class Resolution : IResolution
     {
+        public delegate void OnResolutionChanged();
+
+        public event OnResolutionChanged ResolutionChanged;
 
         public string ResolutionId { get; set; }
 
@@ -16,6 +19,11 @@ namespace MUNityClient.Models.Resolution
 
         public ResolutionPreamble Preamble { get; set; }
         public OperativeSection OperativeSection { get; set; }
+
+        public void InvokeChange()
+        {
+            this.ResolutionChanged?.Invoke();
+        }
 
         public OperativeParagraph FindOperativeParagraph(string id)
         {

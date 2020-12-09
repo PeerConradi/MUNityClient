@@ -1,54 +1,58 @@
-﻿@using MUNityClient.Models.Resolution;
-<div class="row p-0 d-flex justify-content-center">
-    <div class="card my-2 px-0 col @(markedAsControlled ? "border border-success" : "")">
-        <div class="row">
-            @* Up/Down Buttons *@
-            <div class="col-3 col-sm-2 col-md-1 justify-content-center p-0">
-                <button disabled="@(Index == 0)" class="col-12 text-center custom-button h-50"
-                    @onclick="() => OnMoveEvent.InvokeAsync(true)" title="Nach oben verschieben" alt="put higher"><i
-                        class="fas fa-lg fa-caret-up"></i></button>
-                <button disabled="@(Index == Resolution.Preamble.Paragraphs.Count - 1)"
-                    class="col-12 px-0 text-center custom-button h-50" @onclick="() => OnMoveEvent.InvokeAsync(false)"
-                    title="Nach unten verschieben" alt="put lower"><i class="fas fa-lg fa-caret-down"></i></button>
+@using MUNityClient.Models.Resolution;
+@inject MUNityClient.Services.ResolutionService resolutionService;
+
+
+<div class="card my-2 @(Paragraph.Corrected ? "border border-success" : "")">
+    <div class="row">
+        @* Up/Down Buttons *@
+        <div class="col-3 col-sm-2 col-md-1 justify-content-center pr-0">
+            <button disabled="@(Index == 0)" class="col-12 p-0 text-center p-4 custom-button h-50"
+                @onclick="() => OnMoveEvent.InvokeAsync(true)" title="Nach oben verschieben" alt="put higher"><i
+                    class="fas fa-lg fa-caret-up"></i></button>
+            <button disabled="@(Resolution != null && Index == Resolution.Preamble.Paragraphs.Count - 1)"
+                class="col-12 p-0 text-center p-4 custom-button h-50" @onclick="() => OnMoveEvent.InvokeAsync(false)"
+                title="Nach unten verschieben" alt="put lower"><i class="fas fa-lg fa-caret-down"></i></button>
+        </div>
+        @* Input Field *@
+        <div class="col-6 col-sm-8 col-md-10 p-0">
+            <EditForm Model="Paragraph" class="h-100">
+                <textarea value="@Paragraph.Text" @oninput="@OnInputChange" disabled="@this.Paragraph.Is
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      
+                                                                                      " placeholder="Text..."
+                    class="form-control h-100 custom-input-field px-0 p-2" />
+            </EditForm>
+        </div>
+        @* Option Buttons *@
+        <div class="col-3 col-sm-2 col-md-1 pl-0">
+            <div role="button" type="button" @onclick="@(() => this.Paragraph.IsLocked = !this.Paragraph.IsLocked)" title="Bearbeitung sperren"
+                class="col-12 p-0 text-center p-3 custom-button text-warning" alt="lock">
+                @if (this.Paragraph.Is
+              
+      )
+                {
+                    <i class="fas fa-lg fa-lock"></i>
+                }
+                else
+                {
+                    <i class="fas fa-lg fa-lock-open"></i>
+                }
             </div>
-            @* Input Field *@
-            <div class="col p-0">
-                <EditForm Model="Paragraph" class="h-100">
-                    <InputTextArea @bind-Value="Paragraph.Text" disabled="@locked" placeholder="Text..."
-                        class="md-textarea form-control h-100 custom-input-field px-0 p-2" />
-                </EditForm>
-            </div>
-            @* Option Buttons *@
-            <div class="col-3 col-sm-2 col-md-1 pl-0">
-                <div role="button" type="button" @onclick="@(() => locked = !locked)" title="Bearbeitung sperren"
-                    class="col-12 p-0 text-center px-2 py-3 custom-button text-warning" alt="lock">
-                    @if (locked)
-                    {
-                        <i class="fas fa-lg fa-lock"></i>
-                    }
-                    else
-                    {
-                        <i class="fas fa-lg fa-lock-open"></i>
-                    }
-                </div>
-                <div role="button" type="button" @onclick="@(() => markedAsControlled = !markedAsControlled)"
-                    class="col-12 p-0 text-center px-2 py-3 custom-button" alt="mark as checked"
-                    title="Als überprüft markieren">
-                    @if (markedAsControlled)
-                    {
-                        <i class="text-success fa-lg fas fa-check"></i>
-                    }
-                    else
-                    {
-                        <i class="text-danger fa-lg fas fa-times"></i>
-                    }
-                </div>
-                <div role="button" type="button" class="col-12 p-0 text-center px-2 py-3 custom-button text-danger"
-                    alt="delete" title="Löschen" @onclick="() => OnDeleteEvent.InvokeAsync(null)">
-                    <i class="fas fa-lg fa-trash"></i></div>
+            <div role="button" type="button" @onclick="@(() => Paragraph.Corrected = !Paragraph.Corrected)"
+                class="col-12 p-0 text-center p-3 custom-button" alt="mark as checked" title="Als überprüft markieren">
+                @if (Paragraph.Corrected)
+                {
+                    <i class="text-success fa-lg fas fa-check"></i>
+                }
+                else
+                {
+                    <i class="text-danger fa-lg fas fa-times"></i>
+                }
             </div>
         </div>
-
         @* Status Footer *@
         <div class="card-footer">
             <div class="row">
@@ -74,19 +78,19 @@
     @* Comment Panel *@
     <div class="card @(commentsExpanded ? "comments-expanded m-2" : "comments") p-0">
         <EditForm Model="Paragraph" class="h-100">
-            <InputTextArea @bind-Value="Paragraph.Text" disabled="@locked" placeholder="Kommentare..."
+            <InputTextArea @bind-Value="Paragraph.Text" disabled="@this.Paragraph.IsLocked" placeholder="Kommentare..."
                 class="md-textarea form-control h-100 custom-input-field px-0 p-2" />
         </EditForm>
     </div>
 </div>
 
 @code {
-    [Parameter]
-    public Resolution Resolution { get; set; }
 
     [Parameter]
     public PreambleParagraph Paragraph { get; set; }
 
+    [Parameter]
+    public Resolution Resolution {get; set; }
 
     [Parameter]
     //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
@@ -96,15 +100,27 @@
     //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
     public EventCallback OnDeleteEvent { get; set; }
 
-    public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
+    [Parameter]
+    public EventCallback OnTextChanged { get; set; }
 
-    public Boolean locked = false;
-    public Boolean markedAsControlled = false;
+    public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
+    public PreambleParagraphEditor(){}
+
     public Boolean commentsExpanded = false;
 
-    public PreambleParagraphEditor()
+    private async void OnInputChange(ChangeEventArgs args)
     {
+        // This should only happen when we are online!
+        this.Paragraph.Text = (string)args.Value;
 
+        //this.Paragraph.Text = (string)args.Value;
+        if (this.Resolution != null)
+        {
+            if (await this.resolutionService.IsOnline())
+            {
+                await this.resolutionService.UpdatePublicResolutionPreambleParagraph(this.Resolution.ResolutionId, this.Paragraph);
+            }
+        }
     }
 }
 

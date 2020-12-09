@@ -23,8 +23,27 @@ This application is under development and cannot be used at the moment. Please c
 | Administration      | ![0%](https://progress-bar.dev/0)   | NOT STARTED                                              |
 | Dockerize           | ![0%](https://progress-bar.dev/0) | NOT STARTED       |
 
+## Developing and Testing
+
+You can develop without starting the backend. To do this you need to set the ids of your route to the name test.
+
+For example to open a test Resolution navigate to
+
+```[url]/resa/edit/test```
+
+If you have the backend started you may need to set the target IP inside the Program.cs (API_URL)
+
 ## Setup Development Environment
 Requiered: 
 * Visual Studio Community Edtion 2019 or higher or Visual Studio Code https://visualstudio.microsoft.com/de/downloads/
+
+To have an easier workflow with Visual Studio goto Tools (Extras) -> Command Prompt (Befehlszeile) -> Developer-Command-Prompt (Entwickler-EIngabeaufforderung)
+and type in
+```
+cd MUNityClient
+dotnet watch run
+```
+
+This will allow a Hot-Reload function
 
 

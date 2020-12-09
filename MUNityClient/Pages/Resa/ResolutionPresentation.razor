@@ -1,5 +1,37 @@
-﻿<h3>ResolutionPresentation</h3>
+﻿@page "/resa/read/{id}"
+@using MUNityClient.Models.Resolution;
+@inject MUNityClient.Services.ResolutionService resolutionService;
+
+@if (this.Resolution != null)
+{
+    <div class="row">
+        <div class="col-12">
+            <MUNityClient.Shared.Resa.ResolutionReader Resolution="this.Resolution">
+            </MUNityClient.Shared.Resa.ResolutionReader>
+        </div>
+    </div>
+}
+else
+{
+    <p>Resolution nicht bereit!</p>
+}
+
 
 @code {
+    [Parameter]
+    public string Id { get; set; }
 
+    public Resolution Resolution { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.Resolution = await this.resolutionService.GetPublicResolution(this.Id);
+
+        if (this.Resolution != null)
+        {
+            await this.resolutionService.Subscribe(this.Resolution);
+            this.Resolution.ResolutionChanged += () => this.StateHasChanged();
+        }
+
+    }
 }
