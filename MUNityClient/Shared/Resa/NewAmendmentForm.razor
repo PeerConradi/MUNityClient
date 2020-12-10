@@ -1,58 +1,67 @@
 ﻿@using MUNityClient.Models.Resolution;
 
-<EditForm Model="@NewAmendmentModel">
-    <div class="form-group">
-        <label>Art des Änderungsantrags</label>
-        <InputSelect @bind-Value="NewAmendmentModel.AmendmentType" class="form-control border-dark">
-            <option value="change">Text ändern</option>
-            <option value="delete">Absatz streichen</option>
-            <option value="move">Absatz verschieben</option>
-            <option value="add">Neuen Absatz hinzufügen</option>
-        </InputSelect>
-    </div>
-
-
-    @if (this.NewAmendmentModel.AmendmentType == "change" || this.NewAmendmentModel.AmendmentType == "delete" || this.NewAmendmentModel.AmendmentType == "move")
-    {
+@if (Resolution != null && this.NewAmendmentModel != null)
+{
+    <EditForm Model="@NewAmendmentModel">
         <div class="form-group">
-            <label>Operativer Absatz</label>
-            <!-- Input the Target Section when type is change, delete or move -->
-            <InputSelect @bind-Value="NewAmendmentModel.TargetSectionId" class="form-control">
-                @foreach (var paragraph in this.Resolution.OperativeSection.Paragraphs)
-                    {
-                    <option value="@paragraph.OperativeParagraphId">@(paragraph.Text.Length > 40 ? paragraph.Text.Substring(0, 40) : paragraph.Text)</option>
-                    }
+            <label>Art des Änderungsantrags</label>
+            <InputSelect @bind-Value="NewAmendmentModel.AmendmentType" class="form-control border-dark">
+                <option value="change">Text ändern</option>
+                <option value="delete">Absatz streichen</option>
+                <option value="move">Absatz verschieben</option>
+                <option value="add">Neuen Absatz hinzufügen</option>
             </InputSelect>
         </div>
 
-    }
 
-    <!-- Display Submitter Selection in any case! -->
-    @if (this.NewAmendmentModel.AmendmentType == "change" || this.NewAmendmentModel.AmendmentType == "delete" || this.NewAmendmentModel.AmendmentType == "move" || this.NewAmendmentModel.AmendmentType == "add")
-    {
-        <div class="form-group">
-            <label>EinbringerIn</label>
-            <InputText @bind-Value="NewAmendmentModel.Submitter" class="form-control"></InputText>
-        </div>
-    }
+        @if (this.NewAmendmentModel.AmendmentType == "change" || this.NewAmendmentModel.AmendmentType == "delete" || this.NewAmendmentModel.AmendmentType == "move")
+        {
+            <div class="form-group">
+                <label>Operativer Absatz</label>
+                <!-- Input the Target Section when type is change, delete or move -->
+                <InputSelect @bind-Value="NewAmendmentModel.TargetSectionId" class="form-control">
+                    @foreach (var paragraph in this.Resolution.OperativeSection.Paragraphs)
+                            {
+                                if (paragraph != null && paragraph.Text != null)
+                                {
+                            <option value="@paragraph.OperativeParagraphId">@(paragraph.Text.Length > 40 ? paragraph.Text.Substring(0, 40) : paragraph.Text)</option>
+                                }
 
-    <!-- TODO: New Position field for add Amendments and move amendments -->
+                            }
+                </InputSelect>
+            </div>
+
+        }
+
+        <!-- Display Submitter Selection in any case! -->
+        @if (this.NewAmendmentModel.AmendmentType == "change" || this.NewAmendmentModel.AmendmentType == "delete" || this.NewAmendmentModel.AmendmentType == "move" || this.NewAmendmentModel.AmendmentType == "add")
+        {
+            <div class="form-group">
+                <label>EinbringerIn</label>
+                <InputText @bind-Value="NewAmendmentModel.Submitter" class="form-control"></InputText>
+            </div>
+        }
+
+        <!-- TODO: New Position field for add Amendments and move amendments -->
 
 
-    @if (this.NewAmendmentModel.AmendmentType == "change" && !string.IsNullOrEmpty(this.NewAmendmentModel.TargetSectionId) || this.NewAmendmentModel.AmendmentType == "add")
-    {
-        <div class="form-group">
-            <label>Neuer Text</label>
-            <InputTextArea @bind-Value="this.NewAmendmentModel.NewText" class="form-control">Beispiel</InputTextArea>
-        </div>
-    }
-</EditForm>
+        @if (this.NewAmendmentModel.AmendmentType == "change" && !string.IsNullOrEmpty(this.NewAmendmentModel.TargetSectionId) || this.NewAmendmentModel.AmendmentType == "add")
+        {
+            <div class="form-group">
+                <label>Neuer Text</label>
+                <InputTextArea @bind-Value="this.NewAmendmentModel.NewText" class="form-control">Beispiel</InputTextArea>
+            </div>
+        }
+    </EditForm>
+}
+
 
 @code {
     private Resolution _resolution;
 
     [Parameter]
-    public Resolution Resolution {
+    public Resolution Resolution
+    {
         get => _resolution;
         set
         {
@@ -68,7 +77,8 @@
         private readonly Resolution _resolution;
 
         private string amendmentType = "";
-        public string AmendmentType {
+        public string AmendmentType
+        {
             get => this.amendmentType;
             set
             {

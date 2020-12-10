@@ -1,0 +1,49 @@
+﻿@using MUNityClient.Models.Resolution;
+
+@if (Paragraph != null)
+{
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-gradient-dark">
+                <div class="badge badge-danger">@DeleteAmendments.Count() Anträge auf Streichung</div>
+                <div class="badge badge-info">@ChangeAmendments.Count() Anträge auf Änderung</div>
+                <div class="badge badge-light">@MoveAmendments.Count() Anträge auf Verschiebung</div>
+            </div>
+            <div class="card-body">
+                <MUNityClient.Shared.General.MarkdownView Content="@Paragraph.Text"></MUNityClient.Shared.General.MarkdownView>
+            </div>
+        </div>
+    </div>
+}
+
+
+@code {
+
+    private OperativeParagraph _paragraph;
+    [Parameter]
+    public OperativeParagraph Paragraph
+    {
+        get => _paragraph;
+        set
+        {
+            if (this._paragraph != null)
+                this._paragraph.TextChanged -= TextChanged;
+            this._paragraph = value;
+            this._paragraph.TextChanged += TextChanged;
+        }
+    }
+
+    [Parameter]
+    public IEnumerable<DeleteAmendment> DeleteAmendments { get; set; }
+
+    [Parameter]
+    public IEnumerable<ChangeAmendment> ChangeAmendments { get; set; }
+
+    [Parameter]
+    public IEnumerable<MoveAmendment> MoveAmendments { get; set; }
+
+    private void TextChanged(OperativeParagraph sender, string oldText, string newText)
+    {
+        StateHasChanged();
+    }
+}

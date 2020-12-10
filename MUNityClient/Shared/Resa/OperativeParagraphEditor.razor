@@ -122,7 +122,18 @@ else if (!Dismissed)
 
     private async void OnInputChange(ChangeEventArgs args)
     {
-        //TODO: Implement
+
+        this.Paragraph.Text = (string)args.Value;
+
+        //this.Paragraph.Text = (string)args.Value;
+        if (this.Resolution != null)
+        {
+            // This should only happen when we are online!
+            if (await this.resolutionService.IsOnline())
+            {
+                await this.resolutionService.UpdatePublicResolutionOperativeParagraph(this.Resolution.ResolutionId, this.Paragraph);
+            }
+        }
     }
 
     public void RemoveOperativeParagraph()
