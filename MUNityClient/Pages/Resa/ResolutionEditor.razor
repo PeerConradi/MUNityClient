@@ -8,11 +8,16 @@
 
 @if (this.Resolution != null)
 {
-    <div class="row justify-content-center col-12">
-        <div class="col-11">
-            @* Preamble *@
-            <div class="mb-5">
-                <h3 class="font-weight-bold">Präambel</h3>
+    <div class="row p-0 m-0">
+        @* Preamble *@
+        <div class="col-12 mb-5">
+            <span type="button" role="button" class="row m-0 "
+                @onclick="() => preambleExpandingState = !preambleExpandingState">
+                <h3 class="font-weight-bold mr-3 my-0">Präambel</h3>
+                <i
+                    class="fas fa-2x fa-angle-down expansionIcon @(preambleExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
+            </span>
+            <div class="section col-12 @(preambleExpandingState ? "" : "section-collapsed")">
                 @* Preamble paragraphs *@
                 @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
                 {
@@ -25,10 +30,17 @@
                     Paragraph
                 </button>
             </div>
+        </div>
 
-            @* Operative section *@
-            <div class="bt-5">
-                <h3 class="font-weight-bold">Operativer Abschnitt</h3>
+        @* Operative section *@
+        <div class="col-12 bt-5">
+            <span type="button" role="button" class="row m-0 "
+                @onclick="() => operativeExpandingState = !operativeExpandingState">
+                <h3 class="font-weight-bold mr-3 my-0">Operativer Abschnitt</h3>
+                <i
+                    class="fas fa-2x fa-angle-down expansionIcon @(operativeExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
+            </span>
+            <div class="section col-12 @(operativeExpandingState ? "" : "section-collapsed")">
                 @* Operative paragraphs *@
                 @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
                 {
@@ -127,8 +139,10 @@ else
     public Resolution Resolution { get; set; }
     private PreambleParagraph PreambleMarkedForDeletion { get; set; }
     private OperativeParagraph OperativeMarkedForDeletion { get; set; }
-
     private Boolean fetchingResolutionErrored = false;
+    private Boolean preambleExpandingState = true;
+    private Boolean operativeExpandingState = true;
+    private Boolean amendmentExpandingState = true;
 
     public ResolutionEditor()
     {
@@ -290,3 +304,38 @@ else
     }
 
 }
+
+
+<style>
+    @**{border:1pxsolid#f00!important;}*@.expansionIcon {
+        transition: all .3s;
+    }
+
+    .expansionIcon-rotated {
+        transform: rotate(0);
+        -webkit-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        -ms-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+
+    .expansionIcon-unrotated {
+        -webkit-transform: rotate(-90deg);
+        -moz-transform: rotate(-90deg);
+        -o-transform: rotate(-90deg);
+        -ms-transform: rotate(-90deg);
+        transform: rotate(-90deg);
+    }
+
+    .section {
+        transition: .3s ease;
+        @*opacity:100%;*@max-height: 1000px;
+    }
+
+    .section-collapsed {
+        overflow-y: hidden;
+        max-height: 0;
+        @*opacity:0%;*@
+    }
+</style>

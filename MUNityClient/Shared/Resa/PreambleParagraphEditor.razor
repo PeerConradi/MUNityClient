@@ -1,7 +1,7 @@
 ﻿@using MUNityClient.Models.Resolution;
 @inject MUNityClient.Services.ResolutionService resolutionService;
 
-<div class="row my-2 p-0 d-flex justify-content-center">
+<div class="row my-2 mx-0 p-0 d-flex justify-content-center col-12">
     <div class="card px-0 col @(Paragraph.Corrected ? "border border-success" : "")">
         <div class="row">
             @* Up/Down Buttons *@
@@ -82,7 +82,8 @@
     </div>
     @* Comment Panel *@
     <div class="card my-0 col @(commentsExpanded ? "comments-expanded ml-2" : "comments") p-0">
-        <textarea placeholder="Kommentare..." class="form-control h-100 custom-input-field px-0 p-2 no-scrollbar"></textarea>
+        <textarea placeholder="Kommentare..."
+            class="form-control h-100 custom-input-field px-0 p-2 no-scrollbar"></textarea>
     </div>
 </div>
 

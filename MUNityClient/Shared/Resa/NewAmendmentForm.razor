@@ -3,11 +3,11 @@
 <EditForm Model="@NewAmendmentModel">
     <div class="form-group">
         <label>Art des Änderungsantrags</label>
-        <InputSelect @bind-Value="NewAmendmentModel.AmendmentType" class="form-control border-dark">
+        <InputSelect @bind-Value="NewAmendmentModel.AmendmentType" class="form-control custom-select" required>
             <option value="change">Text ändern</option>
-            <option value="delete">Absatz streichen</option>
-            <option value="move">Absatz verschieben</option>
-            <option value="add">Neuen Absatz hinzufügen</option>
+            <option value="delete">Streichen</option>
+            <option value="move">Verschieben</option>
+            <option value="add">Neuer Absatz</option>
         </InputSelect>
     </div>
 
@@ -20,7 +20,7 @@
             <InputSelect @bind-Value="NewAmendmentModel.TargetSectionId" class="form-control">
                 @foreach (var paragraph in this.Resolution.OperativeSection.Paragraphs)
                     {
-                    <option value="@paragraph.OperativeParagraphId">@(paragraph.Text.Length > 40 ? paragraph.Text.Substring(0, 40) : paragraph.Text)</option>
+                    <option value="@paragraph.OperativeParagraphId - @paragraph.Text">@(paragraph.Text.Length > 40 ? paragraph.Text.Substring(0, 40) : paragraph.Text)</option>
                     }
             </InputSelect>
         </div>
