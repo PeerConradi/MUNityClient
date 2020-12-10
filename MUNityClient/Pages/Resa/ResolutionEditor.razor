@@ -8,72 +8,75 @@
 
 @if (this.Resolution != null)
 {
-    <div class="row p-0 m-0">
-        @* Preamble *@
-        <div class="col-12 mb-5">
-            <span type="button" role="button" class="row m-0 "
-                @onclick="() => preambleExpandingState = !preambleExpandingState">
-                <h3 class="font-weight-bold mr-3 my-0">Präambel</h3>
-                <i
-                    class="fas fa-2x fa-angle-down expansionIcon @(preambleExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
-            </span>
-            <div class="section col-12 @(preambleExpandingState ? "" : "section-collapsed")">
-                @* Preamble paragraphs *@
-                @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
-                {
-                    <PreambleParagraphEditor Paragraph="preambleParagraph" Resolution="this.Resolution"
-                        OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
-                        OnDeleteEvent="@(() => {PreambleMarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
-                }
-                <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
-                    <i class="fas fa-plus mr-3"></i>Neuer Präambel
-                    Paragraph
-                </button>
-            </div>
-        </div>
 
-        @* Operative section *@
-        <div class="col-12 bt-5">
-            <span type="button" role="button" class="row m-0 "
-                @onclick="() => operativeExpandingState = !operativeExpandingState">
-                <h3 class="font-weight-bold mr-3 my-0">Operativer Abschnitt</h3>
-                <i
-                    class="fas fa-2x fa-angle-down expansionIcon @(operativeExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
-            </span>
-            <div class="section col-12 @(operativeExpandingState ? "" : "section-collapsed")">
-                @* Operative paragraphs *@
-                @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
-                {
-                    <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative"
-                        OnMoveEvent="@((up)=> MoveOperativeParagraph(up, operative))"
-                        OnDeleteEvent="@(() => {OperativeMarkedForDeletion = operative; DeleteOperativeParagraphModal.Open();})" />
-                }
-                <button class="btn btn-dark-green btn-block mt-4" @onclick="AddOperativeParagraph">
-                    <i class="fas fa-plus mr-3"></i>Neuer operativer Absatz
-                </button>
+    <div class="row p-0 m-0" >
+        <div class="row p-0 m-0 col-lg-8 paragraphs">
+            @* Preamble *@
+            <div class="col-12">
+                <span type="button" role="button" class="row m-0 "
+                    @onclick="() => preambleExpandingState = !preambleExpandingState">
+                    <h3 class="font-weight-bold mr-3 my-0">Präambel</h3>
+                    <i
+                        class="fas fa-2x fa-angle-down expansionIcon @(preambleExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
+                </span>
+                <div class="section col-12 p-0 @(preambleExpandingState ? "" : "section-collapsed")">
+                    @* Preamble paragraphs *@
+                    @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
+                    {
+                        <PreambleParagraphEditor Paragraph="preambleParagraph" Resolution="this.Resolution"
+                            OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
+                            OnDeleteEvent="@(() => {PreambleMarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
+                    }
+                    <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
+                        <i class="fas fa-plus mr-3"></i>Neuer Präambel
+                        Paragraph
+                    </button>
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Amendments -->
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h3>Änderungsanträge</h3>
-                <button class="btn btn-block btn-success" @onclick="ShowNewAmendmentModal">
-                    Neuer
-                    Änderungsantrag
-                </button>
-            </div>
-            <div class="card-body">
-                @foreach (var amendment in OrderedAmendments)
-                {
-                    <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
-                        Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
-                }
+            @* Operative section *@
+            <div class="col-12">
+                <span type="button" role="button" class="row m-0 "
+                    @onclick="() => operativeExpandingState = !operativeExpandingState">
+                    <h3 class="font-weight-bold mr-3 my-0">Operativer Abschnitt</h3>
+                    <i
+                        class="fas fa-2x fa-angle-down expansionIcon @(operativeExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
+                </span>
+                <div class="section col-12 p-0 @(operativeExpandingState ? "" : "section-collapsed")">
+                    @* Operative paragraphs *@
+                    @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+                    {
+                        <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative"
+                            OnMoveEvent="@((up)=> MoveOperativeParagraph(up, operative))"
+                            OnDeleteEvent="@(() => {OperativeMarkedForDeletion = operative; DeleteOperativeParagraphModal.Open();})" />
+                    }
+                    <button class="btn btn-dark-green btn-block mt-4" @onclick="AddOperativeParagraph">
+                        <i class="fas fa-plus mr-3"></i>Neuer operativer Absatz
+                    </button>
                 </div>
             </div>
         </div>
+
+        <!-- Amendments -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Änderungsanträge</h3>
+                    <button class="btn btn-block btn-dark-green" @onclick="ShowNewAmendmentModal">
+                        Neuer
+                        Änderungsantrag
+                    </button>
+                </div>
+                <div class="card-body">
+                    @foreach (var amendment in OrderedAmendments)
+                    {
+                        <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 
     @* Preamble Paragraph Delete Modal *@
     <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeletePreambleParagraphModal"
@@ -337,5 +340,10 @@ else
         overflow-y: hidden;
         max-height: 0;
         @*opacity:0%;*@
+    }
+
+    .paragraphs {
+        overflow-y: auto;
+        max-height: 92vh;
     }
 </style>

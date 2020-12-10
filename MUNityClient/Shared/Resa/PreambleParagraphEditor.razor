@@ -5,7 +5,7 @@
     <div class="card px-0 col @(Paragraph.Corrected ? "border border-success" : "")">
         <div class="row">
             @* Up/Down Buttons *@
-            <div class="col-3 col-sm-2 col-md-1 justify-content-center pr-0">
+            <div class="col-3 col-sm-2 justify-content-center pr-0">
                 <button disabled="@(Index == 0)" class="col-12 p-0 text-center p-3 custom-button h-50"
                     @onclick="() => OnMoveEvent.InvokeAsync(true)" title="Nach oben verschieben" alt="put higher"><i
                         class="fas fa-lg fa-caret-up"></i></button>
@@ -23,7 +23,7 @@
 
             </div>
             @* Option Buttons *@
-            <div class="col-3 col-sm-2 col-md-1 pl-0">
+            <div class="col-3 col-sm-2 pl-0">
                 <div role="button" type="button" @onclick="@(() => this.Paragraph.IsLocked = !this.Paragraph.IsLocked)"
                     title="Bearbeitung sperren" class="col-12 p-0 text-center px-2 py-3 custom-button text-warning"
                     alt="lock">
