@@ -136,6 +136,7 @@ namespace MUNityClient.Services
             {
                 var testResolution = Mocking.Resolution.CreateTestResolution();
                 await this.StoreResolution(testResolution);
+                FixResolution(testResolution);
                 return testResolution;
             }
 
@@ -181,6 +182,8 @@ namespace MUNityClient.Services
             resolution.OperativeSection.ChangeAmendments.RemoveAll(n => n == null);
             resolution.OperativeSection.DeleteAmendments.RemoveAll(n => n == null);
             resolution.OperativeSection.MoveAmendments.RemoveAll(n => n == null);
+            // Set the text to empty string if it is null.
+            resolution.OperativeSection.Paragraphs.ForEach(n => n.Text = n.Text ?? "");
         }
 
         /// <summary>
@@ -200,6 +203,12 @@ namespace MUNityClient.Services
             return this._httpService.HttpClient.PatchAsync($"/api/Resolution/UpdatePublicResolutionPreambleParagraph?resolutionid={resolutionid}", content);
         }
 
+        public Task<HttpResponseMessage> UpdatePublicResolutionOperativeParagraph(string resolutionid, OperativeParagraph paragraph)
+        {
+            var content = JsonContent.Create(paragraph);
+            return this._httpService.HttpClient.PatchAsync($"/api/Resolution/UpdatePublicResolutionOperativeParagraph?resolutionid={resolutionid}", content);
+        }
+
         public async void SaveOfflineResolution(Resolution resolution)
         {
             await this.StoreResolution(resolution);
@@ -213,6 +222,7 @@ namespace MUNityClient.Services
 
             hub.On<Resolution>("ResolutionChanged", (newResolution) => SocketResolutionChanged(resolution, newResolution));
             hub.On<string, PreambleParagraph>("PreambleParagraphChanged", (resolutionId, paragraph) => SocketPreambleParagraphChanged(resolution, resolutionId, paragraph));
+            hub.On<string, OperativeParagraph>("OperativeParagraphChanged", (resolutionId, paragraph) => SocketOperativeParagraphChanged(resolution, resolutionId, paragraph));
 
             await hub.StartAsync();
             await this._httpService.HttpClient.GetAsync($"/api/Resolution/SubscribeToResolution?resolutionid={resolution.ResolutionId}&connectionid={hub.ConnectionId}");
@@ -243,8 +253,18 @@ namespace MUNityClient.Services
                 if (targetParagraph != null)
                 {
                     targetParagraph.Text = newParagraph.Text;
+                    targetParagraph.Notices = newParagraph.Notices;
                 }
             }
+        }
+
+        private void SocketOperativeParagraphChanged(Resolution targetREsolution, string resolutionId, OperativeParagraph changedParagraph)
+        {
+            if (resolutionId != targetREsolution.ResolutionId) return;
+            var paragraph = targetREsolution.OperativeSection.Paragraphs.FirstOrDefault(n => n.OperativeParagraphId == changedParagraph.OperativeParagraphId);
+            if (paragraph == null) return;
+            paragraph.Text = changedParagraph.Text;
+            paragraph.Notices = changedParagraph.Notices;
         }
 
         #endregion

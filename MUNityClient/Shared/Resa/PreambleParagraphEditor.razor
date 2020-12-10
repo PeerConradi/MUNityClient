@@ -106,8 +106,11 @@
     public EventCallback OnTextChanged { get; set; }
 
     public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
+
+
     public Boolean commentsExpanded = false;
-    public PreambleParagraphEditor() { }
+
+
     private async void OnInputChange(ChangeEventArgs args)
     {
         // This should only happen when we are online!
