@@ -7,7 +7,6 @@ namespace MUNityClient.Models.Resolution
 {
     public interface IAddAmendment : IAmendment
     {
-        public string ParentSectionId { get; set; }
 
         public int Position { get; set; }
 

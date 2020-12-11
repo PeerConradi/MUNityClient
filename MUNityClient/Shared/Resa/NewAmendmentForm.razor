@@ -115,8 +115,7 @@
 
         if (this.NewAmendmentModel.AmendmentType == "change")
         {
-            var changeAmendment = new ChangeAmendment();
-            changeAmendment.TargetSectionId = this.NewAmendmentModel.TargetSectionId;
+            var changeAmendment = this.Resolution.CreateChangeAmendment(this.NewAmendmentModel.TargetSectionId);
             changeAmendment.NewText = this.NewAmendmentModel.NewText;
             changeAmendment.SubmitterName = this.NewAmendmentModel.Submitter;
             changeAmendment.SubmitTime = DateTime.Now;
@@ -124,14 +123,12 @@
         }
         else if (this.NewAmendmentModel.AmendmentType == "delete")
         {
-            var deleteAmendment = new DeleteAmendment()
-            {
-                TargetSectionId = this.NewAmendmentModel.TargetSectionId,
-                SubmitterName = this.NewAmendmentModel.Submitter,
-                SubmitTime = DateTime.Now
-            };
+            var deleteAmendment = this.Resolution.CreateDeleteAmendment(this.NewAmendmentModel.TargetSectionId);
+            deleteAmendment.SubmitterName = this.NewAmendmentModel.Submitter;
+            deleteAmendment.SubmitTime = DateTime.Now;
             return deleteAmendment;
         }
+
 
         return null;
     }

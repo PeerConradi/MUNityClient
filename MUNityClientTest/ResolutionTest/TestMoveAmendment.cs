@@ -54,7 +54,41 @@ namespace MUNityClientTest.ResolutionTest
             Assert.AreEqual("Paragraph Two", firstParagraph.Text);
             Assert.AreEqual("Paragraph One", secondParagraph.Text);
             // Alle Daten sollten nun mit dem Platzhalter ausgetauscht sein.
+        }
 
+        [Test]
+        public void TestMoveAmendmentCorrentWhenAmendmentAdded()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph One");
+            var paragraphTwo = resolution.CreateOperativeParagraph("Paragraph Two");
+            var moveAmendment = resolution.CreateMoveAmendment(paragraphOne, 1);
+            var paragraphThree = resolution.CreateOperativeParagraph("Paragraph Three");
+            var realParagraphs = resolution.OperativeSection.Paragraphs.Where(n => n.IsVirtual == false);
+            Assert.AreEqual("Paragraph One", realParagraphs.ElementAt(0).Text);
+            Assert.AreEqual("Paragraph Two", realParagraphs.ElementAt(1).Text);
+            Assert.AreEqual("Paragraph Three", realParagraphs.ElementAt(2).Text);
+
+            var allParagraphs = resolution.OperativeSection.Paragraphs;
+            Assert.AreEqual("Paragraph One", allParagraphs.ElementAt(0).Text);
+            Assert.AreEqual("Paragraph Two", allParagraphs.ElementAt(1).Text);
+            Assert.IsTrue(allParagraphs.ElementAt(2).IsVirtual);
+            Assert.AreEqual("Paragraph Three", allParagraphs.ElementAt(3).Text);
+        }
+
+        [Test]
+        public void TestMoveToStart()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph One");
+            var paragraphTwo = resolution.CreateOperativeParagraph("Paragraph Two");
+            var moveAmendment = resolution.CreateMoveAmendment(paragraphTwo, 0);
+            var success = moveAmendment.Apply(resolution);
+            var firstParagraph = resolution.OperativeSection.Paragraphs[0];
+            var secondParagraph = resolution.OperativeSection.Paragraphs[1];
+            // Paragraph should have moved up
+            Assert.AreEqual("Paragraph Two", firstParagraph.Text);
+            Assert.AreEqual("Paragraph One", secondParagraph.Text);
         }
     }
 }

@@ -1,8 +1,15 @@
 ﻿@using MUNityClient.Models.Resolution;
 @inject MUNityClient.Services.ResolutionService resolutionService;
 
+
 @if (Resolution.OperativeSection.Paragraphs.Contains(this.Paragraph))
 {
+
+    @* TODO: IsVirtual Check:
+        Wenn ein Absatz als IsVirtual gekennzeichnet ist (und Visible ist) darf mit diesem nicht weiter interargiert werden!
+        Das beduetet, er darf nicht verschoben werden, nicht gelöscht, der Text nicht verändert, keine Kommentare etc. er ist 
+        tatsächlich nur als reiner Platzhalter vorhanden für zum Beispiel einen noch kommenden Absatz oder aber gibt die Position an
+        an welche ein anderer Absatz ggf. geschoben werden soll! *@
 
     <div class="row col-12 p-0 m-0">
         <div class="row col m-0 p-0 d-flex justify-content-center border @(Paragraph.Corrected ? "border-success" : "")">

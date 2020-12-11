@@ -45,9 +45,9 @@
                     </h3>
                 </div>
                 <div class="card-body ammendment-body row p-0 m-0">
-                    @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+                    @foreach (var operative in this.Resolution.OperativeSection.Paragraphs.Where(n => !n.IsVirtual && n.Visible))
                     {
-                        <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative"
+                        <OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative"
                             OnMoveEvent="@((up)=> MoveOperativeParagraph(up, operative))"
                             OnDeleteEvent="@(() => {OperativeMarkedForDeletion = operative; DeleteOperativeParagraphModal.Open();})" />
                     }
@@ -71,8 +71,8 @@
                 <div class="card-body ammendment-body row p-0 m-0">
                     @foreach (var amendment in OrderedAmendments)
                     {
-                        <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
-                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                        <AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                            Interaction="AmendmentInteracted"></AmendmentCard>
                     }
                     </div>
                     <div class="card-footer">

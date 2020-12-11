@@ -26,7 +26,14 @@ namespace MUNityClient.Models.Resolution
 
         public bool Apply(Resolution parentResolution)
         {
-            throw new NotImplementedException();
+            var targetParagraph = parentResolution.FindOperativeParagraph(this.TargetSectionId);
+            if (targetParagraph == null)
+                return false;
+
+            targetParagraph.IsVirtual = false;
+            targetParagraph.Visible = true;
+            parentResolution.RemoveAmendment(this);
+            return true;
         }
 
         public bool Deny(Resolution parentResolution)

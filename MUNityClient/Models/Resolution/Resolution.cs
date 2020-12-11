@@ -239,19 +239,7 @@ namespace MUNityClient.Models.Resolution
             virtualParagraph.IsLocked = true;
             virtualParagraph.IsVirtual = true;
             newAmendment.NewTargetSectionId = virtualParagraph.OperativeParagraphId;
-            if (parentParagraph == null)
-            {
-                var paragraphAtThisIndex = OperativeSection.Paragraphs.Where(n => n.IsVirtual == false).ElementAt(targetIndex);
-                var realIndexOfParagraph = OperativeSection.Paragraphs.IndexOf(paragraphAtThisIndex);
-                this.OperativeSection.Paragraphs.Insert(realIndexOfParagraph + 1, virtualParagraph);
-            }
-            else
-            {
-                if (this.FindOperativeParagraph(parentParagraph.OperativeParagraphId) == null)
-                    throw new Exceptions.Resolution.OperativeParagraphNotFoundException("Target parent Paragraph not found in this Resolution");
-
-                parentParagraph.Children.Insert(targetIndex, virtualParagraph);
-            }
+            InsertIntoRealPosition(virtualParagraph, targetIndex, parentParagraph);
             PushAmendment(newAmendment);
             return newAmendment;
         }
@@ -259,6 +247,52 @@ namespace MUNityClient.Models.Resolution
         public MoveAmendment CreateMoveAmendment(OperativeParagraph paragraph, int targetIndex, OperativeParagraph parentParagraph = null) =>
             CreateMoveAmendment(paragraph.OperativeParagraphId, targetIndex, parentParagraph);
             
+
+
+
+        public AddAmendment CreateAddAmendment(int targetIndex, string text = "", OperativeParagraph parentParagraph = null)
+        {
+            var virtualParagraph = new OperativeParagraph(text);
+            virtualParagraph.IsVirtual = true;
+            virtualParagraph.Visible = false;
+            var position = InsertIntoRealPosition(virtualParagraph, targetIndex, parentParagraph);
+            var amendment = new AddAmendment();
+            amendment.Position = position;
+            amendment.TargetSectionId = virtualParagraph.OperativeParagraphId;
+            PushAmendment(amendment);
+            return amendment;
+        }
+
+        private int InsertIntoRealPosition(OperativeParagraph paragraph, int targetIndex, OperativeParagraph parentParagraph)
+        {
+            if (parentParagraph == null)
+            {
+                if (targetIndex != 0)
+                {
+                    var realParagraphs = OperativeSection.Paragraphs.Where(n => n.IsVirtual == false);
+                    if (realParagraphs.Count() < targetIndex)
+                    {
+                        var paragraphAtThisIndex = realParagraphs.ElementAt(targetIndex);
+                        var realIndexOfParagraph = OperativeSection.Paragraphs.IndexOf(paragraphAtThisIndex);
+                        targetIndex = realIndexOfParagraph + 1;
+                    }
+                    else
+                    {
+                        targetIndex = realParagraphs.Count();
+                    }
+                    if (targetIndex > this.OperativeSection.Paragraphs.Count) targetIndex = this.OperativeSection.Paragraphs.Count;
+                }
+                this.OperativeSection.Paragraphs.Insert(targetIndex, paragraph);
+            }
+            else
+            {
+                if (this.FindOperativeParagraph(parentParagraph.OperativeParagraphId) == null)
+                    throw new Exceptions.Resolution.OperativeParagraphNotFoundException("Target parent Paragraph not found in this Resolution");
+
+                parentParagraph.Children.Insert(targetIndex, paragraph);
+            }
+            return targetIndex;
+        }
 
         public Resolution()
         {
