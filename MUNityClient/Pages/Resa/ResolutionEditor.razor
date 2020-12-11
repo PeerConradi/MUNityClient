@@ -252,14 +252,12 @@ else
 
     private void AddPreambleParagraph()
     {
-        this.Resolution.Preamble.Paragraphs.Add(new PreambleParagraph());
-        SaveResolution();
+        this.Resolution.CreatePreambleParagraph();
     }
 
     private void AddOperativeParagraph()
     {
-        this.Resolution.OperativeSection.Paragraphs.Add(new OperativeParagraph());
-        SaveResolution();
+        this.Resolution.CreateOperativeParagraph();
     }
 
     private void ShowNewAmendmentModal()

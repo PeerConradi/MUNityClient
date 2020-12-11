@@ -20,7 +20,24 @@ namespace MUNityClient.Models.Resolution
 
         public bool Apply(Resolution parentResolution)
         {
-            throw new NotImplementedException();
+            var placeholder = parentResolution.FindOperativeParagraph(NewTargetSectionId);
+            var target = parentResolution.FindOperativeParagraph(TargetSectionId);
+
+            if (target == null || placeholder == null)
+                return false;
+
+            placeholder.Children = target.Children;
+            placeholder.Corrected = target.Corrected;
+            placeholder.IsLocked = false;
+            placeholder.IsVirtual = false;
+            placeholder.Name = target.Name;
+            placeholder.OperativeParagraphId = target.OperativeParagraphId;
+            target.OperativeParagraphId = Guid.NewGuid().ToString();
+            this.TargetSectionId = target.OperativeParagraphId;
+            placeholder.Text = target.Text;
+            placeholder.Visible = true;
+            parentResolution.RemoveOperativeParagraph(target);
+            return true;
         }
 
         public bool Deny(Resolution parentResolution)

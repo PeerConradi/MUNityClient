@@ -20,8 +20,7 @@ namespace MUNityClient.Models.Resolution
 
         public bool Apply(Resolution resolution)
         {
-            var paragraph = resolution.OperativeSection.Paragraphs.FirstOrDefault(n =>
-                n.OperativeParagraphId == TargetSectionId);
+            var paragraph = resolution.FindOperativeParagraph(this.TargetSectionId);
 
             if (resolution?.OperativeSection == null)
                 return false;
@@ -30,7 +29,7 @@ namespace MUNityClient.Models.Resolution
                 return false;
 
             resolution.OperativeSection?.Paragraphs.Remove(paragraph);
-            resolution.OperativeSection.DeleteAmendments.Remove(this);
+            resolution.AmendmentsForOperativeParagraph(this.TargetSectionId).ForEach(n => resolution.RemoveAmendment(n));
             return true;
         }
 

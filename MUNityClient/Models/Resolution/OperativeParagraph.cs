@@ -27,7 +27,7 @@ namespace MUNityClient.Models.Resolution
             get => this._text;
             set
             {
-                if (_text != value) return;
+                if (_text == value) return;
                 var oldText = this._text;
                 this._text = value;
                 this.TextChanged?.Invoke(this, value, oldText);
@@ -40,11 +40,12 @@ namespace MUNityClient.Models.Resolution
 
         public List<Notice> Notices { get; set; }
 
-        public OperativeParagraph()
+        public OperativeParagraph(string text = "")
         {
             Children = new List<OperativeParagraph>();
             OperativeParagraphId = Guid.NewGuid().ToString();
             Notices = new List<Notice>();
+            this._text = text;
         }
     }
 }
