@@ -2,25 +2,35 @@
 
 @if (CardVisible)
 {
-    <div class="card @CardBorder">
-        <div class="card-body">
-            @if (Amendment is ChangeAmendment)
-            {
-                <h5 class="card-title">Antrag auf Textänderung</h5>
-            }
-            <p>Zeit: @Amendment.SubmitTime.ToString()</p>
-            <p>Eingebracht durch: @Amendment.SubmitterName</p>
+    <div class="border col-6 col-md-4 col-lg-12 py-3">
 
-            <div class="custom-control custom-checkbox mr-sm-2">
-                <input type="checkbox" class="custom-control-input" @bind="Amendment.Activated" id="customControlAutosizing">
-                <label class="custom-control-label" for="customControlAutosizing">Auf Ansichten markieren</label>
-            </div>
+        @if (Amendment is ChangeAmendment)
+        {
+            <h5 class="card-title">Antrag auf Textänderung</h5>
+        }
+        <p class="text-center">
+            <i class="fas fa-calendar fa-lg text-primary mx-2"
+                alt="submit date"></i>@Amendment.SubmitTime.ToString("dd.MM.yyyy")
+            <i class="fas fa-clock fa-lg text-primary ml-2 mr-1" alt="submit time"></i>
+            @Amendment.SubmitTime.ToString("HH:mm")
+        </p>
+        <p class="text-center">
+            @Amendment.SubmitterName
+        </p>
 
-            <div class="btn-group btn-group-sm">
-                <button class="btn btn-success" @onclick="ApplyAmendment">Annehmen</button>
-                <button class="btn btn-warning" @onclick="DenyAmendment">Ablehnen</button>
-                <button class="btn btn-danger">Löschen</button>
+        <p class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" @bind="Amendment.Activated" id="customControlAutosizing">
+            <label class="custom-control-label" for="customControlAutosizing">Auf Ansichten markieren</label>
+        </p>
+
+        <div class="row p-0 m-0 justify-content-between">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+                <button class="btn btn-success btn-sm m-0 px-2" @onclick="ApplyAmendment"><i
+                        class="fas fa-check mr-2"></i>Annehmen</button>
+                <button class="btn btn-warning btn-sm  m-0 px-2" @onclick="DenyAmendment"><i
+                        class="fas fa-ban mr-2"></i>Ablehnen</button>
             </div>
+            <button class="btn btn-danger btn-sm  m-0 px-2"><i class="fas fa-trash mr-2"></i>Löschen</button>
         </div>
     </div>
 }
@@ -35,6 +45,8 @@
 
     [Parameter]
     public EventCallback Interaction { get; set; }
+
+    private readonly HttpClient _httpClient;
 
     public bool CardVisible = true;
 

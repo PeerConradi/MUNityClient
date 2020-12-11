@@ -9,17 +9,17 @@
 @if (this.Resolution != null)
 {
 
-    <div class="row p-0 m-0" >
+    <div class="row p-0 m-0">
         <div class="row p-0 m-0 col-lg-8 paragraphs">
             @* Preamble *@
-            <div class="col-12">
+            <div class="col-12 section mb-5 @(preambleExpandingState ? "" : "section-collapsed")">
                 <span type="button" role="button" class="row m-0 "
                     @onclick="() => preambleExpandingState = !preambleExpandingState">
                     <h3 class="font-weight-bold mr-3 my-0">Präambel</h3>
                     <i
                         class="fas fa-2x fa-angle-down expansionIcon @(preambleExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
                 </span>
-                <div class="section col-12 p-0 @(preambleExpandingState ? "" : "section-collapsed")">
+                <div class="col-12 p-0">
                     @* Preamble paragraphs *@
                     @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
                     {
@@ -35,14 +35,14 @@
             </div>
 
             @* Operative section *@
-            <div class="col-12">
+            <div class="col-12 section @(operativeExpandingState ? "" : "section-collapsed")">
                 <span type="button" role="button" class="row m-0 "
                     @onclick="() => operativeExpandingState = !operativeExpandingState">
                     <h3 class="font-weight-bold mr-3 my-0">Operativer Abschnitt</h3>
                     <i
                         class="fas fa-2x fa-angle-down expansionIcon @(operativeExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
                 </span>
-                <div class="section col-12 p-0 @(operativeExpandingState ? "" : "section-collapsed")">
+                <div class="col-12 p-0">
                     @* Operative paragraphs *@
                     @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
                     {
@@ -57,26 +57,55 @@
             </div>
         </div>
 
+
+
         <!-- Amendments -->
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-header">
                     <h3>Änderungsanträge</h3>
-                    <button class="btn btn-block btn-dark-green" @onclick="ShowNewAmendmentModal">
-                        Neuer
-                        Änderungsantrag
-                    </button>
                 </div>
-                <div class="card-body">
+                <div class="card-body ammendment-body row p-0 m-0">
                     @foreach (var amendment in OrderedAmendments)
                     {
                         <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
                             Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
                     }
+                        @foreach (var amendment in OrderedAmendments)
+                    {
+                        <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                    }
+                    @foreach (var amendment in OrderedAmendments)
+                    {
+                        <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                    }
+                        @foreach (var amendment in OrderedAmendments)
+                    {
+                        <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                    }
+                    @foreach (var amendment in OrderedAmendments)
+                    {
+                        <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                    }
+                        @foreach (var amendment in OrderedAmendments)
+                    {
+                        <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                    }
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-block btn-dark-green" @onclick="ShowNewAmendmentModal">
+                            Neuer
+                            Änderungsantrag
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
     @* Preamble Paragraph Delete Modal *@
     <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeletePreambleParagraphModal"
@@ -333,17 +362,21 @@ else
 
     .section {
         transition: .3s ease;
-        @*opacity:100%;*@max-height: 1000px;
+        max-height: 1000px;
     }
 
     .section-collapsed {
         overflow-y: hidden;
-        max-height: 0;
-        @*opacity:0%;*@
+        max-height: 35px;
     }
 
     .paragraphs {
         overflow-y: auto;
         max-height: 92vh;
+    }
+
+    .ammendment-body {
+        overflow-y: auto;
+        max-height: 70vh;
     }
 </style>
