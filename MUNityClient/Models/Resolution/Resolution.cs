@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MUNityClient.Extensions;
 
 namespace MUNityClient.Models.Resolution
 {
@@ -293,6 +294,34 @@ namespace MUNityClient.Models.Resolution
             }
             return targetIndex;
         }
+
+        /// <summary>
+        /// Returns the displayed Index name of a Paragraph for example 
+        /// 1, 2, 2.a, 2.a.i etc.
+        /// </summary>
+        /// <param name="paragraph"></param>
+        /// <returns></returns>
+        public string GetIndexNameOfOperativeParagraph(string paragraphId)
+        {
+            var path = GetOperativeParagraphPath(paragraphId);
+            var numbers = new List<int>();
+            OperativeParagraph parent = null;
+            foreach(var paragraph in path)
+            {
+                if (parent == null)
+                {
+                    numbers.Add(this.OperativeSection.Paragraphs.Where(n => !n.IsVirtual).ToList().IndexOf(paragraph));
+                }
+                else
+                {
+                    numbers.Add(parent.Children.Where(n => !n.IsVirtual).ToList().IndexOf(paragraph));
+                }
+                parent = paragraph;
+            }
+            return Conversion.ToPathname(numbers.ToArray());
+        }
+
+        public string GetIndexNameOfOperativeParagraph(OperativeParagraph paragraph) => GetIndexNameOfOperativeParagraph(paragraph.OperativeParagraphId);
 
         public Resolution()
         {
