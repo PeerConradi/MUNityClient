@@ -179,7 +179,7 @@ namespace MUNityClient.Models.Resolution
         {
             if (amendment is AddAmendment addAmendment)
             {
-                this.OperativeSection.AddAmendments.Remove(addAmendment);
+                this.OperativeSection.AddAmendments.RemoveAll(n => n.TargetSectionId == amendment.TargetSectionId);
             }
             else if (amendment is ChangeAmendment changeAmendment)
             {

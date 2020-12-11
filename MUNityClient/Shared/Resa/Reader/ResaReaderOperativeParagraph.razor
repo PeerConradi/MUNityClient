@@ -10,6 +10,7 @@
                 <div class="badge badge-light">@MoveAmendments.Count() Anträge auf Verschiebung</div>
             </div>
             <div class="card-body">
+                @Pathname
                 <MUNityClient.Shared.General.MarkdownView Content="@Paragraph.Text"></MUNityClient.Shared.General.MarkdownView>
             </div>
         </div>
@@ -32,6 +33,9 @@
             this._paragraph.TextChanged += TextChanged;
         }
     }
+
+    [Parameter]
+    public string Pathname {get; set; }
 
     [Parameter]
     public IEnumerable<DeleteAmendment> DeleteAmendments { get; set; }

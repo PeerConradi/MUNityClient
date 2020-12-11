@@ -127,6 +127,7 @@ namespace MUNityClient.Services
         {
             // Look into the local Storage for the resolution
             var resolutionsLocal = await this.GetStoredResolutions();
+            
             return resolutionsLocal.FirstOrDefault(n => n.ResolutionId == id);
         }
 
@@ -287,5 +288,6 @@ namespace MUNityClient.Services
             this._httpService = client;
             this._localStorage = localStorage;
         }
+
     }
 }

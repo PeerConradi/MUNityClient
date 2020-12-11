@@ -18,7 +18,7 @@
     <ul>
         @foreach (var resa in localResolutions)
         {
-            <li><button @onclick="() => OpenOffline(resa.ResolutionId)">Open @resa.Header.Topic</button></li>
+            <li><button @onclick="() => OpenOffline(resa.ResolutionId)">[@resa.Header.Topic] - Im Offline Editor öffnen</button> <button @onclick="() => OpenReader(resa.ResolutionId)">[@resa.Header.Topic] - Im Reader öffnen</button></li>
         }
     </ul>
 }
@@ -62,6 +62,12 @@ else
     private EventCallback OpenOffline(string id)
     {
         navigationManager.NavigateTo($"resa/edit/{id}/offline");
+        return EventCallback.Empty;
+    }
+
+    private EventCallback OpenReader(string id)
+    {
+        navigationManager.NavigateTo($"resa/read/{id}");
         return EventCallback.Empty;
     }
 

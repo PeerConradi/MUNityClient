@@ -30,7 +30,7 @@
                 <button class="btn btn-warning btn-sm  m-0 px-2" @onclick="DenyAmendment"><i
                         class="fas fa-ban mr-2"></i>Ablehnen</button>
             </div>
-            <button class="btn btn-danger btn-sm  m-0 px-2"><i class="fas fa-trash mr-2"></i>Löschen</button>
+            <button class="btn btn-danger btn-sm  m-0 px-2" @onclick="DeleteMe"><i class="fas fa-trash mr-2"></i>Löschen</button>
         </div>
     </div>
 }
@@ -59,6 +59,12 @@
     public void DenyAmendment()
     {
         this.Amendment?.Deny(this.Resolution);
+        Interaction.InvokeAsync(this.Amendment);
+    }
+
+    private void DeleteMe()
+    {
+        this.Resolution.RemoveAmendment(this.Amendment);
         Interaction.InvokeAsync(this.Amendment);
     }
 

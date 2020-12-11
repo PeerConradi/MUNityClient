@@ -19,13 +19,10 @@ namespace MUNityClient.Models.Resolution
             get => _text;
             set
             {
-                
+                if (value == _text) return;
                 var oldText = _text;
-                if (value != oldText)
-                {
-                    _text = value;
-                    TextChanged?.Invoke(this, oldText, value);
-                }
+                _text = value;
+                TextChanged?.Invoke(this, oldText, value);
             }
         }
         public bool IsLocked { get; set; } = false;
