@@ -1,66 +1,65 @@
 ﻿@using MUNityClient.Models.Resolution;
 @inject MUNityClient.Services.ResolutionService resolutionService;
 
-<div class="row my-2 mx-0 p-0 d-flex justify-content-center col-12">
-    <div class="card px-0 col @(Paragraph.Corrected ? "border border-success" : "")">
-        <div class="row">
-            @* Up/Down Buttons *@
-            <div class="col-3 col-sm-2 justify-content-center pr-0">
-                <button disabled="@(Index == 0)" class="col-12 p-0 text-center p-3 custom-button h-50"
-                    @onclick="() => OnMoveEvent.InvokeAsync(true)" title="Nach oben verschieben" alt="put higher"><i
-                        class="fas fa-lg fa-caret-up"></i></button>
-                <button disabled="@(Resolution != null && Index == Resolution.Preamble.Paragraphs.Count - 1)"
-                    class="col-12 p-0 text-center p-3 custom-button h-50"
-                    @onclick="() => OnMoveEvent.InvokeAsync(false)" title="Nach unten verschieben" alt="put lower"><i
-                        class="fas fa-lg fa-caret-down"></i></button>
-            </div>
-            @* Input Field *@
-            <div class="col p-0">
-                <EditForm Model="Paragraph" class="h-100">
-                    <textarea value="@Paragraph.Text" @oninput="@OnInputChange" disabled="@this.Paragraph.IsLocked"
-                        placeholder="Text..." class="form-control h-100 custom-input-field px-0 p-2"></textarea>
-                </EditForm>
+    <div class="row col-12 p-0 m-0">
+        <div class="row col m-0 p-0 d-flex justify-content-center border @(Paragraph.Corrected ? "border-success" : "")">
+            <div class="row p-0 d-flex justify-content-center col-12">
+                @* Up/Down Buttons *@
+                <div class="col-3 col-sm-2 p-0">
+                    <button disabled="@(Index == 0)" class="col-12 p-0 text-center p-3 custom-button h-50"
+                        @onclick="() => OnMoveEvent.InvokeAsync(true)" title="Nach oben verschieben" alt="put higher"><i
+                            class="fas fa-lg fa-caret-up"></i></button>
+                    <button disabled="@(Resolution != null && Index == Resolution.Preamble.Paragraphs.Count - 1)"
+                        class="col-12 p-0 text-center p-3 custom-button h-50"
+                        @onclick="() => OnMoveEvent.InvokeAsync(false)" title="Nach unten verschieben" alt="put lower"><i
+                            class="fas fa-lg fa-caret-down"></i></button>
+                </div>
+                @* Input Field *@
+                <div class="col p-0 my-2">
+                    <EditForm Model="Paragraph" class="h-100">
+                        <textarea value="@Paragraph.Text" @oninput="@OnInputChange" disabled="@this.Paragraph.IsLocked"
+                            placeholder="Text..." class="form-control h-100 custom-input-field px-0 p-2"></textarea>
+                    </EditForm>
 
-            </div>
-            @* Option Buttons *@
-            <div class="col-3 col-sm-2 pl-0">
-                <div role="button" type="button" @onclick="@(() => this.Paragraph.IsLocked = !this.Paragraph.IsLocked)"
-                    title="Bearbeitung sperren" class="col-12 p-0 text-center px-2 py-3 custom-button text-warning"
-                    alt="lock">
-                    @if (this.Paragraph.IsLocked)
-                    {
-                        <i class="fas fa-lg fa-lock"></i>
-                    }
-                    else
-                    {
-                        <i class="fas fa-lg fa-lock-open"></i>
-                    }
                 </div>
-                <div role="button" type="button" @onclick="@(() => Paragraph.Corrected = !Paragraph.Corrected)"
-                    class="col-12 p-0 text-center px-2 py-3 custom-button" alt="mark as checked"
-                    title="Als überprüft markieren">
-                    @if (Paragraph.Corrected)
-                    {
-                        <i class="text-success fa-lg fas fa-check"></i>
-                    }
-                    else
-                    {
-                        <i class="text-danger fa-lg fas fa-times"></i>
-                    }
+                @* Option Buttons *@
+                <div class="col-3 col-sm-2 px-0">
+                    <div role="button" type="button" @onclick="@(() => this.Paragraph.IsLocked = !this.Paragraph.IsLocked)"
+                        title="Bearbeitung sperren" class="col-12 p-0 text-center px-2 py-3 custom-button text-warning"
+                        alt="lock">
+                        @if (this.Paragraph.IsLocked)
+                        {
+                            <i class="fas fa-lg fa-lock"></i>
+                        }
+                        else
+                        {
+                            <i class="fas fa-lg fa-lock-open"></i>
+                        }
+                    </div>
+                    <div role="button" type="button" @onclick="@(() => Paragraph.Corrected = !Paragraph.Corrected)"
+                        class="col-12 p-0 text-center px-2 py-3 custom-button" alt="mark as checked"
+                        title="Als überprüft markieren">
+                        @if (Paragraph.Corrected)
+                        {
+                            <i class="text-success fa-lg fas fa-check"></i>
+                        }
+                        else
+                        {
+                            <i class="text-danger fa-lg fas fa-times"></i>
+                        }
+                    </div>
+                    <div role="button" type="button" class="col-12 p-0 text-center px-2 py-3 custom-button text-danger"
+                        alt="delete" title="Löschen" @onclick="() => OnDeleteEvent.InvokeAsync(null)">
+                        <i class="fas fa-lg fa-trash"></i></div>
                 </div>
-                <div role="button" type="button" class="col-12 p-0 text-center px-2 py-3 custom-button text-danger"
-                    alt="delete" title="Löschen" @onclick="() => OnDeleteEvent.InvokeAsync(null)">
-                    <i class="fas fa-lg fa-trash"></i></div>
             </div>
-        </div>
-        @* Status Footer *@
-        <div class="card-footer">
-            <div class="row">
-                <div class="col">
+            @* Status Footer *@
+            <div class="row m-0 card-footer row col-12 d-flex justify-content-between">
+                <div class="col p-0">
                     @if (!this.resolutionService.HasValidOperator(this.Paragraph))
                     {
                         <div class="text-warning">
-                            <i class="fas fa-info-circle mr-2"></i>Der Präambel Paragraph enthält
+                            <i class="fas fa-info-circle mr-2"></i>Der Paragraph enthält
                             keinen
                             gültigen
                             Operator.
@@ -79,13 +78,12 @@
                 </div>
             </div>
         </div>
+        @* Comment Panel *@
+        <div class="m-0 col comments @(commentsExpanded ? "comments-expanded" : "comments-collapsed") p-0">
+            <textarea placeholder="Kommentare..."
+                class="form-control h-100 custom-input-field px-0 p-2 no-scrollbar"></textarea>
+        </div>
     </div>
-    @* Comment Panel *@
-    <div class="card my-0 col @(commentsExpanded ? "comments-expanded ml-2" : "comments") p-0">
-        <textarea placeholder="Kommentare..."
-            class="form-control h-100 custom-input-field px-0 p-2 no-scrollbar"></textarea>
-    </div>
-</div>
 
 @code {
     [Parameter]
@@ -135,13 +133,16 @@
 
     .comments {
         transition: .3s ease-in-out;
-        max-width: 0%;
-        overflow: hidden;
     }
 
     .comments-expanded {
-        max-width: 25%;
+        max-width: 30%;
         overflow: auto;
+    }
+
+    .comments-collapsed {
+        max-width: 0%;
+        overflow: hidden;
     }
 
     .custom-button {
