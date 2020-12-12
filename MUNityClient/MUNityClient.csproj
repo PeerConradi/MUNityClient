@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <Folder Include="Pages\Conference\" />
-    <Folder Include="Pages\LoS\" />
   </ItemGroup>
 
 </Project>
