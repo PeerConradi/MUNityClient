@@ -1,9 +1,24 @@
-﻿@page "/auth"
+﻿@page "/auth/{type}"
 
-<MUNityClient.Shared.Authentication.LoginBox></MUNityClient.Shared.Authentication.LoginBox>
 
-<MUNityClient.Shared.Authentication.SignUpBox></MUNityClient.Shared.Authentication.SignUpBox>
+@if (type == "login")
+{
+    <div class="row col-12 d-flex justify-content-center">
+        <div class="col-10 col-md-6">
+            <MUNityClient.Shared.Authentication.LoginBox></MUNityClient.Shared.Authentication.LoginBox>
+        </div>
+    </div>
+}
+else if (type == "register")
+{
+    <MUNityClient.Shared.Authentication.SignUpBox></MUNityClient.Shared.Authentication.SignUpBox>
+} else {
+    <_404></_404>
+}
 
-@code {
+
+    @code {
+    [Parameter]
+    public string type { get; set; }
 
 }
