@@ -33,26 +33,7 @@ namespace MUNityClient.Extensions.ResolutionExtensions
 
         public static OperativeParagraph FindOperativeParagraph(this Resolution resolution, string id)
         {
-            foreach (var paragraph in resolution.OperativeSection.Paragraphs)
-            {
-                var result = FindOperativeParagraphRecursive(paragraph, id);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        private static OperativeParagraph FindOperativeParagraphRecursive(OperativeParagraph paragraph, string targetId)
-        {
-            if (paragraph.OperativeParagraphId == targetId) return paragraph;
-            if (paragraph.Children != null && paragraph.Children.Any())
-            {
-                foreach (var child in paragraph.Children)
-                {
-                    var result = FindOperativeParagraphRecursive(child, targetId);
-                    if (result != null) return result;
-                }
-            }
-            return null;
+            return resolution.OperativeSection.FirstOrDefault(n => n.OperativeParagraphId == id);
         }
 
         private static OperativeParagraph FindOperativeParagraphPathRecursive(OperativeParagraph paragraph, string targetId, List<OperativeParagraph> path)
@@ -210,6 +191,46 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             list.AddRange(resolution.OperativeSection.Paragraphs.Select(n => n.OperativeParagraphId));
             resolution.OperativeSection.Paragraphs.ForEach(n => AddAllChildrenRecursive(n, list));
             return list;
+        }
+
+        public static List<OperativeParagraph> WhereParagraph(this OperativeSection operativeSection, Func<OperativeParagraph, bool> predicate)
+        {
+            var list = new List<OperativeParagraph>();
+            list.AddRange(operativeSection.Paragraphs.Where(predicate));
+            operativeSection.Paragraphs.ForEach(n => deepWhere(n, predicate, list));
+            return list;
+        }
+
+        private static void deepWhere(OperativeParagraph parentParagraph, Func<OperativeParagraph, bool> predicate, List<OperativeParagraph> resultList)
+        {
+            if (parentParagraph.Children != null && parentParagraph.Children.Any())
+            {
+                resultList.AddRange(parentParagraph.Children.Where(predicate));
+                parentParagraph.Children.ForEach(n => deepWhere(n, predicate, resultList));
+            }
+        }
+
+        public static OperativeParagraph FirstOrDefault(this OperativeSection operativeSection, Func<OperativeParagraph, bool> predicate)
+        {
+            var result = operativeSection.Paragraphs.FirstOrDefault(predicate);
+            if (result != null) return result;
+            foreach(var s in operativeSection.Paragraphs)
+            {
+                result = deepFirstOrDefault(s, predicate);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        private static OperativeParagraph deepFirstOrDefault(this OperativeParagraph paragraph, Func<OperativeParagraph, bool> predicate)
+        {
+            var result = paragraph.Children.FirstOrDefault(predicate);
+            if (result != null) return result;
+            foreach(var child in paragraph.Children)
+            {
+                return deepFirstOrDefault(child, predicate);
+            }
+            return null;
         }
 
         #region function linking

@@ -10,16 +10,26 @@
 @if (this.Resolution != null)
 {
 
+    var corruptionResult = MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.IsResolutionCorrupted(this.Resolution);
+    if (corruptionResult.isCorrupted)
+    {
+        <div class="row">
+            <h3>Achtung die Resolution ist beschädigt.</h3>
+            <p>@corruptionResult.log</p>
+            <button @onclick="() => MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.FixResolution(this.Resolution)">Jetzt reparieren</button>
+        </div>
+    }
+
     <div class="row p-0 m-0 d-flex justify-content-center">
         <div class="row col-lg-8 col-xl-6 p-2 paragraphs">
             <div class="accordion col-12" id="accordion">
                 <div class="card">
                     <div role="button" class="card-header row m-0" type="button" data-toggle="collapse"
-                        data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne"
-                        @onclick="() => preambleExpandingState = !preambleExpandingState">
-                        <h3>Präambel
-                            <i
-                                class="fas fa-angle-down ml-2 expansionIcon"></i>
+                         data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne"
+                         @onclick="() => preambleExpandingState = !preambleExpandingState">
+                        <h3>
+                            Präambel
+                            <i class="fas fa-angle-down ml-2 expansionIcon"></i>
                         </h3>
                     </div>
                     <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
@@ -28,8 +38,8 @@
                             @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
                             {
                                 <PreambleParagraphEditor Paragraph="preambleParagraph" Resolution="this.Resolution"
-                                    OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
-                                    OnDeleteEvent="@(() => {PreambleMarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
+                                                         OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
+                                                         OnDeleteEvent="@(() => {PreambleMarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
                             }
                         </div>
                         <div class="card-footer">
@@ -41,62 +51,62 @@
                 </div>
                 <div class="card">
                     <div role="button" class="card-header row m-0" type="button" data-toggle="collapse"
-                        data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo"
-                        @onclick="() => operativeExpandingState = !operativeExpandingState">
-                        <h3>Operativer Abschnitt
-                            <i
-                                class="fas fa-angle-down ml-2 expansionIcon "></i>
+                         data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo"
+                         @onclick="() => operativeExpandingState = !operativeExpandingState">
+                        <h3>
+                            Operativer Abschnitt
+                            <i class="fas fa-angle-down ml-2 expansionIcon "></i>
                         </h3>
                     </div>
                     <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordion">
                         @* Operative section *@
-                       <div class="card-body ammendment-body row p-0 m-0">
-                                                @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
-                    {
-                        @if (!operative.IsVirtual)
-                        {
-                            <OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative"
-                                                      OnMoveEvent="@((up)=> MoveOperativeParagraph(up, operative))"
-                                                      OnDeleteEvent="@(() => {OperativeMarkedForDeletion = operative; DeleteOperativeParagraphModal.Open();})" />
-                        }
-                        else
-                        {
-                <div class="col-12">
-                    @{ 
-                        var moveParent = this.Resolution.OperativeSection.MoveAmendments.FirstOrDefault(n => n.NewTargetSectionId == operative.OperativeParagraphId);
-
-                    }
-
-                    @if (operative.Visible)
-                    {
-                        <div class="alert alert-primary">
-                    An dieser Stelle ist ein eingeblendeter Virtueller Absatz
-                            @if (moveParent != null)
+                        <div class="card-body ammendment-body row p-0 m-0">
+                            @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
                             {
-                                var sourceParagraph = Resolution.GetIndexNameOfOperativeParagraph(moveParent.TargetSectionId);
-                                <span>Der Absatz @sourceParagraph soll an diese Stelle geschoben werden.</span>
-                            }
-                            else
-                            {
-                                <span>Dieser Absatz kommt scheinbar über einen Änderungsantrag auf Hinzufügen. Der Neue Text ist: </span>
-                                <p>@operative.Text</p>
-                            }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-secondary"> An dieser Stelle ist ein ausgelbendeter Virtueller Absatz</div>
-                    }
+                                @if (!operative.IsVirtual)
+                                {
+                                    <OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative"
+                                                              OnMoveEvent="@((up)=> MoveOperativeParagraph(up, operative))"
+                                                              OnDeleteEvent="@(() => {OperativeMarkedForDeletion = operative; DeleteOperativeParagraphModal.Open();})" />
+                                }
+                                else
+                                {
+                                    <div class="col-12">
+                                        @{
+                                            var moveParent = this.Resolution.OperativeSection.MoveAmendments.FirstOrDefault(n => n.NewTargetSectionId == operative.OperativeParagraphId);
 
-                </div>
-                            
-                        }
-                    }
+                                        }
+
+                                        @if (operative.Visible)
+                                        {
+                                            <div class="alert alert-primary">
+                                                An dieser Stelle ist ein eingeblendeter Virtueller Absatz
+                                                @if (moveParent != null)
+                                                {
+                                                    var sourceParagraph = Resolution.GetIndexNameOfOperativeParagraph(moveParent.TargetSectionId);
+                                                    <span>Der Absatz @sourceParagraph soll an diese Stelle geschoben werden.</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Dieser Absatz kommt scheinbar über einen Änderungsantrag auf Hinzufügen. Der Neue Text ist: </span>
+                                                    <p>@operative.Text</p>
+                                                }
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="alert alert-secondary"> An dieser Stelle ist ein ausgelbendeter Virtueller Absatz</div>
+                                        }
+
+                                    </div>
+
+                                }
+                            }
                         </div>
                         <div class="card-footer">
                             <button class="btn btn-dark-green btn-block mt-4" @onclick="AddOperativeParagraph">
-                               <i class="fas fa-plus mr-3"></i>Neuer operativer Absatz
-                           </button>
+                                <i class="fas fa-plus mr-3"></i>Neuer operativer Absatz
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -113,52 +123,53 @@
                     @foreach (var amendment in OrderedAmendments)
                     {
                         <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
-                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
+                                                                Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
                     }
-                    </div>
-                    <div class="card-footer">
-                        <button class="btn btn-block btn-dark-green" @onclick="ShowNewAmendmentModal">
-                            <i class="fas fa-plus mr-3"></i>
-                            Neuer
-                            Änderungsantrag
-                        </button>
-                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn btn-block btn-dark-green" @onclick="ShowNewAmendmentModal">
+                        <i class="fas fa-plus mr-3"></i>
+                        Neuer
+                        Änderungsantrag
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
     @* Preamble Paragraph Delete Modal *@
     <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeletePreambleParagraphModal"
-        OnSubmitCallback="removePreambleParagraph">
+                                         OnSubmitCallback="removePreambleParagraph">
         Bist du sicher, dass du den Paragraphen löschen möchtest?
     </MUNityClient.Shared.Bootstrap.Modal>
 
     @* Operative Paragraph Delete Modal *@
     <MUNityClient.Shared.Bootstrap.Modal Title="Löschen bestätigen" @ref="DeleteOperativeParagraphModal"
-        OnSubmitCallback="removeOperativeParagraph">
+                                         OnSubmitCallback="removeOperativeParagraph">
         Bist du sicher, dass du den Paragraphen löschen möchtest?
     </MUNityClient.Shared.Bootstrap.Modal>
 
     <MUNityClient.Shared.Bootstrap.Modal Title="Neuer Änderungsantrag" @ref="AddAmendmentModal"
-        OnSubmitCallback="NewAmendment">
+                                         OnSubmitCallback="NewAmendment">
         <MUNityClient.Shared.Resa.NewAmendmentForm Resolution="this.Resolution" @ref="NewAmendmentForm">
         </MUNityClient.Shared.Resa.NewAmendmentForm>
     </MUNityClient.Shared.Bootstrap.Modal>
 }
 else
 {
-    if(!fetchingResolutionErrored){
+    if (!fetchingResolutionErrored)
+    {
 
         <div class="row d-flex w-100 justify-content-center mt-5">
-        <div class="d-flex w-100 justify-content-center">
-            <div class="spinner-border text-primary p-4" role="status">
-                <span class="sr-only">Loading...</span>
+            <div class="d-flex w-100 justify-content-center">
+                <div class="spinner-border text-primary p-4" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center mt-5">
+                Lade Resolution, einen Moment bitte...
             </div>
         </div>
-        <div class="d-flex justify-content-center mt-5">
-            Lade Resolution, einen Moment bitte...
-        </div>
-    </div>
     }
     else
     {
@@ -385,6 +396,12 @@ else
         }
     }
 
+    private EventCallback RepairResolution()
+    {
+
+        return EventCallback.Empty;
+    }
+
 }
 
 
@@ -410,7 +427,7 @@ else
         -ms-transform: rotate(-90deg);
         transform: rotate(-90deg);
     }
-    
+
     .paragraphs {
         overflow-y: auto;
         max-height: 85vh;

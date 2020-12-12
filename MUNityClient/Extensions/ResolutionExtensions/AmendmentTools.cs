@@ -21,7 +21,9 @@ namespace MUNityClient.Extensions.ResolutionExtensions
 
         private static void PushAmendment(this Resolution resolution, IAmendment amendment)
         {
-            if (resolution.FindOperativeParagraph(amendment.TargetSectionId) == null)
+            // For now every Amendment has a TargetSectionId this could maybe be different one day
+            // Remember to move this function if this day ever comes.
+            if (resolution.OperativeSection.FirstOrDefault(n => n.OperativeParagraphId == amendment.TargetSectionId) == null)
                 throw new Exceptions.Resolution.OperativeParagraphNotFoundException();
 
             if (amendment is AddAmendment addAmendment)
