@@ -12,41 +12,46 @@
 
     <div class="row p-0 m-0 d-flex justify-content-center">
         <div class="row col-lg-8 col-xl-6 p-2 paragraphs">
-            @* Preamble *@
-            <div class="col-12 card p-0 mb-3 section @(preambleExpandingState ? "" : "section-collapsed")">
-                <div role="button" class="card-header row m-0"
-                    @onclick="() => preambleExpandingState = !preambleExpandingState">
-                    <h3>Präambel
-                        <i
-                            class="fas fa-angle-down ml-2 expansionIcon @(preambleExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
-                    </h3>
+            <div class="accordion col-12" id="accordion">
+                <div class="card">
+                    <div role="button" class="card-header row m-0" type="button" data-toggle="collapse"
+                        data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne"
+                        @onclick="() => preambleExpandingState = !preambleExpandingState">
+                        <h3>Präambel
+                            <i
+                                class="fas fa-angle-down ml-2 expansionIcon"></i>
+                        </h3>
+                    </div>
+                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+                        @* Preamble *@
+                        <div class="card-body ammendment-body row p-0 m-0">
+                            @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
+                            {
+                                <PreambleParagraphEditor Paragraph="preambleParagraph" Resolution="this.Resolution"
+                                    OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
+                                    OnDeleteEvent="@(() => {PreambleMarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
+                            }
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
+                                <i class="fas fa-plus mr-3"></i>Neuer Präamble Paragraph
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body ammendment-body row p-0 m-0">
-                    @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
-                    {
-                        <PreambleParagraphEditor Paragraph="preambleParagraph" Resolution="this.Resolution"
-                            OnMoveEvent="@((up)=> MovePreambleParagraph(up, preambleParagraph))"
-                            OnDeleteEvent="@(() => {PreambleMarkedForDeletion = preambleParagraph; DeletePreambleParagraphModal.Open();})" />
-                    }
-                </div>
-                <div class="card-footer">
-                    <button class="btn btn-dark-green btn-block mt-4" @onclick="AddPreambleParagraph">
-                        <i class="fas fa-plus mr-3"></i>Neuer Präamble Paragraph
-                    </button>
-                </div>
-            </div>
-
-            @* Operative section *@
-            <div class="col-12 card p-0 section @(operativeExpandingState ? "" : "section-collapsed")">
-                <div role="button" class="card-header row m-0"
-                    @onclick="() => operativeExpandingState = !operativeExpandingState">
-                    <h3>Operativer Abschnitt
-                        <i
-                            class="fas fa-angle-down ml-2 expansionIcon @(operativeExpandingState ? "expansionIcon-rotated" : "expansionIcon-unrotated")"></i>
-                    </h3>
-                </div>
-                <div class="card-body ammendment-body row p-0 m-0">
-                    @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+                <div class="card">
+                    <div role="button" class="card-header row m-0" type="button" data-toggle="collapse"
+                        data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo"
+                        @onclick="() => operativeExpandingState = !operativeExpandingState">
+                        <h3>Operativer Abschnitt
+                            <i
+                                class="fas fa-angle-down ml-2 expansionIcon "></i>
+                        </h3>
+                    </div>
+                    <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordion">
+                        @* Operative section *@
+                       <div class="card-body ammendment-body row p-0 m-0">
+                                                @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
                     {
                         @if (!operative.IsVirtual)
                         {
@@ -87,11 +92,13 @@
                             
                         }
                     }
-                </div>
-                <div class="card-footer">
-                    <button class="btn btn-dark-green btn-block mt-4" @onclick="AddOperativeParagraph">
-                        <i class="fas fa-plus mr-3"></i>Neuer operativer Absatz
-                    </button>
+                        </div>
+                        <div class="card-footer">
+                            <button class="btn btn-dark-green btn-block mt-4" @onclick="AddOperativeParagraph">
+                               <i class="fas fa-plus mr-3"></i>Neuer operativer Absatz
+                           </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -105,8 +112,8 @@
                 <div class="card-body ammendment-body row p-0 m-0">
                     @foreach (var amendment in OrderedAmendments)
                     {
-                        <AmendmentCard Amendment="amendment" Resolution="this.Resolution"
-                            Interaction="AmendmentInteracted"></AmendmentCard>
+                        <MUNityClient.Shared.Resa.AmendmentCard Amendment="amendment" Resolution="this.Resolution"
+                            Interaction="AmendmentInteracted"></MUNityClient.Shared.Resa.AmendmentCard>
                     }
                     </div>
                     <div class="card-footer">
@@ -382,11 +389,11 @@ else
 
 
 <style>
+
+    @* The order of the css classes MATTERS for the expansion icon! *@
     .expansionIcon {
         transition: all .3s;
-    }
 
-    .expansionIcon-rotated {
         transform: rotate(0);
         -webkit-transform: rotate(0deg);
         -moz-transform: rotate(0deg);
@@ -395,28 +402,18 @@ else
         transform: rotate(0deg);
     }
 
-    .expansionIcon-unrotated {
+    .collapsed > h3 > i{
+        transform: rotate(-90);
         -webkit-transform: rotate(-90deg);
         -moz-transform: rotate(-90deg);
         -o-transform: rotate(-90deg);
         -ms-transform: rotate(-90deg);
         transform: rotate(-90deg);
     }
-
-    .section {
-        transition: .3s;
-        max-height: 90%;
-    }
-
-    .section-collapsed {
-        overflow-y: hidden;
-        max-height: 63px;
-    }
-
+    
     .paragraphs {
         overflow-y: auto;
         max-height: 85vh;
-        @*max-height:calc(100%-300px)*@
     }
 
     .ammendment-body {
