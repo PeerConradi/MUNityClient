@@ -18,10 +18,10 @@ namespace MUNityClient.Models.Resolution
 
         public string NewTargetSectionId { get; set; }
 
-        public bool Apply(Resolution parentResolution)
+        public bool Apply(OperativeSection parentSection)
         {
-            var placeholder = parentResolution.FindOperativeParagraph(NewTargetSectionId);
-            var target = parentResolution.FindOperativeParagraph(TargetSectionId);
+            var placeholder = parentSection.FindOperativeParagraph(NewTargetSectionId);
+            var target = parentSection.FindOperativeParagraph(TargetSectionId);
 
             if (target == null || placeholder == null)
                 return false;
@@ -36,13 +36,14 @@ namespace MUNityClient.Models.Resolution
             this.TargetSectionId = target.OperativeParagraphId;
             placeholder.Text = target.Text;
             placeholder.Visible = true;
-            parentResolution.RemoveOperativeParagraph(target);
+            parentSection.RemoveOperativeParagraph(target);
             return true;
         }
 
-        public bool Deny(Resolution parentResolution)
+        public bool Deny(OperativeSection parentSection)
         {
-            throw new NotImplementedException();
+            parentSection.RemoveAmendment(this);
+            return true;
         }
     }
 }

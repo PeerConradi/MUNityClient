@@ -83,7 +83,7 @@
                                                 An dieser Stelle ist ein eingeblendeter Virtueller Absatz
                                                 @if (moveParent != null)
                                                 {
-                                                    var sourceParagraph = Resolution.GetIndexNameOfOperativeParagraph(moveParent.TargetSectionId);
+                                                    var sourceParagraph = Resolution.OperativeSection.GetIndexNameOfOperativeParagraph(moveParent.TargetSectionId);
                                                     <span>Der Absatz @sourceParagraph soll an diese Stelle geschoben werden.</span>
                                                 }
                                                 else
@@ -340,7 +340,7 @@ else
 
     private void AddOperativeParagraph()
     {
-        this.Resolution.CreateOperativeParagraph();
+        this.Resolution.OperativeSection.CreateOperativeParagraph();
         SaveResolution();
     }
 

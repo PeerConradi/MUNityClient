@@ -21,9 +21,9 @@ namespace MUNityClient.Models.Resolution
 
         public string Type { get; set; }
 
-        public bool Apply(Resolution parentResolution);
+        public bool Apply(OperativeSection parentSection);
 
-        public bool Deny(Resolution parentResolution);
+        public bool Deny(OperativeSection parentSection);
 
     }
 }

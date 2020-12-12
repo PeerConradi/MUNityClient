@@ -19,33 +19,25 @@ namespace MUNityClient.Models.Resolution
         public DateTime SubmitTime { get; set; }
         public string Type { get; set; }
 
-        public bool Apply(Resolution resolution)
+        public bool Apply(OperativeSection parentSection)
         {
-            var paragraph = resolution.FindOperativeParagraph(this.TargetSectionId);
+            var paragraph = parentSection.FindOperativeParagraph(this.TargetSectionId);
 
-            if (resolution?.OperativeSection == null)
+            if (!parentSection.Paragraphs.Contains(paragraph))
                 return false;
 
-            if (!resolution.OperativeSection.Paragraphs.Contains(paragraph))
-                return false;
+            parentSection.Paragraphs.Remove(paragraph);
 
-            resolution.OperativeSection?.Paragraphs.Remove(paragraph);
-            resolution.AmendmentsForOperativeParagraph(this.TargetSectionId).ForEach(n => resolution.RemoveAmendment(n));
+            parentSection.AmendmentsForOperativeParagraph(this.TargetSectionId).ForEach(n => parentSection.RemoveAmendment(n));
             return true;
         }
 
-        public bool Deny(Resolution resolution)
+        public bool Deny(OperativeSection section)
         {
-            if (resolution.OperativeSection == null)
-                return false;
-
-            var count = resolution.OperativeSection.DeleteAmendments.RemoveAll(n =>
+            var count = section.DeleteAmendments.RemoveAll(n =>
                 n.TargetSectionId == this.TargetSectionId);
 
-            if (count > 0)
-                return true;
-
-            return false;
+            return count > 0;
         }
 
         public DeleteAmendment()

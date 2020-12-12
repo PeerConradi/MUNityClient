@@ -13,8 +13,8 @@ namespace MUNityClientTest.ResolutionTest
         public void TestCreateInstance()
         {
             var resolution = new Resolution();
-            var paragraphOne = resolution.CreateOperativeParagraph();
-            var amendment = resolution.CreateAddAmendment(1, "New Paragraph");
+            var paragraphOne = resolution.OperativeSection.CreateOperativeParagraph();
+            var amendment = resolution.OperativeSection.CreateAddAmendment(1, "New Paragraph");
             Assert.NotNull(amendment);
             Assert.AreEqual(1, resolution.OperativeSection.AddAmendments.Count);
             Assert.AreEqual(2, resolution.OperativeSection.Paragraphs.Count);
@@ -27,9 +27,9 @@ namespace MUNityClientTest.ResolutionTest
         public void TestApplyAmendment()
         {
             var resolution = new Resolution();
-            var paragraphOne = resolution.CreateOperativeParagraph();
-            var amendment = resolution.CreateAddAmendment(1, "New Paragraph");
-            amendment.Apply(resolution);
+            var paragraphOne = resolution.OperativeSection.CreateOperativeParagraph();
+            var amendment = resolution.OperativeSection.CreateAddAmendment(1, "New Paragraph");
+            amendment.Apply(resolution.OperativeSection);
             Assert.AreEqual(paragraphOne, resolution.OperativeSection.Paragraphs[0]);
             Assert.IsFalse(resolution.OperativeSection.Paragraphs[1].IsVirtual);
             Assert.IsFalse(resolution.OperativeSection.AddAmendments.Contains(amendment));

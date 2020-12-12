@@ -154,7 +154,7 @@ namespace MUNityClient.Managing.ResolutionManaging
                 {
                     foreach(var ghost in ghosts)
                     {
-                        resolution.RemoveOperativeParagraph(ghost);
+                        resolution.OperativeSection.RemoveOperativeParagraph(ghost);
                     }
                 }
 

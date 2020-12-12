@@ -130,14 +130,14 @@
 
         if (this.NewAmendmentModel.AmendmentType == "change")
         {
-            var newChangeAmendment = this.Resolution.CreateChangeAmendment(this.NewAmendmentModel.TargetSectionId);
+            var newChangeAmendment = this.Resolution.OperativeSection.CreateChangeAmendment(this.NewAmendmentModel.TargetSectionId);
             newChangeAmendment.NewText = this.NewAmendmentModel.NewText;
             newAmendment = newChangeAmendment;
 
         }
         else if (this.NewAmendmentModel.AmendmentType == "delete")
         {
-            newAmendment = this.Resolution.CreateDeleteAmendment(this.NewAmendmentModel.TargetSectionId);
+            newAmendment = this.Resolution.OperativeSection.CreateDeleteAmendment(this.NewAmendmentModel.TargetSectionId);
         }
         else if (this.NewAmendmentModel.AmendmentType == "move")
         {
@@ -160,24 +160,24 @@
 
     private AddAmendment CreateAddAmendment(NewAmendment data)
     {
-        if (data.NewTargetPath == "start") return this.Resolution.CreateAddAmendment(0, this.NewAmendmentModel.NewText ?? "");
-        if (data.NewTargetPath == "end") return this.Resolution.CreateAddAmendment(this.Resolution.OperativeSection.Paragraphs.Count, this.NewAmendmentModel.NewText ?? "");
+        if (data.NewTargetPath == "start") return this.Resolution.OperativeSection.CreateAddAmendment(0, this.NewAmendmentModel.NewText ?? "");
+        if (data.NewTargetPath == "end") return this.Resolution.OperativeSection.CreateAddAmendment(this.Resolution.OperativeSection.Paragraphs.Count, this.NewAmendmentModel.NewText ?? "");
         if (data.NewTargetPath.StartsWith("sub_"))
         {
             var parent = FindParentOfSub(data.NewTargetPath);
-            if (parent != null) return this.Resolution.CreateAddAmendment(parent.Children.Count, data.NewText ?? "", parent);
+            if (parent != null) return this.Resolution.OperativeSection.CreateAddAmendment(parent.Children.Count, data.NewText ?? "", parent);
         }
         if (!string.IsNullOrEmpty(data.NewTargetPath))
         {
             // Create under a selected Paragraph
-            var parent = this.Resolution.FindOperativeParagraph(data.NewTargetPath);
+            var parent = this.Resolution.OperativeSection.FindOperativeParagraph(data.NewTargetPath);
             if (parent == null)
                 throw new Exceptions.Resolution.OperativeParagraphNotFoundException();
 
             bool isFirstLevel = this.Resolution.OperativeSection.Paragraphs.Contains(parent);
 
-            var indexOfHead = this.Resolution.IndexOfParagraph(parent);
-            return this.Resolution.CreateAddAmendment(indexOfHead, data.NewText ?? "", isFirstLevel ? null : parent);
+            var indexOfHead = this.Resolution.OperativeSection.IndexOfParagraph(parent);
+            return this.Resolution.OperativeSection.CreateAddAmendment(indexOfHead, data.NewText ?? "", isFirstLevel ? null : parent);
         }
 
         return null;
@@ -187,30 +187,30 @@
     {
         if (data.NewTargetPath == "start")
         {
-            return this.Resolution.CreateMoveAmendment(data.TargetSectionId, 0);
+            return this.Resolution.OperativeSection.CreateMoveAmendment(data.TargetSectionId, 0);
         }
         else if (data.NewTargetPath == "end")
         {
-            return  this.Resolution.CreateMoveAmendment(data.TargetSectionId, this.Resolution.OperativeSection.Paragraphs.Count);
+            return  this.Resolution.OperativeSection.CreateMoveAmendment(data.TargetSectionId, this.Resolution.OperativeSection.Paragraphs.Count);
         }
         else if (data.NewTargetPath.StartsWith("sub_"))
         {
 
             var parent = FindParentOfSub(data.NewTargetPath);
             if (parent != null)
-                return this.Resolution.CreateMoveAmendment(data.TargetSectionId, parent.Children.Count, parent);
+                return this.Resolution.OperativeSection.CreateMoveAmendment(data.TargetSectionId, parent.Children.Count, parent);
         }
         else if (!string.IsNullOrEmpty(data.NewTargetPath))
         {
             // Move underneath an operative paragraph
-            var parent = this.Resolution.FindOperativeParagraph(data.NewTargetPath);
+            var parent = this.Resolution.OperativeSection.FindOperativeParagraph(data.NewTargetPath);
             if (parent == null)
                 throw new Exceptions.Resolution.OperativeParagraphNotFoundException();
 
             bool isFirstLevel = this.Resolution.OperativeSection.Paragraphs.Contains(parent);
 
-            var indexOfHead = this.Resolution.IndexOfParagraph(parent);
-            return this.Resolution.CreateMoveAmendment(data.TargetSectionId, indexOfHead, isFirstLevel ? null : parent);
+            var indexOfHead = this.Resolution.OperativeSection.IndexOfParagraph(parent);
+            return this.Resolution.OperativeSection.CreateMoveAmendment(data.TargetSectionId, indexOfHead, isFirstLevel ? null : parent);
         }
 
         return null;
@@ -221,7 +221,7 @@
         // Create a Move Amendment that is moving the selected Paragraph to a sub Position
         if (id.StartsWith("sub_"))
             id = id.Substring(4);
-        var parent = this.Resolution.FindOperativeParagraph(id);
+        var parent = this.Resolution.OperativeSection.FindOperativeParagraph(id);
 
         return parent;
     }
