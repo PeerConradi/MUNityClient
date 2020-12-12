@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using MUNityClient.Models.Resolution;
+using MUNityClient.Extensions.ResolutionExtensions;
 
 namespace MUNityClientTest.ResolutionTest
 {
@@ -15,11 +16,11 @@ namespace MUNityClientTest.ResolutionTest
             var paragraphOne = resolution.CreateOperativeParagraph();
             var amendment = resolution.CreateAddAmendment(1, "New Paragraph");
             Assert.NotNull(amendment);
+            Assert.AreEqual(1, resolution.OperativeSection.AddAmendments.Count);
             Assert.AreEqual(2, resolution.OperativeSection.Paragraphs.Count);
             Assert.AreEqual(paragraphOne, resolution.OperativeSection.Paragraphs[0]);
             Assert.IsTrue(resolution.OperativeSection.Paragraphs[1].IsVirtual);
             Assert.Contains(amendment, resolution.OperativeSection.AddAmendments);
-            Assert.AreEqual(1, amendment.Position);
         }
 
         [Test]

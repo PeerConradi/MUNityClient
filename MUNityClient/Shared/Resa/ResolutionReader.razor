@@ -1,5 +1,6 @@
 ﻿@using MUNityClient.Models.Resolution;
 @using MUNityClient.Shared.Resa.Reader;
+@using MUNityClient.Extensions.ResolutionExtensions;
 
 @inject MUNityClient.Services.ResolutionService resolutionService;
 @if (Resolution != null)
@@ -40,17 +41,48 @@
     </div>
 
     <!-- Operative Section -->
-    <div class="row">
-        @foreach (var op in Resolution.OperativeSection.Paragraphs)
+<div class="row">
+    @foreach (var op in Resolution.OperativeSection.Paragraphs)
+    {
+        if (!op.IsVirtual)
         {
             <ResaReaderOperativeParagraph Paragraph="op"
                                           Pathname="@Resolution.GetIndexNameOfOperativeParagraph(op)"
                                           DeleteAmendments="this.Resolution.OperativeSection.DeleteAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"
                                           ChangeAmendments="this.Resolution.OperativeSection.ChangeAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"
                                           MoveAmendments="this.Resolution.OperativeSection.MoveAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"></ResaReaderOperativeParagraph>
-        
         }
-    </div>
+        else
+        {
+            @* Dieser Paragraph kann in Zukunft dazu kommen durch einen Änderungsantrag auf verschieben oder einen Änderungsantrag auf Hinzufügen.
+                Um zu ermitteln wie dieser Absatz zustande kommt können diese Funktionen verwendet werden:
+                bool durchVerschieben = Resolution.OperativeSection.MoveAmendments.Any(n => n.NewTargetSectionId == op.OperativeParagraphId);
+                bool durchHinzufuegen = Resolution.OPerativeSection.AddAmendments.Any(n => n.TargetSectionId == op.OperativeParagraphId);
+
+                Um bei einem Verschieben den Ausgangsabsatz zu bekommen:
+                var aenderungsantrag = Resolution.OperativeSection.MoveAmendments.FirstOrDefault(n => n.NewTargetSectionId == op.OperativeParagraphId);
+                if (aenderungsantrag != null)
+                {
+                    var quellParagraph = Resolution.FindOperativeParagraph(aenderungsantrag.TargetSectionId);
+                }
+            *@
+
+            if (op.Visible)
+            {
+
+                <div class="col-12">
+                    <div class="card border-success">
+                        <div class="card-body">
+                            <p>@op.Text</p>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+
+    }
+</div>
     
 }
 else

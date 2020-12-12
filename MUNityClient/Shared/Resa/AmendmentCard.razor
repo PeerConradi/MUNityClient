@@ -1,4 +1,5 @@
 ﻿@using MUNityClient.Models.Resolution;
+@using MUNityClient.Extensions.ResolutionExtensions;
 
 @if (CardVisible)
 {
@@ -19,7 +20,7 @@
         </p>
 
         <p class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" @bind="Amendment.Activated" id="customControlAutosizing">
+            <input type="checkbox" class="custom-control-input" @bind-value="Activated" id="customControlAutosizing">
             <label class="custom-control-label" for="customControlAutosizing">Auf Ansichten markieren</label>
         </p>
 
@@ -45,6 +46,28 @@
 
     [Parameter]
     public EventCallback Interaction { get; set; }
+
+
+    private bool _activated;
+    public bool Activated
+    {
+        get => _activated;
+        set
+        {
+            this._activated = value;
+            if (this.Amendment is MoveAmendment moveAmendment)
+            {
+                var newParagraph = Resolution.FindOperativeParagraph(moveAmendment.NewTargetSectionId);
+                newParagraph.Visible = value;
+            }
+            else if (this.Amendment is AddAmendment addAmendment)
+            {
+                var newParagraph = Resolution.FindOperativeParagraph(addAmendment.TargetSectionId);
+                newParagraph.Visible = value;
+            }
+            Interaction.InvokeAsync(this.Amendment);
+        }
+    }
 
     private readonly HttpClient _httpClient;
 
@@ -75,5 +98,14 @@
             if (this.Amendment is ChangeAmendment) return "border-info";
             return "";
         }
+    }
+
+    protected override void OnInitialized()
+    {
+        if (this.Amendment != null)
+        {
+            this._activated = this.Amendment.Activated;
+        }
+        base.OnInitialized();
     }
 }

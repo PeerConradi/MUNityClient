@@ -12,6 +12,19 @@
             <div class="card-body">
                 @Pathname
                 <MUNityClient.Shared.General.MarkdownView Content="@Paragraph.Text"></MUNityClient.Shared.General.MarkdownView>
+
+                @foreach(var activeDeleteAmendments in DeleteAmendments.Where(n => n.Activated))
+                {
+            <p>ABSATZ STREICHEN Eingebracht durch: @activeDeleteAmendments.SubmitterName (TODO: Text rot und durchstreichen darunter Einbringer: SubmitterName) </p>
+                }
+                @foreach(var activChangeAmendments in ChangeAmendments.Where(n => n.Activated))
+                {
+                    <p>ABSATZ ÄNDERN: (TODO: Text rot und durchstreichen, neuer Text daneben oder darunter und auch Einbringer anzeigen)</p>
+                }
+                @foreach(var activeMoveAmendments in MoveAmendments.Where(n => n.Activated))
+                {
+                    <p>Absatz verschieben: (TODO: Absatz rot und durchstreichen. Zielposition wird durch den Virtuellen Absatz angegeben!)</p>
+                }
             </div>
         </div>
     </div>
@@ -45,6 +58,8 @@
 
     [Parameter]
     public IEnumerable<MoveAmendment> MoveAmendments { get; set; }
+
+
 
     private void TextChanged(OperativeParagraph sender, string oldText, string newText)
     {

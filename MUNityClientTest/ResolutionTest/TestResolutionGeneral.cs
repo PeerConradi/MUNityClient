@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using MUNityClient.Models.Resolution;
+using MUNityClient.Extensions.ResolutionExtensions;
 
 namespace MUNityClientTest.ResolutionTest
 {
@@ -144,6 +145,37 @@ namespace MUNityClientTest.ResolutionTest
             Assert.AreEqual("1.a", pathOneOne);
             Assert.AreEqual("1.a.i", pathOneai);
             Assert.AreEqual("2", pathTwo);
+        }
+
+        [Test]
+        public void TestGetAllParagraphInfos()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph 1");
+            var subOne = resolution.CreateChildParagraph(paragraphOne, "Paragraph 1.a");
+            var subSubOne = resolution.CreateChildParagraph(subOne, "Paragraph 1.a.i");
+            var paragraphTwo = resolution.CreateOperativeParagraph("Paragraph 2");
+            var infos = resolution.GetRealOperativeParagraphsInfo();
+            Assert.AreEqual(4, infos.Count);
+            // Check 1
+            Assert.AreEqual(paragraphOne.OperativeParagraphId, infos[0].id);
+            Assert.AreEqual("1", infos[0].path);
+            Assert.AreEqual("Paragraph 1", infos[0].text);
+
+            // Check 1.a
+            Assert.AreEqual(subOne.OperativeParagraphId, infos[1].id);
+            Assert.AreEqual("1.a", infos[1].path);
+            Assert.AreEqual("Paragraph 1.a", infos[1].text);
+
+            // Check 1.a.i
+            Assert.AreEqual(subSubOne.OperativeParagraphId, infos[2].id);
+            Assert.AreEqual("1.a.i", infos[2].path);
+            Assert.AreEqual("Paragraph 1.a.i", infos[2].text);
+
+            // Check 2
+            Assert.AreEqual(paragraphTwo.OperativeParagraphId, infos[3].id);
+            Assert.AreEqual("2", infos[3].path);
+            Assert.AreEqual("Paragraph 2", infos[3].text);
         }
     }
 }
