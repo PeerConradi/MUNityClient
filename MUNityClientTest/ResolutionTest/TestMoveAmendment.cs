@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using MUNityClient.Models.Resolution;
 using System.Linq;
+using MUNityClient.Extensions.ResolutionExtensions;
 
 namespace MUNityClientTest.ResolutionTest
 {
@@ -18,10 +19,9 @@ namespace MUNityClientTest.ResolutionTest
             var moveAmendment = resolution.CreateMoveAmendment(paragraphOne, 1);
             Assert.NotNull(moveAmendment);
             Assert.Contains(moveAmendment, resolution.OperativeSection.MoveAmendments);
+            Assert.AreEqual(1, resolution.OperativeSection.MoveAmendments.Count);
             Assert.AreEqual(3, resolution.OperativeSection.Paragraphs.Count);
             Assert.AreEqual(2, resolution.OperativeSection.Paragraphs.Count(n => !n.IsVirtual));
-            Assert.AreEqual(paragraphOne, resolution.OperativeSection.Paragraphs[0]);
-            Assert.AreEqual(paragraphTwo, resolution.OperativeSection.Paragraphs[1]);
         }
 
         [Test]
@@ -43,7 +43,7 @@ namespace MUNityClientTest.ResolutionTest
             var resolution = new Resolution();
             var paragraphOne = resolution.CreateOperativeParagraph("Paragraph One");
             var paragraphTwo = resolution.CreateOperativeParagraph("Paragraph Two");
-            var moveAmendment = resolution.CreateMoveAmendment(paragraphOne, 1);
+            var moveAmendment = resolution.CreateMoveAmendment(paragraphOne, 2);
             var success = moveAmendment.Apply(resolution);
             Assert.IsTrue(success);
             Assert.AreEqual(2, resolution.OperativeSection.Paragraphs.Count);
@@ -59,10 +59,14 @@ namespace MUNityClientTest.ResolutionTest
         [Test]
         public void TestMoveAmendmentCorrentWhenAmendmentAdded()
         {
+            // Paragraph One
+            // ParagraphTwo
+            // [Move Paragraph One here]
+            // Paragraph Three
             var resolution = new Resolution();
             var paragraphOne = resolution.CreateOperativeParagraph("Paragraph One");
             var paragraphTwo = resolution.CreateOperativeParagraph("Paragraph Two");
-            var moveAmendment = resolution.CreateMoveAmendment(paragraphOne, 1);
+            var moveAmendment = resolution.CreateMoveAmendment(paragraphOne, 2);
             var paragraphThree = resolution.CreateOperativeParagraph("Paragraph Three");
             var realParagraphs = resolution.OperativeSection.Paragraphs.Where(n => n.IsVirtual == false);
             Assert.AreEqual("Paragraph One", realParagraphs.ElementAt(0).Text);
@@ -90,5 +94,122 @@ namespace MUNityClientTest.ResolutionTest
             Assert.AreEqual("Paragraph Two", firstParagraph.Text);
             Assert.AreEqual("Paragraph One", secondParagraph.Text);
         }
+
+        [Test]
+        public void TestCreateMoveToSub()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph One");
+            var paragraphTwo = resolution.CreateOperativeParagraph("Paragraph Two");
+            var moveAmendment = resolution.CreateMoveAmendment(paragraphTwo, 0, paragraphOne);
+            Assert.AreEqual(2, resolution.OperativeSection.Paragraphs.Count);
+            Assert.AreEqual(1, paragraphOne.Children.Count);
+            Assert.IsTrue(paragraphOne.Children.Any(n => n.OperativeParagraphId == moveAmendment.NewTargetSectionId));
+        }
+
+        [Test]
+        public void TestApplyMoveToSub()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph One");
+            var paragraphTwo = resolution.CreateOperativeParagraph("Paragraph Two");
+            var moveAmendment = resolution.CreateMoveAmendment(paragraphTwo, 0, paragraphOne);
+            var success = moveAmendment.Apply(resolution);
+            Assert.IsTrue(success);
+            Assert.AreEqual(1, resolution.OperativeSection.Paragraphs.Count);
+            Assert.AreEqual(1, paragraphOne.Children.Count);
+        }
+
+        [Test]
+        public void TestCreateMoveSubToMaster()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph 1");
+            var subParagraph = resolution.CreateChildParagraph(paragraphOne, "Paragraph 1.a");
+            var moveAmendment = resolution.CreateMoveAmendment(subParagraph, resolution.OperativeSection.Paragraphs.Count);
+            Assert.AreEqual(2, resolution.OperativeSection.Paragraphs.Count);
+            Assert.IsTrue(resolution.OperativeSection.Paragraphs[1].IsVirtual);
+        }
+
+        [Test]
+        public void TestApplyMoveSubToMaster()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph 1");
+            var subParagraph = resolution.CreateChildParagraph(paragraphOne, "Paragraph 1.a");
+            var moveAmendment = resolution.CreateMoveAmendment(subParagraph, resolution.OperativeSection.Paragraphs.Count);
+            var result = moveAmendment.Apply(resolution);
+            Assert.IsTrue(result);
+            Assert.AreEqual(2, resolution.OperativeSection.Paragraphs.Count);
+            Assert.IsTrue(resolution.OperativeSection.Paragraphs.All(n => !n.IsVirtual));
+        }
+
+        [Test]
+        public void TestCreateMoveToMiddle()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph 1");
+            var paragraphTwo = resolution.CreateOperativeParagraph("Paragraph 2");
+            var paragraphThree = resolution.CreateOperativeParagraph("Paragraph 3");
+            var amendment = resolution.CreateMoveAmendment(paragraphThree, 1);
+            Assert.NotNull(amendment);
+            Assert.AreEqual(4, resolution.OperativeSection.Paragraphs.Count);
+            Assert.AreEqual(paragraphOne, resolution.OperativeSection.Paragraphs[0]);
+            Assert.AreEqual(amendment.NewTargetSectionId, resolution.OperativeSection.Paragraphs[1].OperativeParagraphId);
+            Assert.IsTrue(resolution.OperativeSection.Paragraphs[1].IsVirtual);
+            Assert.AreEqual(paragraphTwo, resolution.OperativeSection.Paragraphs[2]);
+            Assert.AreEqual(paragraphThree, resolution.OperativeSection.Paragraphs[3]);
+        }
+
+        [Test]
+        public void TestApplyMoveToMiddle()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph 1");
+            var paragraphTwo = resolution.CreateOperativeParagraph("Paragraph 2");
+            var paragraphThree = resolution.CreateOperativeParagraph("Paragraph 3");
+            var amendment = resolution.CreateMoveAmendment(paragraphThree, 1);
+            var success = amendment.Apply(resolution);
+            Assert.IsTrue(success);
+            Assert.AreEqual(3, resolution.OperativeSection.Paragraphs.Count);
+            Assert.IsTrue(resolution.OperativeSection.Paragraphs.All(n => !n.IsVirtual));
+            Assert.AreEqual("Paragraph 1", resolution.OperativeSection.Paragraphs[0].Text);
+            Assert.AreEqual("Paragraph 3", resolution.OperativeSection.Paragraphs[1].Text);
+            Assert.AreEqual("Paragraph 2", resolution.OperativeSection.Paragraphs[2].Text);
+        }
+
+        [Test]
+        public void TestCreateMoveInsideOfSub()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph 1");
+            var subOne = resolution.CreateChildParagraph(paragraphOne, "Paragraph 1.a");
+            var subTwo = resolution.CreateChildParagraph(paragraphOne, "Paragraph 1.b");
+            var subThree = resolution.CreateChildParagraph(paragraphOne, "Paragraph 1.c");
+            var amendment = resolution.CreateMoveAmendment(subThree, 0, paragraphOne);
+            Assert.NotNull(amendment);
+            Assert.AreEqual(4, paragraphOne.Children.Count);
+            Assert.IsTrue(paragraphOne.Children[0].IsVirtual);
+            Assert.AreEqual(subOne, paragraphOne.Children[1]);
+            Assert.AreEqual(subTwo, paragraphOne.Children[2]);
+            Assert.AreEqual(subThree, paragraphOne.Children[3]);
+        }
+
+        [Test]
+        public void TestApplyMoveInsideOfSub()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph("Paragraph 1");
+            var subOne = resolution.CreateChildParagraph(paragraphOne, "Paragraph 1.a");
+            var subTwo = resolution.CreateChildParagraph(paragraphOne, "Paragraph 1.b");
+            var subThree = resolution.CreateChildParagraph(paragraphOne, "Paragraph 1.c");
+            var amendment = resolution.CreateMoveAmendment(subThree, 0, paragraphOne);
+            var success = amendment.Apply(resolution);
+            Assert.IsTrue(success);
+            Assert.AreEqual("Paragraph 1.c", paragraphOne.Children[0].Text);
+            Assert.AreEqual("Paragraph 1.a", paragraphOne.Children[1].Text);
+            Assert.AreEqual("Paragraph 1.b", paragraphOne.Children[2].Text);
+        }
+
     }
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using MUNityClient.Models.Resolution;
+using MUNityClient.Extensions.ResolutionExtensions;
 
 namespace MUNityClientTest.ResolutionTest
 {
@@ -16,6 +17,7 @@ namespace MUNityClientTest.ResolutionTest
             var changeAmendmet = resolution.CreateChangeAmendment(operativeParagraph);
             Assert.NotNull(changeAmendmet);
             Assert.Contains(changeAmendmet, resolution.OperativeSection.ChangeAmendments);
+            Assert.AreEqual(1, resolution.OperativeSection.ChangeAmendments.Count);
         }
 
         [Test]

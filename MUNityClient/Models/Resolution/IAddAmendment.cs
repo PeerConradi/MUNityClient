@@ -8,8 +8,6 @@ namespace MUNityClient.Models.Resolution
     public interface IAddAmendment : IAmendment
     {
 
-        public int Position { get; set; }
-
         public string Text { get; set; }
     }
 }

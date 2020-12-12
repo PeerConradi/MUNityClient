@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MUNityClient.Extensions.ResolutionExtensions;
 
 namespace MUNityClient.Models.Resolution
 {
@@ -20,7 +21,6 @@ namespace MUNityClient.Models.Resolution
         public DateTime SubmitTime { get; set; }
         public string Type { get; set; }
 
-        public int Position { get; set; }
         public string Text { get; set; }
 
         public bool Apply(Resolution parentResolution)

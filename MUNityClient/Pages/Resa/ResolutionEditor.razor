@@ -4,6 +4,7 @@
 @using MUNityClient.Models.Resolution;
 @using MUNityClient.Extensions;
 @using MUNityClient.Shared.Resa;
+@using MUNityClient.Extensions.ResolutionExtensions;
 @inject MUNityClient.Services.ResolutionService resolutionService;
 
 @if (this.Resolution != null)
@@ -48,14 +49,49 @@
                         </h3>
                     </div>
                     <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordion">
-                        @* Preamble *@
+                        @* Operative section *@
                        <div class="card-body ammendment-body row p-0 m-0">
-                            @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+                                                @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
+                    {
+                        @if (!operative.IsVirtual)
+                        {
+                            <OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative"
+                                                      OnMoveEvent="@((up)=> MoveOperativeParagraph(up, operative))"
+                                                      OnDeleteEvent="@(() => {OperativeMarkedForDeletion = operative; DeleteOperativeParagraphModal.Open();})" />
+                        }
+                        else
+                        {
+                <div class="col-12">
+                    @{ 
+                        var moveParent = this.Resolution.OperativeSection.MoveAmendments.FirstOrDefault(n => n.NewTargetSectionId == operative.OperativeParagraphId);
+
+                    }
+
+                    @if (operative.Visible)
+                    {
+                        <div class="alert alert-primary">
+                    An dieser Stelle ist ein eingeblendeter Virtueller Absatz
+                            @if (moveParent != null)
                             {
-                                <MUNityClient.Shared.Resa.OperativeParagraphEditor Resolution="this.Resolution" Paragraph="operative"
-                                    OnMoveEvent="@((up)=> MoveOperativeParagraph(up, operative))"
-                                    OnDeleteEvent="@(() => {OperativeMarkedForDeletion = operative; DeleteOperativeParagraphModal.Open();})" />
+                                var sourceParagraph = Resolution.GetIndexNameOfOperativeParagraph(moveParent.TargetSectionId);
+                                <span>Der Absatz @sourceParagraph soll an diese Stelle geschoben werden.</span>
                             }
+                            else
+                            {
+                                <span>Dieser Absatz kommt scheinbar über einen Änderungsantrag auf Hinzufügen. Der Neue Text ist: </span>
+                                <p>@operative.Text</p>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-secondary"> An dieser Stelle ist ein ausgelbendeter Virtueller Absatz</div>
+                    }
+
+                </div>
+                            
+                        }
+                    }
                         </div>
                         <div class="card-footer">
                             <button class="btn btn-dark-green btn-block mt-4" @onclick="AddOperativeParagraph">
@@ -65,12 +101,7 @@
                     </div>
                 </div>
             </div>
-
-
-
         </div>
-
-
 
         <!-- Amendments -->
         <div class="col-lg-4">
@@ -310,9 +341,9 @@ else
     private void NewAmendment()
     {
         var amendment = this.NewAmendmentForm.GetAmendment();
-        if (amendment is ChangeAmendment changeAmendment)
+        if (amendment == null)
         {
-            this.Resolution.OperativeSection.ChangeAmendments.Add(changeAmendment);
+            // TODO: Meldung zeigen Resolution konnte nicht erstellt werden!
         }
         this.AddAmendmentModal.Close();
         SaveResolution();

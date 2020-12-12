@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MUNityClient.Extensions.ResolutionExtensions;
 
 namespace MUNityClient.Models.Resolution
 {
@@ -16,7 +17,6 @@ namespace MUNityClient.Models.Resolution
         public string Type { get; set; }
 
         public string NewTargetSectionId { get; set; }
-        public int Position { get; set; }
 
         public bool Apply(Resolution parentResolution)
         {

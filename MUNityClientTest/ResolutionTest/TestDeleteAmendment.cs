@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using MUNityClient.Models.Resolution;
 using System.Linq;
+using MUNityClient.Extensions.ResolutionExtensions;
 
 namespace MUNityClientTest.ResolutionTest
 {
@@ -17,6 +18,7 @@ namespace MUNityClientTest.ResolutionTest
             var amendment = resolution.CreateDeleteAmendment(operativeParagraph);
             Assert.NotNull(amendment);
             Assert.Contains(amendment, resolution.OperativeSection.DeleteAmendments);
+            Assert.AreEqual(1, resolution.OperativeSection.DeleteAmendments.Count);
         }
 
         [Test]
