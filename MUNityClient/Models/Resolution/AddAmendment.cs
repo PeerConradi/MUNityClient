@@ -20,7 +20,6 @@ namespace MUNityClient.Models.Resolution
         public DateTime SubmitTime { get; set; }
         public string Type { get; set; }
 
-        public string ParentSectionId { get; set; }
         public int Position { get; set; }
         public string Text { get; set; }
 

@@ -165,6 +165,15 @@ else
     private Boolean operativeExpandingState = true;
     private Boolean amendmentExpandingState = true;
 
+    private enum SyncModes
+    {
+        Offline,
+        PublicMode,
+        PrivateMode
+    }
+
+    private SyncModes SyncMode = SyncModes.Offline;
+
     public ResolutionEditor()
     {
 
@@ -181,23 +190,43 @@ else
                 // Register WebSocket!
                 var signalRHub = await this.resolutionService.Subscribe(this.Resolution);
             }
-
+            this.SyncMode = SyncModes.PublicMode;
         }
         else if (Mode == "offline")
         {
+            this.SyncMode = SyncModes.Offline;
             this.Resolution = await this.resolutionService.GetOfflineResolution(Id);
             if (this.Resolution == null) this.fetchingResolutionErrored = true;
         }
 
+        if (Resolution != null)
+        {
+            this.Resolution.Preamble?.Paragraphs?.ForEach(n => n.TextChanged += PreambleTextChanged);
+            this.Resolution.OperativeSection.Paragraphs?.ForEach(n => n.TextChanged += OperativeTextChanged);
+        }
     }
 
     private void PreambleTextChanged(PreambleParagraph sender, string oldText, string newText)
     {
-        // For now we save everything later only the PreambleChanged should be send to the server!
-        //SaveResolution();
-        if (string.IsNullOrEmpty(Mode))
+        if (SyncMode == SyncModes.PublicMode)
         {
             this.resolutionService.UpdatePublicResolutionPreambleParagraph(this.Resolution.ResolutionId, sender);
+        }
+        else if (SyncMode == SyncModes.Offline)
+        {
+            SaveResolution();
+        }
+    }
+
+    private void OperativeTextChanged(OperativeParagraph sender, string oldText, string newText)
+    {
+        if (SyncMode == SyncModes.PublicMode)
+        {
+            this.resolutionService.UpdatePublicResolutionOperativeParagraph(this.Resolution.ResolutionId, sender);
+        }
+        else if (SyncMode == SyncModes.Offline)
+        {
+            SaveResolution();
         }
     }
 
@@ -205,7 +234,7 @@ else
     {
         if (this.Resolution.ResolutionId == "test") return;
 
-        if (string.IsNullOrEmpty(Mode))
+        if (SyncMode == SyncModes.PublicMode)
         {
             var result = await this.resolutionService.UpdatePublicResolution(this.Resolution);
             if (result.IsSuccessStatusCode)
@@ -219,7 +248,7 @@ else
                 // TODO: Save failure notification!
             }
         }
-        else if (Mode == "offline")
+        else if (SyncMode == SyncModes.Offline)
         {
             this.resolutionService.SaveOfflineResolution(this.Resolution);
         }
@@ -258,16 +287,19 @@ else
     public void AmendmentInteracted()
     {
         this.StateHasChanged();
+        SaveResolution();
     }
 
     private void AddPreambleParagraph()
     {
         this.Resolution.CreatePreambleParagraph();
+        SaveResolution();
     }
 
     private void AddOperativeParagraph()
     {
         this.Resolution.CreateOperativeParagraph();
+        SaveResolution();
     }
 
     private void ShowNewAmendmentModal()

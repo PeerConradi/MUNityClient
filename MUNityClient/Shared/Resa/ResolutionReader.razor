@@ -44,6 +44,7 @@
         @foreach (var op in Resolution.OperativeSection.Paragraphs)
         {
             <ResaReaderOperativeParagraph Paragraph="op"
+                                          Pathname="@Resolution.GetIndexNameOfOperativeParagraph(op)"
                                           DeleteAmendments="this.Resolution.OperativeSection.DeleteAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"
                                           ChangeAmendments="this.Resolution.OperativeSection.ChangeAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"
                                           MoveAmendments="this.Resolution.OperativeSection.MoveAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"></ResaReaderOperativeParagraph>

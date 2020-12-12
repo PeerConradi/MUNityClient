@@ -100,5 +100,50 @@ namespace MUNityClientTest.ResolutionTest
             Assert.AreEqual(paragraphLevelThree, path[2]);
         }
 
+        [Test]
+        public void TestFirstLevelPathnames()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph();
+            var paragraphTwo = resolution.CreateOperativeParagraph();
+            var pathOne = resolution.GetIndexNameOfOperativeParagraph(paragraphOne);
+            var pathTwo = resolution.GetIndexNameOfOperativeParagraph(paragraphTwo);
+            Assert.AreEqual("1", pathOne);
+            Assert.AreEqual("2", pathTwo);
+        }
+
+        [Test]
+        public void TestSecondLevelPathnames()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph();
+            var paragraphTwo = resolution.CreateOperativeParagraph();
+            var subOne = resolution.CreateChildParagraph(paragraphOne);
+            var pathOne = resolution.GetIndexNameOfOperativeParagraph(paragraphOne);
+            var pathOneOne = resolution.GetIndexNameOfOperativeParagraph(subOne);
+            var pathTwo = resolution.GetIndexNameOfOperativeParagraph(paragraphTwo);
+            Assert.AreEqual("1", pathOne);
+            Assert.AreEqual("1.a", pathOneOne);
+            Assert.AreEqual("2", pathTwo);
+        }
+
+        [Test]
+        public void TestThirdLEvelPathnames()
+        {
+            var resolution = new Resolution();
+            var paragraphOne = resolution.CreateOperativeParagraph();
+            var subOne = resolution.CreateChildParagraph(paragraphOne);
+            var subSubOne = resolution.CreateChildParagraph(subOne);
+            var paragraphTwo = resolution.CreateOperativeParagraph();
+            
+            var pathOne = resolution.GetIndexNameOfOperativeParagraph(paragraphOne);
+            var pathOneOne = resolution.GetIndexNameOfOperativeParagraph(subOne);
+            var pathOneai = resolution.GetIndexNameOfOperativeParagraph(subSubOne);
+            var pathTwo = resolution.GetIndexNameOfOperativeParagraph(paragraphTwo);
+            Assert.AreEqual("1", pathOne);
+            Assert.AreEqual("1.a", pathOneOne);
+            Assert.AreEqual("1.a.i", pathOneai);
+            Assert.AreEqual("2", pathTwo);
+        }
     }
 }

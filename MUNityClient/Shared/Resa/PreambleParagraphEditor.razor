@@ -109,19 +109,10 @@
     public Boolean commentsExpanded = false;
 
 
-    private async void OnInputChange(ChangeEventArgs args)
+    private void OnInputChange(ChangeEventArgs args)
     {
         // This should only happen when we are online!
         this.Paragraph.Text = (string)args.Value;
-
-        //this.Paragraph.Text = (string)args.Value;
-        if (this.Resolution != null)
-        {
-            if (await this.resolutionService.IsOnline())
-            {
-                await this.resolutionService.UpdatePublicResolutionPreambleParagraph(this.Resolution.ResolutionId, this.Paragraph);
-            }
-        }
     }
 }
 
