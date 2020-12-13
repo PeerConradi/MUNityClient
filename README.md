@@ -18,7 +18,7 @@ This application is under development and cannot be used at the moment. Please c
 | User Managment      | ![5%](https://progress-bar.dev/5) | Login and Registration done                                        |
 | ConferenceManagment | ![0%](https://progress-bar.dev/1) | NOT STARTED                                                  |
 | ResaEditor          | ![35%](https://progress-bar.dev/35) | Offline Controller mostly done - Server Comm und Readers next |
-| Speakerlist         | ![10%](https://progress-bar.dev/10) | First basic implementation                                     |
+| Speakerlist         | ![20%](https://progress-bar.dev/20) | Logic working offline                                     |
 | Simulation          | ![0%](https://progress-bar.dev/0)   | NOT STARTED                                                    |
 | Administration      | ![0%](https://progress-bar.dev/0)   | NOT STARTED                                              |
 | Dockerize           | ![0%](https://progress-bar.dev/0) | NOT STARTED       |
