@@ -3,8 +3,24 @@
 
 @page "/los/edit/{id}"
 
+@inject MUNityClient.Services.ListOfSpeakerService listOfSpeakerService;
+
 @if (Speakerlist != null)
 {
+    <div class="row">
+        <EditForm Model="@Settings" OnSubmit="SaveSettings">
+            <div class="form-group">
+                <label>Redzeit</label>
+                <InputText @bind-Value="Settings.Speakertime" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Zeit für Fragen, Kurzbemerkdungen und Antwort</label>
+                <InputText @bind-Value="Settings.Questiontime" class="form-control" />
+            </div>
+            
+            <button class="btn btn-success" type="submit">Speichern</button>
+        </EditForm>
+    </div>
     <h3>Aktueller Redner</h3>
 
     @if (Speakerlist.CurrentSpeaker != null)
@@ -93,23 +109,49 @@
         public string Name { get; set; }
     }
 
+    private class SpeakerlistSettings
+    {
+        public string Speakertime { get; set; }
+
+        public string Questiontime { get; set; }
+
+        public SpeakerlistSettings()
+        {
+
+        }
+
+        public SpeakerlistSettings(ListOfSpeakers source)
+        {
+            Speakertime = source.SpeakerTime.ToString(@"mm\:ss");
+            Questiontime = source.QuestionTime.ToString(@"mm\:ss");
+        }
+    }
+
+    private SpeakerlistSettings Settings { get; set; }
+
     private SpeakerToAdd NewSpeaker = new SpeakerToAdd();
 
-    protected override void OnInitialized()
+    private void SaveSettings()
     {
-        Speakerlist = new ListOfSpeakers();
-        // Wir bauen jetzt für den ersten Entwurf einen Timer, welcher
-        // jede Sekunde neu Zeichnet. Der Grund dafür ist, dass die
-        // Redeliste nicht selber mit einem Timer arbeitet sondern
-        // Startzeiten mit der aktuellen Uhrzeit Synct und hierdurch
-        // die Redezeiten berechnet.
-        // Es ist theoretisch möglich sich von der Redeliste ein StateChanged Event geben zu lassen
-        // dann kann der Timer pausiert werden, wenn ohnehin gerade niemand spricht, aber ich halte
-        // eine aktualisierung der Ansicht (kein Serverping) nicht für zu viel. ~Peer
-        var timer = new Timer(1000);
-        timer.Elapsed += TimerElapsed;
-        timer.Start();
-        base.OnInitialized();
+        var spekaerTime = Speakerlist.SpeakerTime;
+        var questionTime = Speakerlist.QuestionTime;
+        if (TimeSpan.TryParseExact(Settings.Speakertime, @"mm\:ss", null, out spekaerTime))
+        {
+            this.Speakerlist.SpeakerTime = spekaerTime;
+        }
+        else
+        {
+            // Die Eingabe der Redezeit ist ungültig!
+        }
+
+        if (TimeSpan.TryParseExact(Settings.Questiontime, @"mm\:ss", null, out questionTime))
+        {
+            this.Speakerlist.QuestionTime = questionTime;
+        }
+        else
+        {
+            // Die Eingegebene Zeit für Fragen und Kurzbemerkungen ist ungültig.
+        }
     }
 
     private void TimerElapsed(object sender, ElapsedEventArgs args)
@@ -129,5 +171,27 @@
         this.Speakerlist.AddQuestion(NewSpeaker.Name);
         NewSpeaker.Name = "";
         return EventCallback.Empty;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.Speakerlist = await this.listOfSpeakerService.GetListOfSpeakers(this.Id);
+        if (this.Speakerlist != null)
+        {
+            this.Settings = new SpeakerlistSettings(this.Speakerlist);
+
+            // Wir bauen jetzt für den ersten Entwurf einen Timer, welcher
+            // jede Sekunde neu Zeichnet. Der Grund dafür ist, dass die
+            // Redeliste nicht selber mit einem Timer arbeitet sondern
+            // Startzeiten mit der aktuellen Uhrzeit Synct und hierdurch
+            // die Redezeiten berechnet.
+            // Es ist theoretisch möglich sich von der Redeliste ein StateChanged Event geben zu lassen
+            // dann kann der Timer pausiert werden, wenn ohnehin gerade niemand spricht, aber ich halte
+            // eine aktualisierung der Ansicht (kein Serverping) nicht für zu viel. ~Peer
+            var timer = new Timer(1000);
+            timer.Elapsed += TimerElapsed;
+            timer.Start();
+            base.OnInitialized();
+        }
     }
 }
