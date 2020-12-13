@@ -1,6 +1,5 @@
 ﻿<!-- Navigate to id test /resa/edit/test to show a test resolution without anything -->
 @page "/resa/edit/{id}"
-@page "/resa/edit/{id}/{mode}"
 @using MUNityClient.Models.Resolution;
 @using MUNityClient.Extensions;
 @using MUNityClient.Shared.Resa;
@@ -14,9 +13,20 @@
     if (corruptionResult.isCorrupted)
     {
         <div class="row">
-            <h3>Achtung die Resolution ist beschädigt.</h3>
-            <p>@corruptionResult.log</p>
-            <button @onclick="() => MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.FixResolution(this.Resolution)">Jetzt reparieren</button>
+            <div class="alert alert-danger">
+                <h3>Achtung die Resolution ist beschädigt.</h3>
+                <p>@corruptionResult.log</p>
+                <button @onclick="() => RepairResolution()">Jetzt reparieren</button>
+            </div>
+        </div>
+    }
+
+    if (this.SyncMode == SyncModes.Offline)
+    {
+        <div class="row col-12">
+            <div class="alert alert-warning">
+                <b>Die Resolution wird nicht an den Server übertragen und ist lediglich offline im Speicher des Browsers gespeichert. (TODO: Download-Button um json Datei runterladen zu können)</b>
+            </div>
         </div>
     }
 
@@ -191,9 +201,6 @@ else
     [Parameter]
     public string Id { get; set; }
 
-    [Parameter]
-    public string Mode { get; set; }
-
 
     private MUNityClient.Shared.Bootstrap.Modal AddAmendmentModal { get; set; }
     private MUNityClient.Shared.Bootstrap.Modal DeletePreambleParagraphModal { get; set; }
@@ -210,8 +217,8 @@ else
     private enum SyncModes
     {
         Offline,
-        PublicMode,
-        PrivateMode
+        OnlineButNotSyncing,
+        Syncing
     }
 
     private SyncModes SyncMode = SyncModes.Offline;
@@ -223,26 +230,26 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (string.IsNullOrEmpty(Mode))
-        {
-            this.Resolution = await this.resolutionService.GetPublicResolution(Id);
-            if (this.Resolution == null) this.fetchingResolutionErrored = true;
-            else
-            {
-                // Register WebSocket!
-                var signalRHub = await this.resolutionService.Subscribe(this.Resolution);
-            }
-            this.SyncMode = SyncModes.PublicMode;
-        }
-        else if (Mode == "offline")
-        {
-            this.SyncMode = SyncModes.Offline;
-            this.Resolution = await this.resolutionService.GetOfflineResolution(Id);
-            if (this.Resolution == null) this.fetchingResolutionErrored = true;
-        }
+        // Get the resolution from any source (local or online)
+        this.Resolution = await this.resolutionService.GetResolution(Id);
 
         if (Resolution != null)
         {
+            if (!await this.resolutionService.IsOnline())
+            {
+                this.SyncMode = SyncModes.Offline;
+            }
+            else
+            {
+                this.SyncMode = SyncModes.OnlineButNotSyncing;
+
+                // TODO:
+                // Beim Server anfragen ob die Resolution bearbeitet werden darf
+                // Wenn nein: OnlineButNotSyncing
+                // Wenn ja: SignalR initializieren und SyncMode auf Syncing setzen.
+                // var signalRHub = await this.resolutionService.Subscribe(this.Resolution);
+            }
+
             this.Resolution.Preamble?.Paragraphs?.ForEach(n => n.TextChanged += PreambleTextChanged);
             this.Resolution.OperativeSection.Paragraphs?.ForEach(n => n.TextChanged += OperativeTextChanged);
         }
@@ -250,7 +257,7 @@ else
 
     private void PreambleTextChanged(PreambleParagraph sender, string oldText, string newText)
     {
-        if (SyncMode == SyncModes.PublicMode)
+        if (SyncMode == SyncModes.Syncing)
         {
             this.resolutionService.UpdatePublicResolutionPreambleParagraph(this.Resolution.ResolutionId, sender);
         }
@@ -262,7 +269,7 @@ else
 
     private void OperativeTextChanged(OperativeParagraph sender, string oldText, string newText)
     {
-        if (SyncMode == SyncModes.PublicMode)
+        if (SyncMode == SyncModes.Syncing)
         {
             this.resolutionService.UpdatePublicResolutionOperativeParagraph(this.Resolution.ResolutionId, sender);
         }
@@ -276,14 +283,13 @@ else
     {
         if (this.Resolution.ResolutionId == "test") return;
 
-        if (SyncMode == SyncModes.PublicMode)
+        if (SyncMode == SyncModes.Syncing)
         {
             var result = await this.resolutionService.UpdatePublicResolution(this.Resolution);
             if (result.IsSuccessStatusCode)
             {
                 // TODO: Save success notification!
                 // currently the whole document will be saved as one.
-
             }
             else
             {
@@ -298,13 +304,15 @@ else
 
     public void removePreambleParagraph()
     {
+        PreambleMarkedForDeletion.TextChanged -= PreambleTextChanged;
         this.Resolution?.Preamble?.Paragraphs?.Remove(PreambleMarkedForDeletion);
         SaveResolution();
     }
 
     public void removeOperativeParagraph()
     {
-        this.Resolution?.OperativeSection?.Paragraphs?.Remove(OperativeMarkedForDeletion);
+        OperativeMarkedForDeletion.TextChanged -= OperativeTextChanged;
+        this.Resolution?.OperativeSection.RemoveOperativeParagraph(OperativeMarkedForDeletion);
         SaveResolution();
     }
 
@@ -334,13 +342,15 @@ else
 
     private void AddPreambleParagraph()
     {
-        this.Resolution.CreatePreambleParagraph();
+        var paragraph = this.Resolution.CreatePreambleParagraph();
+        paragraph.TextChanged += PreambleTextChanged;
         SaveResolution();
     }
 
     private void AddOperativeParagraph()
     {
-        this.Resolution.OperativeSection.CreateOperativeParagraph();
+        var paragraph = this.Resolution.OperativeSection.CreateOperativeParagraph();
+        paragraph.TextChanged += OperativeTextChanged;
         SaveResolution();
     }
 
@@ -398,7 +408,8 @@ else
 
     private EventCallback RepairResolution()
     {
-
+        MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.FixResolution(this.Resolution);
+        SaveResolution();
         return EventCallback.Empty;
     }
 

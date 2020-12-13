@@ -25,7 +25,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var resolutionLocal = await this.resolutionService.GetOfflineResolution(this.Id);
+        var resolutionLocal = await this.resolutionService.GetResolution(this.Id);
         if (resolutionLocal != null)
         {
 
@@ -48,7 +48,7 @@ else
 
     private async void RefreshWithTimer(Object source, System.Timers.ElapsedEventArgs e)
     {
-        this.Resolution = await this.resolutionService.GetOfflineResolution(this.Id);
+        this.Resolution = await this.resolutionService.GetResolution(this.Id);
         this.StateHasChanged();
     }
 
