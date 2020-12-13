@@ -22,7 +22,7 @@
 
     if (this.SyncMode == SyncModes.Offline)
     {
-        <div class="row d-flex justify-content-center my-2 align-items-center">
+        <div class="row d-flex justify-content-center my-1 align-items-center">
             <div class="col-6 alert alert-warning alert-dismissible my-0">
                 <b>Die Resolution wird nicht an den Server übertragen und ist lediglich offline im Speicher des Browsers gespeichert. (TODO: Download-Button um json Datei runterladen zu können)</b>
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -35,9 +35,12 @@
     }
     else if (this.SyncMode == SyncModes.PingingServer)
     {
-        <div class="row">
-            <div class="col-12 alert alert-info">
+        <div class="row d-flex justify-content-center my-2 align-items-center">
+            <div class="col-12 alert alert-info d-flex align-items-center">
                 <b>Es wird versucht eine Verbindung zum Server herzustellen.</b>
+                <div class="spinner-border text-primary ml-2" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
             </div>
         </div>
     }
