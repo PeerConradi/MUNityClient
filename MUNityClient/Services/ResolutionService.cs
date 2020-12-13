@@ -51,6 +51,18 @@ namespace MUNityClient.Services
             return _isOnline.Value;
         }
 
+        public async Task<bool> CanReadResolution(string resolutionId)
+        {
+            var client = await this._httpService.GetAuthClient();
+            return await client.GetFromJsonAsync<bool>($"/api/Resolution/CanEditResolution?id={resolutionId}");
+        }
+
+        public async Task<bool> CanEditResolution(string resolutionId)
+        {
+            var client = await this._httpService.GetAuthClient();
+            return await client.GetFromJsonAsync<bool>($"/api/Resolution/CanEditResolution?id={resolutionId}");
+        }
+
         public async Task<List<ResolutionInfo>> GetStoredResolutions()
         {
             var resolutions = await this._localStorage.GetItemAsync<List<ResolutionInfo>>("munity_storedResolutions");
@@ -73,12 +85,17 @@ namespace MUNityClient.Services
             return resolution;
         }
 
-        private async Task<Resolution> GetResolutionFromServer(string resolutionId)
+        public async Task<bool> ResolutionExistsServerside(string id)
+        {
+            return await this._httpService.HttpClient.GetFromJsonAsync<bool>($"/api/Resolution/ResolutionExists?id={id}");
+        }
+
+        public async Task<Resolution> GetResolutionFromServer(string resolutionId)
         {
             try
             {
                 var authedClient = await this._httpService.GetAuthClient();
-                return await authedClient.GetFromJsonAsync<Resolution>($"/apo/Resolution/GetResolution?id={resolutionId}");
+                return await authedClient.GetFromJsonAsync<Resolution>($"/api/Resolution/GetResolution?id={resolutionId}");
             }
             catch (Exception)
             {
@@ -88,7 +105,17 @@ namespace MUNityClient.Services
 
         public async Task<bool> SyncResolutionWithServer(Resolution resolution)
         {
-            return false;
+            try
+            {
+                var authedClient = await this._httpService.GetAuthClient();
+                var content = JsonContent.Create(resolution);
+                var msg = await authedClient.PatchAsync($"api/Resolution/UpdateResolution", content);
+                return msg.IsSuccessStatusCode;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
 
@@ -155,54 +182,18 @@ namespace MUNityClient.Services
             return await this._localStorage.GetItemAsync<Resolution>(GetResolutionLocalStorageName(id));
         }
 
-        public async Task<Resolution> GetPublicResolution(string id)
+        public async Task<HttpResponseMessage> UpdateResolutionPreambleParagraph(string resolutionid, PreambleParagraph paragraph)
         {
-            if (id == "test")
-            {
-                var testResolution = Mocking.Resolution.CreateTestResolution();
-                await this.StoreResolution(testResolution);
-                return testResolution;
-            }
-
-            try
-            {
-                var resolution = await this._httpService.HttpClient.GetFromJsonAsync<Resolution>($"/api/Resolution/GetPublic?id={id}");
-                if (resolution != null)
-                {
-                    await this.StoreResolution(resolution);
-                    return resolution;
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Unable to reach the server!");
-                
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Updates a resolution and informs all connected WebSockets
-        /// </summary>
-        /// <param name="resolution"></param>
-        /// <returns></returns>
-        public Task<HttpResponseMessage> UpdatePublicResolution(Resolution resolution)
-        {
-            HttpContent content = JsonContent.Create(resolution);
-            return this._httpService.HttpClient.PatchAsync($"/api/Resolution/UpdatePublicResolution", content);
-        }
-
-        public Task<HttpResponseMessage> UpdatePublicResolutionPreambleParagraph(string resolutionid, PreambleParagraph paragraph)
-        {
+            var client = await this._httpService.GetAuthClient();
             var content = JsonContent.Create(paragraph);
-            return this._httpService.HttpClient.PatchAsync($"/api/Resolution/UpdatePublicResolutionPreambleParagraph?resolutionid={resolutionid}", content);
+            return await client.PatchAsync($"/api/Resolution/UpdatePreambleParagraph?resolutionid={resolutionid}", content);
         }
 
-        public Task<HttpResponseMessage> UpdatePublicResolutionOperativeParagraph(string resolutionid, OperativeParagraph paragraph)
+        public async Task<HttpResponseMessage> UpdateResolutionOperativeParagraph(string resolutionid, OperativeParagraph paragraph)
         {
+            var client = await this._httpService.GetAuthClient();
             var content = JsonContent.Create(paragraph);
-            return this._httpService.HttpClient.PatchAsync($"/api/Resolution/UpdatePublicResolutionOperativeParagraph?resolutionid={resolutionid}", content);
+            return await client.PatchAsync($"/api/Resolution/UpdateOperativeParagraph?resolutionid={resolutionid}", content);
         }
 
         public async void SaveOfflineResolution(Resolution resolution)
