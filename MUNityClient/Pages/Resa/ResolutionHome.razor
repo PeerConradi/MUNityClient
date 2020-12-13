@@ -4,9 +4,7 @@
 
 <h3>MUNity Resolutions-Editor</h3>
 
-<button @onclick="CreatePublicResolution">Öffentliche Resolution erstellen (Mit Server)</button>
-
-<button @onclick="CreateOfflineResolution">Erstelle offline Resolution</button>
+<button @onclick="CreateResolution" class="btn btn-success">Resolution erstellen</button>
 
 <NavLink href="resa/edit/test">Open Resolution Editor with Test</NavLink>
 
@@ -15,12 +13,19 @@
 
 @if (localResolutions != null)
 {
-    <ul>
-        @foreach (var resa in localResolutions)
-        {
-            <li><button @onclick="() => OpenOffline(resa.ResolutionId)">[@resa.Header.Topic] - Im Offline Editor öffnen</button> <button @onclick="() => OpenReader(resa.ResolutionId)">[@resa.Header.Topic] - Im Reader öffnen</button></li>
-        }
-    </ul>
+<div class="card-deck">
+    @foreach (var resa in localResolutions)
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="card-title">@resa.Title</h3>
+                <p class="card-text">@resa.LastChangedDate.ToLocalTime().ToLongDateString() - @resa.LastChangedDate.ToLocalTime().ToShortTimeString()</p>
+                <button type="button" class="btn btn-light-blue btn-md" @onclick="() => OpenResolution(resa.ResolutionId)">Bearbeiten</button>
+                <button type="button" class="btn btn-light-blue btn-md" @onclick="() => OpenReader(resa.ResolutionId)">Lesen</button>
+            </div>
+        </div>
+    }
+</div>
 }
 else
 {
@@ -39,31 +44,24 @@ else
 @code {
     private bool loadingLocalsDone = false;
 
-    private List<MUNityClient.Models.Resolution.Resolution> localResolutions;
+    private List<MUNityClient.Models.Resolution.ResolutionInfo> localResolutions;
 
-    private async Task CreatePublicResolution()
+    private async Task CreateResolution()
     {
-        var resolution = await this.resolutionService.CreatePublicResolution("NoTitle");
+        var resolution = await this.resolutionService.CreateResolution();
         if (resolution != null)
         {
             navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}");
         }
     }
 
-    private async Task CreateOfflineResolution()
+    private EventCallback OpenResolution(string id)
     {
-        var resolution = await this.resolutionService.CreateOffline();
-        if (resolution != null)
-        {
-            navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}/offline");
-        }
-    }
-
-    private EventCallback OpenOffline(string id)
-    {
-        navigationManager.NavigateTo($"resa/edit/{id}/offline");
+        navigationManager.NavigateTo($"resa/edit/{id}");
         return EventCallback.Empty;
     }
+
+
 
     private EventCallback OpenReader(string id)
     {

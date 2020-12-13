@@ -1,0 +1,18 @@
+﻿@inject MUNityClient.Services.ListOfSpeakerService listOfSpeakerService;
+@inject NavigationManager navigationManager;
+@page "/redelisten"
+
+<h3>ListOfSpeakerHome</h3>
+
+<button class="btn btn-success">Neue Redeliste erstellen</button>
+
+@code {
+    private async Task CreateListOfSpeakers()
+    {
+        var list = await this.listOfSpeakerService.CreateListOfSpeakers();
+        if (list != null)
+        {
+            navigationManager.NavigateTo($"/los/edit/{list.ListOfSpeakersId}");
+        }
+    }
+}

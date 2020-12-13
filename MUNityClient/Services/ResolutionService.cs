@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using MUNityClient.Models.Resolution;
 using Blazored.LocalStorage;
+using MUNityClient.Extensions.ResolutionExtensions;
+using Microsoft.JSInterop;
 
 namespace MUNityClient.Services
 {
@@ -20,6 +22,10 @@ namespace MUNityClient.Services
 
         private DateTime? _lastOnlineChecked;
 
+        public delegate void OnStorageChanged();
+
+        public event OnStorageChanged StorageChanged;
+
         /// <summary>
         /// Checks if the Resolution Controller of the API is available.
         /// Will store the value for 30 Seconds and refresh when called 30 seconds after
@@ -30,74 +36,96 @@ namespace MUNityClient.Services
         {
             if (forceRefresh || _isOnline == null || _lastOnlineChecked == null || (DateTime.Now - _lastOnlineChecked.Value).TotalSeconds > 30)
             {
-                var result = await this._httpService.HttpClient.GetAsync($"/api/Resolution/IsUp");
-                _isOnline = result.IsSuccessStatusCode;
+                try
+                {
+                    var result = await this._httpService.HttpClient.GetAsync($"/api/Resolution/IsUp");
+                    _isOnline = result.IsSuccessStatusCode;
+                }
+                catch (Exception)
+                {
+                    _isOnline = false;
+                }
+                
                 _lastOnlineChecked = DateTime.Now;
             }
             return _isOnline.Value;
         }
 
-        public async Task<List<Resolution>> GetStoredResolutions()
+        public async Task<List<ResolutionInfo>> GetStoredResolutions()
         {
-            var resolutions = await this._localStorage.GetItemAsync<List<Resolution>>("munity_resolutions");
-            if (resolutions == null) return new List<Resolution>();
+            var resolutions = await this._localStorage.GetItemAsync<List<ResolutionInfo>>("munity_storedResolutions");
+            if (resolutions == null) return new List<ResolutionInfo>();
             return resolutions;
         }
 
-        private async Task StoreResolutions()
+        public async Task<Resolution> GetResolution(string resolutionId)
         {
-            var resolutions = await this._localStorage.GetItemAsync<List<Resolution>>("munity_resolutions");
-            if (resolutions == null) resolutions = new List<Resolution>();
-            await this._localStorage.SetItemAsync("munity_resolutions", resolutions);
+            var inLocalStorage = await GetStoredResolution(resolutionId);
+            if (inLocalStorage != null) return inLocalStorage;
+            return await GetResolutionFromServer(resolutionId);
         }
+
+        public async Task<Resolution> CreateResolution(string title = "")
+        {
+            var resolution = new Resolution();
+            resolution.Header.Topic = title;
+            await StoreResolution(resolution);
+            return resolution;
+        }
+
+        private async Task<Resolution> GetResolutionFromServer(string resolutionId)
+        {
+            try
+            {
+                var authedClient = await this._httpService.GetAuthClient();
+                return await authedClient.GetFromJsonAsync<Resolution>($"/apo/Resolution/GetResolution?id={resolutionId}");
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> SyncResolutionWithServer(Resolution resolution)
+        {
+            return false;
+        }
+
 
         private async Task StoreResolution(Resolution resolution)
         {
-            var resolutions = await this._localStorage.GetItemAsync<List<Resolution>>("munity_resolutions");
-            if (resolutions == null) resolutions = new List<Resolution>();
-            var resolutionClone = resolutions.FirstOrDefault(n => n.ResolutionId == resolution.ResolutionId);
+            await this._localStorage.SetItemAsync(GetResolutionLocalStorageName(resolution), resolution);
+            // Can be performed async
+            await UpdateStoredResolutionList(resolution);
+        }
 
-            if (resolutionClone != null)
+        private async Task UpdateStoredResolutionList(Resolution updatedResolution)
+        {
+            var storedResolutionInfos = await GetStoredResolutions();
+            if (storedResolutionInfos == null) storedResolutionInfos = new List<ResolutionInfo>();
+            var foundEntry = storedResolutionInfos.FirstOrDefault(n => n.ResolutionId == updatedResolution.ResolutionId);
+            var info = updatedResolution.GetInfo();
+            if (foundEntry != null)
             {
-                // Found a matchin Resolution but its not the same instance
-                if (resolutionClone != resolution)
-                {
-                    // Store all values
-                    resolutionClone.Header = resolution.Header;
-                    resolutionClone.Preamble = resolution.Preamble;
-                    resolutionClone.OperativeSection = resolution.OperativeSection;
-                    resolutionClone.Date = resolution.Date;
-                }
+                foundEntry.LastChangedDate = info.LastChangedDate;
+                foundEntry.ResolutionId = info.ResolutionId;
+                foundEntry.Title = info.Title;
             }
             else
             {
-                resolutions.Add(resolution);
+                storedResolutionInfos.Add(info);
             }
-            await this._localStorage.SetItemAsync("munity_resolutions", resolutions);
+            await this._localStorage.SetItemAsync("munity_storedResolutions", storedResolutionInfos);
         }
 
-        public async Task<Resolution> GetResolutionOfOperativeParagraph(OperativeParagraph paragraph)
+        private string GetResolutionLocalStorageName(Resolution resolution)
         {
-            var resolutions = await GetStoredResolutions();
-            return resolutions.FirstOrDefault(n => n.OperativeSection.Paragraphs.Contains(paragraph));
+            return GetResolutionLocalStorageName(resolution.ResolutionId);
         }
 
-        public async Task<Resolution> GetResolutionOfOperativeParagraph(string id)
+        private string GetResolutionLocalStorageName(string id)
         {
-            var resolutions = await GetStoredResolutions();
-            return resolutions.FirstOrDefault(n => n.OperativeSection.Paragraphs.Any(a => a.OperativeParagraphId == id));
-        }
-
-        public async Task<Resolution> GetResolutionOfPreambleParagraph(PreambleParagraph paragraph)
-        {
-            var resolutions = await GetStoredResolutions();
-            return resolutions.FirstOrDefault(n => n.Preamble.Paragraphs.Contains(paragraph));
-        }
-
-        public async Task<Resolution> GetResolutionOfPreambleParagraph(string id)
-        {
-            var resolutions = await GetStoredResolutions();
-            return resolutions.FirstOrDefault(n => n.Preamble.Paragraphs.Any(a => a.PreambleParagraphId == id));
+            return "mtr_" + id;
         }
 
         public async Task<Resolution> CreateOffline()
@@ -122,12 +150,9 @@ namespace MUNityClient.Services
             return resolution;
         }
 
-        public async Task<Resolution> GetOfflineResolution(string id)
+        public async Task<Resolution> GetStoredResolution(string id)
         {
-            // Look into the local Storage for the resolution
-            var resolutionsLocal = await this.GetStoredResolutions();
-            
-            return resolutionsLocal.FirstOrDefault(n => n.ResolutionId == id);
+            return await this._localStorage.GetItemAsync<Resolution>(GetResolutionLocalStorageName(id));
         }
 
         public async Task<Resolution> GetPublicResolution(string id)
@@ -240,23 +265,18 @@ namespace MUNityClient.Services
 
         #endregion
 
-        public bool HasValidOperator(PreambleParagraph paragraph)
+        [JSInvokable]
+        public Task StorageHasChanged()
         {
-            // TODO
-            return false;
+            this.StorageChanged?.Invoke();
+            return Task.FromResult("");
         }
 
-        public bool HasValidOperator(OperativeParagraph paragraph)
-        {
-            // TODO
-            return false;
-        }
-
-
-        public ResolutionService(HttpService client, ILocalStorageService localStorage)
+        public ResolutionService(HttpService client, ILocalStorageService localStorage, IJSRuntime jSRuntime)
         {
             this._httpService = client;
             this._localStorage = localStorage;
+            jSRuntime.InvokeVoidAsync("registerStorageListener", DotNetObjectReference.Create(this));
         }
 
     }

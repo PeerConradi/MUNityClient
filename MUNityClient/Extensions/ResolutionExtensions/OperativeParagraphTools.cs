@@ -233,6 +233,11 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             return null;
         }
 
+        public static bool HasValidOperator(this OperativeParagraph paragraph)
+        {
+            return false;
+        }
+
         #region function linking
             public static string GetIndexNameOfOperativeParagraph(this OperativeSection section, OperativeParagraph paragraph) => section.GetIndexNameOfOperativeParagraph(paragraph.OperativeParagraphId);
         #endregion

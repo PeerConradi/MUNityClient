@@ -14,5 +14,10 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             resolution.Preamble.Paragraphs.Add(paragraph);
             return paragraph;
         }
+
+        public static bool HasValidOperator(this PreambleParagraph paragraph)
+        {
+            return false;
+        }
     }
 }

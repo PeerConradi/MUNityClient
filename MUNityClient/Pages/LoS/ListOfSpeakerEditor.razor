@@ -1,12 +1,7 @@
-﻿@* Das ganze hier ist nur zum Testen. Die eigentliche Implementierung der Redeliste muss in einer "Controller" Razor komponente, sowie einer
-    eigenen View Komponente erfolgen. Was mir noch eingefallen ist, in der Angular Implementation ist es möglich sich eine Redeliste als
-    Kontext zu setzen. Dann ist am Bildschirmrand eine Aufklappbare Box entstanden (wie bei einem Chat bei Facebook) mit der man ein paar
-    "Quick Controls" bekommen hat um schnell die Redeliste pausieren zu können etc. Es wäre ganz hilfreich wenn der Rede/Frage Pausieren starten Button etc. schnell
-    zu erreichen ist.*@
-
-@using MUNityClient.Models.ListOsSpeakers
+﻿@using MUNityClient.Models.ListOsSpeakers;
 @using System.Timers;
-@page "/los"
+
+@page "/los/edit/{id}"
 
 @if (Speakerlist != null)
 {
@@ -67,8 +62,8 @@
     @* Es ist sicherlich sinnvoll Redezeitstarten/Pausieren und Fortsetzen in einem zu vereinen.
         Redezeit Starten gibt dem Redner aktuell die Volle Redezeit und wäre somit immer ein Reset.
         Es ist natürlich möglich das "Nächster Redner" in eine eigene Funktion zu packen und dadurch zu schauen
-        ob pausiert wurde oder nicht. 
-        *@
+        ob pausiert wurde oder nicht.
+    *@
     <button @onclick="() => Speakerlist.StartSpeaker()">Redezeit starten</button>
     <button @onclick="() => Speakerlist.PauseSpeaker()">Redezeit/Frage und Kurzbemerkung pausieren</button>
     <button @onclick="() => Speakerlist.ResumeSpeaker()">Redebeitrag Fortsetzen</button>
@@ -85,8 +80,10 @@
 
 }
 
-
 @code {
+    [Parameter]
+    public string Id { get; set; }
+
     public ListOfSpeakers Speakerlist { get; set; }
 
     private class SpeakerToAdd
