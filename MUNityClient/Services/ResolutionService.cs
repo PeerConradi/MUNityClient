@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using MUNityClient.Models.Resolution;
 using Blazored.LocalStorage;
 using MUNityClient.Extensions.ResolutionExtensions;
+using Microsoft.JSInterop;
 
 namespace MUNityClient.Services
 {
@@ -261,10 +262,11 @@ namespace MUNityClient.Services
         #endregion
 
 
-        public ResolutionService(HttpService client, ILocalStorageService localStorage)
+        public ResolutionService(HttpService client, ILocalStorageService localStorage, IJSRuntime jSRuntime)
         {
             this._httpService = client;
             this._localStorage = localStorage;
+            jSRuntime.InvokeVoidAsync("registerStorageListener");
         }
 
     }
