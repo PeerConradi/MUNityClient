@@ -13,10 +13,11 @@
     var corruptionResult = MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.IsResolutionCorrupted(this.Resolution);
     if (corruptionResult.isCorrupted)
     {
-        <div class="row">
+        <div class="row d-flex justify-content-center my-5 align-items-center">
+            <i class="fas fa-exclamation-circle fa-2x text-danger mr-2"></i>
             <h3>Achtung die Resolution ist beschädigt.</h3>
             <p>@corruptionResult.log</p>
-            <button @onclick="() => MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.FixResolution(this.Resolution)">Jetzt reparieren</button>
+            <button @onclick="() => MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.FixResolution(this.Resolution)" class="btn aqua-gradient">Jetzt reparieren</button>
         </div>
     }
 
@@ -95,7 +96,7 @@
                                         }
                                         else
                                         {
-                                            <div class="alert alert-secondary"> An dieser Stelle ist ein ausgelbendeter Virtueller Absatz</div>
+                                            <div class="alert alert-secondary mt-2"> An dieser Stelle ist ein ausgelbendeter Virtueller Absatz</div>
                                         }
 
                                     </div>
