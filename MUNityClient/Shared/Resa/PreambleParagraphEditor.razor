@@ -81,7 +81,7 @@
         </div>
         @* Comment Panel *@
         <div class="m-0 col comments @(commentsExpanded ? "comments-expanded" : "comments-collapsed") p-0">
-            <textarea placeholder="Kommentare..."
+            <textarea placeholder="Kommentare..." value="@this.Comment" @oninput="@OnCommentChange"
                 class="form-control h-100 custom-input-field px-0 p-2 no-scrollbar"></textarea>
         </div>
     </div>
@@ -106,6 +106,28 @@
 
     public int Index => this.Resolution?.Preamble?.Paragraphs?.IndexOf(this.Paragraph) ?? -1;
 
+    public string Comment
+    {
+        get
+        {
+            if (!this.Paragraph.Notices.Any())
+            {
+                this.Paragraph.Notices.Add(new Notice());
+            }
+
+            return this.Paragraph.Notices.First().Text;
+        }
+    }
+
+    private void OnCommentChange(ChangeEventArgs args)
+    {
+        if (!this.Paragraph.Notices.Any())
+        {
+            this.Paragraph.Notices.Add(new Notice());
+        }
+        this.Paragraph.Notices.First().Text = (string)args.Value;
+        this.Paragraph.InvokeNoticesChanged();
+    }
 
     public Boolean commentsExpanded = false;
 

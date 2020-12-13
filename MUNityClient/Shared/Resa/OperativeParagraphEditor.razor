@@ -91,8 +91,8 @@
         </div>
         @* Comment Panel *@
         <div class="m-0 col comments @(commentsExpanded ? "comments-expanded" : "comments-collapsed") p-0">
-            <textarea placeholder="Kommentare..."
-                class="form-control h-100 custom-input-field px-0 p-2 no-scrollbar"></textarea>
+                <textarea placeholder="Kommentare..." value="@this.Comment" @oninput="@OnCommentChange"
+                          class="form-control h-100 custom-input-field px-0 p-2 no-scrollbar"></textarea>
         </div>
     </div>
 }
@@ -120,6 +120,19 @@ else if (!Dismissed)
 
     public Boolean commentsExpanded = false;
 
+    public string Comment
+    {
+        get
+        {
+            if (!this.Paragraph.Notices.Any())
+            {
+                this.Paragraph.Notices.Add(new Notice());
+            }
+
+            return this.Paragraph.Notices.First().Text;
+        }
+    }
+
     [Parameter]
     //Event called when the arrow up/down buttons are called. Returns true if direction is updwards, false if downwards
     public EventCallback<Boolean> OnMoveEvent { get; set; }
@@ -133,10 +146,19 @@ else if (!Dismissed)
         Paragraph = new OperativeParagraph();
     }
 
-    private async void OnInputChange(ChangeEventArgs args)
+    private void OnInputChange(ChangeEventArgs args)
     {
-
         this.Paragraph.Text = (string)args.Value;
+    }
+
+    private void OnCommentChange(ChangeEventArgs args)
+    {
+        if (!this.Paragraph.Notices.Any())
+        {
+            this.Paragraph.Notices.Add(new Notice());
+        }
+        this.Paragraph.Notices.First().Text = (string)args.Value;
+        this.Paragraph.InvokeNoticesChanged();
     }
 
     public void RemoveOperativeParagraph()

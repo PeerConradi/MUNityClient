@@ -9,7 +9,11 @@ namespace MUNityClient.Models.Resolution
     {
         public delegate void OnTextChanged(OperativeParagraph paragraph, string newText, string oldText);
 
+        public delegate void OnNoticesChanged(OperativeParagraph paragraph);
+
         public event OnTextChanged TextChanged;
+
+        public event OnNoticesChanged NoticesChanged;
 
         public string OperativeParagraphId { get; set; }
         public string Name { get; set; } = "";
@@ -39,6 +43,11 @@ namespace MUNityClient.Models.Resolution
         public List<OperativeParagraph> Children { get; set; }
 
         public List<Notice> Notices { get; set; }
+
+        public void InvokeNoticesChanged()
+        {
+            this.NoticesChanged?.Invoke(this);
+        }
 
         public OperativeParagraph(string text = "")
         {

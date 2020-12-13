@@ -19,7 +19,13 @@ namespace MUNityClient.Models.Resolution
         public Notice()
         {
             ReadBy = new List<string>();
+            Tags = new List<NoticeTag>();
             Id = Guid.NewGuid().ToString();
+            Title = "";
+            CreationDate = DateTime.Now;
+            AuthorId = "";
+            AuthorName = "";
+            Text = "";
         }
     }
 }

@@ -260,12 +260,12 @@ else
                 {
                     this.SyncMode = SyncModes.OnlineButNotSyncing;
 
-                // TODO:
-                // Beim Server anfragen ob die Resolution bearbeitet werden darf
-                // Wenn nein: OnlineButNotSyncing
-                // Wenn ja: SignalR initializieren und SyncMode auf Syncing setzen.
-                // var signalRHub = await this.resolutionService.Subscribe(this.Resolution);
-            }
+                    // TODO:
+                    // Beim Server anfragen ob die Resolution bearbeitet werden darf
+                    // Wenn nein: OnlineButNotSyncing
+                    // Wenn ja: SignalR initializieren und SyncMode auf Syncing setzen.
+                    // var signalRHub = await this.resolutionService.Subscribe(this.Resolution);
+                }
                 else
                 {
                     this.SyncMode = SyncModes.Offline;
@@ -273,8 +273,15 @@ else
                 this.StateHasChanged();
             });
 
-            this.Resolution.Preamble?.Paragraphs?.ForEach(n => n.TextChanged += PreambleTextChanged);
-            this.Resolution.OperativeSection.Paragraphs?.ForEach(n => n.TextChanged += OperativeTextChanged);
+            this.Resolution.Preamble?.Paragraphs?.ForEach(n => {
+                n.TextChanged += PreambleTextChanged;
+                n.NoticesChanged += PreambleNoticesChanged;
+            });
+            this.Resolution.OperativeSection.Paragraphs?.ForEach(n =>
+            {
+                n.TextChanged += OperativeTextChanged;
+                n.NoticesChanged += OperativeNoticesChanged;
+            });
         }
     }
 
@@ -297,6 +304,32 @@ else
         if (SyncMode == SyncModes.Syncing)
         {
             this.resolutionService.UpdatePublicResolutionOperativeParagraph(this.Resolution.ResolutionId, sender);
+        }
+        else if (SyncMode == SyncModes.Offline)
+        {
+            SaveResolution();
+        }
+    }
+
+    private void OperativeNoticesChanged(OperativeParagraph sender)
+    {
+        this.Resolution.Date = DateTime.Now;
+        if (SyncMode == SyncModes.Syncing)
+        {
+            this.resolutionService.UpdatePublicResolutionOperativeParagraph(this.Resolution.ResolutionId, sender);
+        }
+        else if (SyncMode == SyncModes.Offline)
+        {
+            SaveResolution();
+        }
+    }
+
+    private void PreambleNoticesChanged(PreambleParagraph sender)
+    {
+        this.Resolution.Date = DateTime.Now;
+        if (SyncMode == SyncModes.Syncing)
+        {
+            this.resolutionService.UpdatePublicResolutionPreambleParagraph(this.Resolution.ResolutionId, sender);
         }
         else if (SyncMode == SyncModes.Offline)
         {
@@ -331,6 +364,7 @@ else
     {
         this.Resolution.Date = DateTime.Now;
         PreambleMarkedForDeletion.TextChanged -= PreambleTextChanged;
+        PreambleMarkedForDeletion.NoticesChanged -= PreambleNoticesChanged;
         this.Resolution?.Preamble?.Paragraphs?.Remove(PreambleMarkedForDeletion);
         SaveResolution();
     }
@@ -339,6 +373,7 @@ else
     {
         this.Resolution.Date = DateTime.Now;
         OperativeMarkedForDeletion.TextChanged -= OperativeTextChanged;
+        OperativeMarkedForDeletion.NoticesChanged -= OperativeNoticesChanged;
         this.Resolution?.OperativeSection.RemoveOperativeParagraph(OperativeMarkedForDeletion);
         SaveResolution();
     }
@@ -374,6 +409,7 @@ else
         this.Resolution.Date = DateTime.Now;
         var paragraph = this.Resolution.CreatePreambleParagraph();
         paragraph.TextChanged += PreambleTextChanged;
+        paragraph.NoticesChanged += PreambleNoticesChanged;
         SaveResolution();
     }
 
@@ -382,6 +418,7 @@ else
         this.Resolution.Date = DateTime.Now;
         var paragraph = this.Resolution.OperativeSection.CreateOperativeParagraph();
         paragraph.TextChanged += OperativeTextChanged;
+        paragraph.NoticesChanged += OperativeNoticesChanged;
         SaveResolution();
     }
 

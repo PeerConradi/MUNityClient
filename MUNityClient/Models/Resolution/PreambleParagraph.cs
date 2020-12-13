@@ -9,7 +9,11 @@ namespace MUNityClient.Models.Resolution
     {
         public delegate void OnTextChanged(PreambleParagraph sender, string oldText, string newText);
 
+        public delegate void OnNoticesChanged(PreambleParagraph sender);
+
         public event OnTextChanged TextChanged;
+
+        public event OnNoticesChanged NoticesChanged;
 
         public string PreambleParagraphId { get; set; }
 
@@ -30,6 +34,11 @@ namespace MUNityClient.Models.Resolution
         public bool Corrected { get; set; }
 
         public List<Notice> Notices { get; set; }
+
+        public void InvokeNoticesChanged()
+        {
+            this.NoticesChanged?.Invoke(this);
+        }
 
         public PreambleParagraph()
         {
