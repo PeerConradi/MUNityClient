@@ -210,7 +210,7 @@
             bool isFirstLevel = this.Resolution.OperativeSection.Paragraphs.Contains(parent);
 
             var indexOfHead = this.Resolution.OperativeSection.IndexOfParagraph(parent);
-            return this.Resolution.OperativeSection.CreateMoveAmendment(data.TargetSectionId, indexOfHead, isFirstLevel ? null : parent);
+            return this.Resolution.OperativeSection.CreateMoveAmendment(data.TargetSectionId, indexOfHead + 1, isFirstLevel ? null : parent);
         }
 
         return null;

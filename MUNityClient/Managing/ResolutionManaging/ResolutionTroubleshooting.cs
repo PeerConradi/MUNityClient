@@ -137,17 +137,25 @@ namespace MUNityClient.Managing.ResolutionManaging
 
             public bool Detect(Resolution resolution)
             {
-                var ghosts = resolution.OperativeSection.WhereParagraph(n => n.IsVirtual && (resolution.OperativeSection.MoveAmendments.All(a => a.NewTargetSectionId != n.OperativeParagraphId) ||
+                var ghosts = resolution.OperativeSection.WhereParagraph(n => n.IsVirtual && (resolution.OperativeSection.MoveAmendments.All(a => a.NewTargetSectionId != n.OperativeParagraphId) &&
                     resolution.OperativeSection.AddAmendments.All(a => a.TargetSectionId != n.OperativeParagraphId)));
 
-                if (ghosts.Any()) return true;
+
+
+                if (ghosts.Any())
+                {
+                    foreach(var ghost in ghosts)
+                    {
+                        bugs += $"{ghost.OperativeParagraphId} (Virutal: {ghost.IsVirtual}) is a ghost. There is no amendment referencing this paragraph.\n";
+                    }
+                }
 
                 return false;
             }
 
             public bool Fix(Resolution resolution)
             {
-                var ghosts = resolution.OperativeSection.WhereParagraph(n => n.IsVirtual && (resolution.OperativeSection.MoveAmendments.All(a => a.NewTargetSectionId != n.OperativeParagraphId) ||
+                var ghosts = resolution.OperativeSection.WhereParagraph(n => n.IsVirtual && (resolution.OperativeSection.MoveAmendments.All(a => a.NewTargetSectionId != n.OperativeParagraphId) &&
                     resolution.OperativeSection.AddAmendments.All(a => a.TargetSectionId != n.OperativeParagraphId)));
 
                 if (ghosts.Any())

@@ -4,95 +4,215 @@
 @page "/los/edit/{id}"
 
 @inject MUNityClient.Services.ListOfSpeakerService listOfSpeakerService;
+@inject IJSRuntime jsRuntime
 
 @if (Speakerlist != null)
 {
     <div class="row">
-        <EditForm Model="@Settings" OnSubmit="SaveSettings">
-            <div class="form-group">
-                <label>Redzeit</label>
-                <InputText @bind-Value="Settings.Speakertime" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label>Zeit für Fragen, Kurzbemerkdungen und Antwort</label>
-                <InputText @bind-Value="Settings.Questiontime" class="form-control" />
-            </div>
-            
-            <button class="btn btn-success" type="submit">Speichern</button>
-        </EditForm>
+        <button class="btn btn-block btn-primary" @onclick="() => OpenReaderSpectatorView()">Teilnehmendenansicht in neuem Tab öffnen</button>
     </div>
-    <h3>Aktueller Redner</h3>
 
-    @if (Speakerlist.CurrentSpeaker != null)
-    {
-        <h4>@Speakerlist.CurrentSpeaker.Name</h4>
-        <h4>Verbleibende Redezeit</h4>
-        @* Achtung derzeit wird einfach nur hoch gezählt wenn die Zeit übschritten wurde.
-            Eine Zeitüebrschreibung lässt sich feststellen indem einfach auf:
-            RemainingSpeakerTime.TotalSeconds < 0 geprüft wird.
-            Für die an der Steuerung ist es sicher sinnvoll, wenn sie sehen um wie viel
-            überzogen wurde. Auf der Teiliansicht muss aber an dieser Stelle "Bitte zum Ende kommen" stehen
-            anstelle einer Zeit. Zudem soll die Textfarbe der Restzeit sich ändern, wenn RemainingSpeakerTime.TotalSeconds < 10 ist.*@
-        <h4>@Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
-    }
-    else
-    {
-        <h4>Niemand :(</h4>
-    }
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    Einstellungen
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@Settings" OnSubmit="SaveSettings">
+                        <div class="form-group">
+                            <label>Redzeit</label>
+                            <InputText @bind-Value="Settings.Speakertime" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label>Zeit für Fragen, Kurzbemerkdungen und Antwort</label>
+                            <InputText @bind-Value="Settings.Questiontime" class="form-control" />
+                        </div>
 
-    <h3>Warteliste Redebeitrag</h3>
+                        <button class="btn btn-success" type="submit">Speichern</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <ul>
-        @foreach (var speaker in Speakerlist.Speakers)
-        {
-            <li>@speaker.Name</li>
-        }
-    </ul>
+    <div class="row">
+        <div class="col-6">
+            <div class="card border-primary">
+                <div class="card-body">
+                    Aktueller RednerIn
+                    @if (Speakerlist.CurrentSpeaker != null)
+                    {
+                        <h4>@Speakerlist.CurrentSpeaker.Name</h4>
+                        <h4>Verbleibende Redezeit</h4>
 
-    <hr />
+                        @if (Speakerlist.RemainingSpeakerTime.TotalSeconds > 10)
+                        {
+                            <h4>@Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
+                        }
+                        else if (Speakerlist.RemainingSpeakerTime.TotalSeconds <= 10 && Speakerlist.RemainingSpeakerTime.TotalSeconds >= 0)
+                        {
+                            <h4 class="text-danger">@Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
+                        }
+                        else
+                        {
+                            <h4 class="text-danger">Zeitüberschreitung um: @Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
+                        }
 
-    <h3>Aktuelle Frage/Kurzbemerkung</h3>
-    @if (Speakerlist.CurrentQuestion != null)
-    {
-        <h4>@Speakerlist.CurrentQuestion.Name</h4>
-        <h4>Verbleibende Zeit</h4>
-        <h4>@Speakerlist.RemainingQuestionTime.ToString(@"mm\:ss")</h4>
-    }
-    else
-    {
-        <h3>Niemand</h3>
-    }
+                        <button class="btn btn-danger" @onclick="() => this.Speakerlist.ClearCurrentSpeaker()">Kopf leeren/Aktuelle(n) RednerIn entfernen</button>
+                        <button class="btn btn-success" @onclick="() => this.Speakerlist.AddSpeakerSeconds(10)">+ 10 Sekunden</button>
+                        <button class="btn btn-danger" @onclick="() => this.Speakerlist.AddSpeakerSeconds(-10)">- 10 Sekunden</button>
+                    }
+                    else
+                    {
+                        <h4>Niemand :(</h4>
+                    }
 
-    <h3>Warteliste Fragen und Kurzbemerkungen</h3>
+                    <h3>Warteliste Redebeitrag</h3>
 
-    <ul>
-        @foreach (var question in Speakerlist.Questions)
-        {
-            <li>@question.Name</li>
-        }
-    </ul>
-
-    <hr />
-
-    <button @onclick="() => Speakerlist.NextSpeaker()">Nächster Redner</button>
-    @* Es ist sicherlich sinnvoll Redezeitstarten/Pausieren und Fortsetzen in einem zu vereinen.
-        Redezeit Starten gibt dem Redner aktuell die Volle Redezeit und wäre somit immer ein Reset.
-        Es ist natürlich möglich das "Nächster Redner" in eine eigene Funktion zu packen und dadurch zu schauen
-        ob pausiert wurde oder nicht.
-    *@
-    <button @onclick="() => Speakerlist.StartSpeaker()">Redezeit starten</button>
-    <button @onclick="() => Speakerlist.PauseSpeaker()">Redezeit/Frage und Kurzbemerkung pausieren</button>
-    <button @onclick="() => Speakerlist.ResumeSpeaker()">Redebeitrag Fortsetzen</button>
-    <EditForm Model="NewSpeaker">
-        <div class="form-group">
-            <label>Name</label>
-            <InputText @bind-Value="NewSpeaker.Name" class="form-control" />
+                    <ul>
+                        @foreach (var speaker in Speakerlist.Speakers)
+                        {
+                            <li>@speaker.Name</li>
+                        }
+                    </ul>
+                </div>
+            </div>
         </div>
 
-    </EditForm>
+        <div class="col-6">
+            <div class="card border-secondary">
+                <div class="card-body">
+                    Aktuelle Frage/Kurzbemerkung
+                    @if (Speakerlist.CurrentQuestion != null)
+                    {
+                        <h4>@Speakerlist.CurrentQuestion.Name</h4>
+                        <h4>Verbleibende Zeit</h4>
+                        <h4>@Speakerlist.RemainingQuestionTime.ToString(@"mm\:ss")</h4>
+                        <button class="btn btn-danger" @onclick="() => this.Speakerlist.ClearCurrentQuestion()">Kopf leeren/Aktuelle(n) FragestellerIn entfernen</button>
+                        <button class="btn btn-success" @onclick="() => this.Speakerlist.AddQuestionSeconds(10)">+ 10 Sekunden</button>
+                        <button class="btn btn-danger" @onclick="() => this.Speakerlist.AddQuestionSeconds(-10)">- 10 Sekunden</button>
+                    }
+                    else
+                    {
+                        <h3>Niemand</h3>
+                    }
 
-    <button @onclick="() => AddToSpeakers()">Auf die Redeliste setzen</button>
-    <button @onclick="() => AddToQuestions()">Auf Fragen und Kurzbemerkungen setzen</button>
+                    <h3>Warteliste Fragen und Khhurzbemerkungen</h3>
+
+                    <ul>
+                        @foreach (var question in Speakerlist.Questions)
+                        {
+                            <li>@question.Name</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    Steuerung
+                </div>
+                <div class="card-body">
+                    @* Zur Info: *@
+                    @if (Speakerlist.Status == ListOfSpeakers.EStatus.Answer)
+                    {
+                        <div class="alert alert-primary">Der Redner antwortet auf die Frage</div>
+                    }
+                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.AnswerPaused)
+                    {
+                        <div class="alert alert-primary">Die Antwort für den Redner wurde pausiert.</div>
+                    }
+                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.Question)
+                    {
+                        <div class="alert alert-secondary">Es wird eine Frage gestellt</div>
+                    }
+                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.QuestionPaused)
+                    {
+                        <div class="alert alert-secondary">Die Frage wurde pausiert.</div>
+                    }
+                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.SpeakerPaused)
+                    {
+                        <div class="alert alert-primary">Der Redebeitrag wurde pausiert.</div>
+                    }
+                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.Speaking)
+                    {
+                        <div class="alert alert-primary">Der Redebeitrag läuft</div>
+                    }
+                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.Stopped)
+                    {
+                        <div class="alert alert-info">Die Redeliste wird gehalten.</div>
+                    }
+
+                    <button @onclick="() => Speakerlist.NextSpeaker()" class="btn btn-primary">Nächster Redner</button>
+                    <button @onclick="() => Speakerlist.StartSpeaker()" class="btn btn-primary">Redezeit (neu)starten</button>
+                    <button @onclick="() => Speakerlist.PauseSpeaker()" class="btn btn-primary">Redner pausieren</button>
+                    <button @onclick="() => Speakerlist.ResumeSpeaker()" class="btn btn-primary">Redebeitrag Fortsetzen</button>
+                    <button @onclick="() => Speakerlist.NextQuestion()" class="btn btn-secondary">Nächste Frage</button>
+                    <button @onclick="() => Speakerlist.StartQuestion()" class="btn btn-secondary">Frage (neu)starten</button>
+                    <button @onclick="() => Speakerlist.PauseQuestion()" class="btn btn-secondary">Frage pausieren</button>
+                    <button @onclick="() => Speakerlist.ResumeQuestion()" class="btn btn-secondary">Frage fortsetzen</button>
+
+                    @if (Speakerlist.ListClosed)
+                    {
+                        <button @onclick="() => Speakerlist.ListClosed = true" class="btn btn-success">Redeliste öffnen</button>
+                    }
+                    else
+                    {
+                        <button @onclick="() => Speakerlist.ListClosed = false" class="btn btn-danger">Redeliste schließen</button>
+                    }
+
+                    @if (Speakerlist.QuestionsClosed)
+                    {
+                        <button @onclick="() => Speakerlist.QuestionsClosed = true" class="btn btn-success">Fragen und Kurzbemerkungen öffnen</button>
+                    }
+                    else
+                    {
+                        <button @onclick="() => Speakerlist.QuestionsClosed = false" class="btn btn-danger">Fragen und Kurzbemerkungen schließen</button>
+                    }
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    Auf Liste setzen
+                </div>
+                <div class="card-body">
+                    <EditForm Model="NewSpeaker">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <InputText @bind-Value="NewSpeaker.Name" class="form-control" />
+                        </div>
+
+                    </EditForm>
+
+                    @if (!Speakerlist.ListClosed)
+                    {
+                        <button @onclick="() => AddToSpeakers()" class="btn btn-primary">Auf die Redeliste setzen</button>
+                    }
+
+                    @if (!Speakerlist.QuestionsClosed)
+                    {
+                        <button @onclick="() => AddToQuestions()" class="btn btn-secondary">Auf Fragen und Kurzbemerkungen setzen</button>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 }
 
@@ -191,7 +311,22 @@
             var timer = new Timer(1000);
             timer.Elapsed += TimerElapsed;
             timer.Start();
+
+            Speakerlist.ListChanged += StoreOnListChanged;
+
             base.OnInitialized();
         }
+    }
+
+    private async void StoreOnListChanged()
+    {
+        await this.listOfSpeakerService.StoreListOfSpeakers(this.Speakerlist);
+    }
+
+    private async Task OpenReaderSpectatorView()
+    {
+        // Das her ist auch mal ein beispiel, wie man eine JavaScript Methode schnell aufrufen kann :)
+        string url = "/los/read/" + this.Speakerlist.ListOfSpeakersId;
+        await jsRuntime.InvokeAsync<object>("open", url, "_blank");
     }
 }

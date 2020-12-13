@@ -21,13 +21,18 @@ namespace MUNityClient.Services
         public async Task<ListOfSpeakers> CreateListOfSpeakers()
         {
             var listOfSpeakers = new ListOfSpeakers();
-            await this._localStorage.SetItemAsync(ListOfSpeakerIdInStorage(listOfSpeakers.ListOfSpeakersId), listOfSpeakers);
+            await StoreListOfSpeakers(listOfSpeakers);
             return listOfSpeakers;
         }
 
         public async Task<ListOfSpeakers> GetListOfSpeakers(string id)
         {
             return await this._localStorage.GetItemAsync<ListOfSpeakers>(ListOfSpeakerIdInStorage(id));
+        }
+
+        public async Task StoreListOfSpeakers(ListOfSpeakers list)
+        {
+            await this._localStorage.SetItemAsync(ListOfSpeakerIdInStorage(list.ListOfSpeakersId), list);
         }
 
         private string ListOfSpeakerIdInStorage(string id) => "mtlos_" + id;
