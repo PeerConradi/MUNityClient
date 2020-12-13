@@ -25,7 +25,7 @@
     {
         <div class="row">
             <div class="col-12 alert alert-warning">
-                <b>Die Resolution wird nicht an den Server übertragen und ist lediglich offline im Speicher des Browsers gespeichert. (TODO: Download-Button um json Datei runterladen zu können)</b>
+                <b>Die Resolution wird nicht an den Server übertragen und ist lediglich offline im Speicher des Browsers gespeichert. (TODO: Download-Button um json Datei runterladen zu können) (TODO: Erneut versuchen button)</b>
             </div>
         </div>
     }
@@ -273,6 +273,7 @@ else
 
     private void PreambleTextChanged(PreambleParagraph sender, string oldText, string newText)
     {
+        this.Resolution.Date = DateTime.Now;
         if (SyncMode == SyncModes.Syncing)
         {
             this.resolutionService.UpdatePublicResolutionPreambleParagraph(this.Resolution.ResolutionId, sender);
@@ -285,6 +286,7 @@ else
 
     private void OperativeTextChanged(OperativeParagraph sender, string oldText, string newText)
     {
+        this.Resolution.Date = DateTime.Now;
         if (SyncMode == SyncModes.Syncing)
         {
             this.resolutionService.UpdatePublicResolutionOperativeParagraph(this.Resolution.ResolutionId, sender);
@@ -320,6 +322,7 @@ else
 
     public void removePreambleParagraph()
     {
+        this.Resolution.Date = DateTime.Now;
         PreambleMarkedForDeletion.TextChanged -= PreambleTextChanged;
         this.Resolution?.Preamble?.Paragraphs?.Remove(PreambleMarkedForDeletion);
         SaveResolution();
@@ -327,6 +330,7 @@ else
 
     public void removeOperativeParagraph()
     {
+        this.Resolution.Date = DateTime.Now;
         OperativeMarkedForDeletion.TextChanged -= OperativeTextChanged;
         this.Resolution?.OperativeSection.RemoveOperativeParagraph(OperativeMarkedForDeletion);
         SaveResolution();
@@ -336,6 +340,7 @@ else
     //component
     public void MovePreambleParagraph(Boolean up, PreambleParagraph preambleParagraph)
     {
+        this.Resolution.Date = DateTime.Now;
         int originalIndex = this.Resolution?.Preamble?.Paragraphs?.IndexOf(preambleParagraph) ?? -1;
         this.Resolution.Preamble.Paragraphs.Move(originalIndex, up ? MoveDirection.Up : MoveDirection.Down);
         SaveResolution();
@@ -345,6 +350,7 @@ else
     //component
     public void MoveOperativeParagraph(Boolean up, OperativeParagraph preambleParagraph)
     {
+        this.Resolution.Date = DateTime.Now;
         int originalIndex = this.Resolution?.OperativeSection?.Paragraphs?.IndexOf(preambleParagraph) ?? -1;
         this.Resolution.OperativeSection.Paragraphs.Move(originalIndex, up ? MoveDirection.Up : MoveDirection.Down);
         SaveResolution();
@@ -358,6 +364,7 @@ else
 
     private void AddPreambleParagraph()
     {
+        this.Resolution.Date = DateTime.Now;
         var paragraph = this.Resolution.CreatePreambleParagraph();
         paragraph.TextChanged += PreambleTextChanged;
         SaveResolution();
@@ -365,6 +372,7 @@ else
 
     private void AddOperativeParagraph()
     {
+        this.Resolution.Date = DateTime.Now;
         var paragraph = this.Resolution.OperativeSection.CreateOperativeParagraph();
         paragraph.TextChanged += OperativeTextChanged;
         SaveResolution();

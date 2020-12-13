@@ -8,6 +8,13 @@ namespace MUNityClient.Extensions.ResolutionExtensions
 {
     public static class AmendmentTools
     {
+
+        /// <summary>
+        /// Returns all the Amendments for the operative paragraph with the given Id.
+        /// </summary>
+        /// <param name="section"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public static List<IAmendment> AmendmentsForOperativeParagraph(this OperativeSection section, string id)
         {
             var result = new List<IAmendment>();
@@ -19,6 +26,11 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             return result;
         }
 
+        /// <summary>
+        /// Adds a new Amendment into the Amendment list.
+        /// </summary>
+        /// <param name="section"></param>
+        /// <param name="amendment"></param>
         private static void PushAmendment(this OperativeSection section, IAmendment amendment)
         {
             // For now every Amendment has a TargetSectionId this could maybe be different one day
@@ -48,6 +60,12 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             }
         }
 
+        /// <summary>
+        /// Removes an amentment from its list. Note that this is not the same
+        /// as Deny. This will just remove the given instance of the amendment.
+        /// </summary>
+        /// <param name="section"></param>
+        /// <param name="amendment"></param>
         public static void RemoveAmendment(this OperativeSection section, IAmendment amendment)
         {
             if (amendment is AddAmendment addAmendment)
@@ -73,6 +91,12 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             }
         }
 
+        /// <summary>
+        /// Creates a new Amendment to delete an operative paragraph.
+        /// </summary>
+        /// <param name="section"></param>
+        /// <param name="paragraphId"></param>
+        /// <returns></returns>
         public static DeleteAmendment CreateDeleteAmendment(this OperativeSection section, string paragraphId)
         {
             if (section.FindOperativeParagraph(paragraphId) == null)

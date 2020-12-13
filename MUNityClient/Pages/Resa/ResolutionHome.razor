@@ -13,12 +13,19 @@
 
 @if (localResolutions != null)
 {
-    <ul>
-        @foreach (var resa in localResolutions)
-        {
-            <li><button @onclick="() => OpenResolution(resa.ResolutionId)">[@resa.Title] - Im Offline Editor öffnen</button> <button @onclick="() => OpenReader(resa.ResolutionId)">[@resa.Title] - Im Reader öffnen</button></li>
-        }
-    </ul>
+<div class="card-deck">
+    @foreach (var resa in localResolutions)
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="card-title">@resa.Title</h3>
+                <p class="card-text">@resa.LastChangedDate.ToLocalTime().ToLongDateString() - @resa.LastChangedDate.ToLocalTime().ToShortTimeString()</p>
+                <button type="button" class="btn btn-light-blue btn-md" @onclick="() => OpenResolution(resa.ResolutionId)">Bearbeiten</button>
+                <button type="button" class="btn btn-light-blue btn-md" @onclick="() => OpenReader(resa.ResolutionId)">Lesen</button>
+            </div>
+        </div>
+    }
+</div>
 }
 else
 {

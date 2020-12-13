@@ -28,6 +28,8 @@ else
         var resolutionLocal = await this.resolutionService.GetResolution(this.Id);
         if (resolutionLocal != null)
         {
+            // An dieser Stelle hängen wir das StorageChanged Event ran. Es wird nur gefeuert, wenn die Änderung
+            // nicht durch diesen Browser Tab vorgenommen wurde.
             this.Resolution = resolutionLocal;
             this.resolutionService.StorageChanged += RefreshFromStorage;
         }
@@ -38,11 +40,13 @@ else
             if (this.Resolution != null)
             {
                 await this.resolutionService.Subscribe(this.Resolution);
-                this.Resolution.ResolutionChanged += () => this.StateHasChanged();
             }
         }
     }
 
+    /// <summary>
+    /// Reloads the Resolution and fires a State changed.
+    /// </summary>
     private async void RefreshFromStorage()
     {
         if (Resolution != null)

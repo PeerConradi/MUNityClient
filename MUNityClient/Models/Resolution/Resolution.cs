@@ -8,9 +8,6 @@ namespace MUNityClient.Models.Resolution
 {
     public class Resolution : IResolution
     {
-        public delegate void OnResolutionChanged();
-
-        public event OnResolutionChanged ResolutionChanged;
 
         public string ResolutionId { get; set; }
 
@@ -20,12 +17,6 @@ namespace MUNityClient.Models.Resolution
 
         public ResolutionPreamble Preamble { get; set; }
         public OperativeSection OperativeSection { get; set; }
-
-        public void InvokeChange()
-        {
-            this.ResolutionChanged?.Invoke();
-        }
-
         
         public Resolution()
         {
@@ -33,6 +24,7 @@ namespace MUNityClient.Models.Resolution
             Preamble = new ResolutionPreamble();
             OperativeSection = new OperativeSection();
             Header = new ResolutionHeader();
+            Date = DateTime.Now;
         }
     }
 }
