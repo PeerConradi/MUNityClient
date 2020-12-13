@@ -22,6 +22,10 @@ namespace MUNityClient.Services
 
         private DateTime? _lastOnlineChecked;
 
+        public delegate void OnStorageChanged();
+
+        public event OnStorageChanged StorageChanged;
+
         /// <summary>
         /// Checks if the Resolution Controller of the API is available.
         /// Will store the value for 30 Seconds and refresh when called 30 seconds after
@@ -261,12 +265,18 @@ namespace MUNityClient.Services
 
         #endregion
 
+        [JSInvokable]
+        public Task StorageHasChanged()
+        {
+            this.StorageChanged?.Invoke();
+            return Task.FromResult("");
+        }
 
         public ResolutionService(HttpService client, ILocalStorageService localStorage, IJSRuntime jSRuntime)
         {
             this._httpService = client;
             this._localStorage = localStorage;
-            jSRuntime.InvokeVoidAsync("registerStorageListener");
+            jSRuntime.InvokeVoidAsync("registerStorageListener", DotNetObjectReference.Create(this));
         }
 
     }

@@ -28,11 +28,8 @@ else
         var resolutionLocal = await this.resolutionService.GetResolution(this.Id);
         if (resolutionLocal != null)
         {
-
             this.Resolution = resolutionLocal;
-            System.Timers.Timer timer = new System.Timers.Timer(10000);
-            timer.Elapsed += RefreshWithTimer;
-            timer.Start();
+            this.resolutionService.StorageChanged += RefreshFromStorage;
         }
         else
         {
@@ -46,10 +43,14 @@ else
         }
     }
 
-    private async void RefreshWithTimer(Object source, System.Timers.ElapsedEventArgs e)
+    private async void RefreshFromStorage()
     {
-        this.Resolution = await this.resolutionService.GetResolution(this.Id);
-        this.StateHasChanged();
+        if (Resolution != null)
+        {
+            this.Resolution = await this.resolutionService.GetStoredResolution(this.Resolution.ResolutionId);
+            this.StateHasChanged();
+        }
+
     }
 
 }
