@@ -12,12 +12,11 @@
     var corruptionResult = MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.IsResolutionCorrupted(this.Resolution);
     if (corruptionResult.isCorrupted)
     {
-        <div class="row">
-            <div class="alert alert-danger">
-                <h3>Achtung die Resolution ist beschädigt.</h3>
-                <p>@corruptionResult.log</p>
-                <button @onclick="() => RepairResolution()">Jetzt reparieren</button>
-            </div>
+        <div class="row d-flex justify-content-center my-5 align-items-center">
+            <i class="fas fa-exclamation-circle fa-2x text-danger mr-2"></i>
+            <h3>Achtung die Resolution ist beschädigt.</h3>
+            <p>@corruptionResult.log</p>
+            <button @onclick="() => RepairResolution()" class="btn aqua-gradient">Jetzt reparieren</button>
         </div>
     }
 
@@ -35,7 +34,6 @@
             <div class="col-12 alert alert-info">
                 <b>Es wird versucht eine Verbindung zum Server herzustellen.</b>
             </div>
-        </div>
     }
 
     <div class="row p-0 m-0 d-flex justify-content-center">
@@ -52,7 +50,7 @@
                     </div>
                     <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
                         @* Preamble *@
-                        <div class="card-body ammendment-body row p-0 m-0">
+                        <div class="card-body paragraph-body row p-0 m-0">
                             @foreach (var preambleParagraph in this.Resolution.Preamble.Paragraphs)
                             {
                                 <PreambleParagraphEditor Paragraph="preambleParagraph" Resolution="this.Resolution"
@@ -68,7 +66,7 @@
                     </div>
                 </div>
                 <div class="card">
-                    <div role="button" class="card-header row m-0" type="button" data-toggle="collapse"
+                    <div role="button" class="card-header row m-0 collapsed" type="button" data-toggle="collapse"
                          data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo"
                          @onclick="() => operativeExpandingState = !operativeExpandingState">
                         <h3>
@@ -76,9 +74,9 @@
                             <i class="fas fa-angle-down ml-2 expansionIcon "></i>
                         </h3>
                     </div>
-                    <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordion">
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
                         @* Operative section *@
-                        <div class="card-body ammendment-body row p-0 m-0">
+                        <div class="card-body paragraph-body row p-0 m-0">
                             @foreach (var operative in this.Resolution.OperativeSection.Paragraphs)
                             {
                                 @if (!operative.IsVirtual)
@@ -113,7 +111,7 @@
                                         }
                                         else
                                         {
-                                            <div class="alert alert-secondary"> An dieser Stelle ist ein ausgelbendeter Virtueller Absatz</div>
+                                            <div class="alert alert-secondary mt-2"> An dieser Stelle ist ein ausgelbendeter Virtueller Absatz</div>
                                         }
 
                                     </div>
@@ -441,6 +439,9 @@ else
 
 
 <style>
+    @* The used accordion is based on the standard bootstrap accordion
+       The used CSS classes are default and will be expanded by the following CSS
+       to make the Icon animated dependent on the expand state *@
 
     @* The order of the css classes MATTERS for the expansion icon! *@
     .expansionIcon {
@@ -464,12 +465,17 @@ else
     }
 
     .paragraphs {
-        overflow-y: auto;
-        max-height: 85vh;
+        @* overflow-y: auto;
+        max-height: 85vh; *@
     }
 
     .ammendment-body {
         overflow-y: auto;
         max-height: 70vh;
+    }
+
+    .paragraph-body {
+        overflow-y: auto;
+        max-height: 65vh;
     }
 </style>
