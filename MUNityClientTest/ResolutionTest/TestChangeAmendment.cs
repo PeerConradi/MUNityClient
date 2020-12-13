@@ -13,8 +13,8 @@ namespace MUNityClientTest.ResolutionTest
         public void TestCreateInstance()
         {
             var resolution = new Resolution();
-            var operativeParagraph = resolution.CreateOperativeParagraph();
-            var changeAmendmet = resolution.CreateChangeAmendment(operativeParagraph);
+            var operativeParagraph = resolution.OperativeSection.CreateOperativeParagraph();
+            var changeAmendmet = resolution.OperativeSection.CreateChangeAmendment(operativeParagraph);
             Assert.NotNull(changeAmendmet);
             Assert.Contains(changeAmendmet, resolution.OperativeSection.ChangeAmendments);
             Assert.AreEqual(1, resolution.OperativeSection.ChangeAmendments.Count);
@@ -24,9 +24,9 @@ namespace MUNityClientTest.ResolutionTest
         public void TestRemoveAmendment()
         {
             var resolution = new Resolution();
-            var operativeParagraph = resolution.CreateOperativeParagraph();
-            var changeAmendment = resolution.CreateChangeAmendment(operativeParagraph);
-            resolution.RemoveAmendment(changeAmendment);
+            var operativeParagraph = resolution.OperativeSection.CreateOperativeParagraph();
+            var changeAmendment = resolution.OperativeSection.CreateChangeAmendment(operativeParagraph);
+            resolution.OperativeSection.RemoveAmendment(changeAmendment);
             Assert.IsFalse(resolution.OperativeSection.ChangeAmendments.Contains(changeAmendment));
         }
 
@@ -34,10 +34,10 @@ namespace MUNityClientTest.ResolutionTest
         public void TestApplyChangeAmendment()
         {
             var resolution = new Resolution();
-            var operativeParagraph = resolution.CreateOperativeParagraph("Original Text");
-            var changeAmendment = resolution.CreateChangeAmendment(operativeParagraph, "New Text");
+            var operativeParagraph = resolution.OperativeSection.CreateOperativeParagraph("Original Text");
+            var changeAmendment = resolution.OperativeSection.CreateChangeAmendment(operativeParagraph, "New Text");
             Assert.AreEqual("Original Text", operativeParagraph.Text);
-            changeAmendment.Apply(resolution);
+            changeAmendment.Apply(resolution.OperativeSection);
             Assert.AreEqual("New Text", operativeParagraph.Text);
             Assert.IsFalse(resolution.OperativeSection.ChangeAmendments.Contains(changeAmendment));
         }
@@ -46,10 +46,10 @@ namespace MUNityClientTest.ResolutionTest
         public void TestDenyChangeAmendment()
         {
             var resolution = new Resolution();
-            var operativeParagraph = resolution.CreateOperativeParagraph("Original Text");
-            var changeAmendment = resolution.CreateChangeAmendment(operativeParagraph, "New Text");
+            var operativeParagraph = resolution.OperativeSection.CreateOperativeParagraph("Original Text");
+            var changeAmendment = resolution.OperativeSection.CreateChangeAmendment(operativeParagraph, "New Text");
             Assert.AreEqual("Original Text", operativeParagraph.Text);
-            changeAmendment.Deny(resolution);
+            changeAmendment.Deny(resolution.OperativeSection);
             Assert.AreEqual("Original Text", operativeParagraph.Text);
             Assert.IsFalse(resolution.OperativeSection.ChangeAmendments.Contains(changeAmendment));
         }

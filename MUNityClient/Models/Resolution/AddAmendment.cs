@@ -23,21 +23,22 @@ namespace MUNityClient.Models.Resolution
 
         public string Text { get; set; }
 
-        public bool Apply(Resolution parentResolution)
+        public bool Apply(OperativeSection parentSection)
         {
-            var targetParagraph = parentResolution.FindOperativeParagraph(this.TargetSectionId);
+            var targetParagraph = parentSection.FindOperativeParagraph(this.TargetSectionId);
             if (targetParagraph == null)
                 return false;
 
             targetParagraph.IsVirtual = false;
             targetParagraph.Visible = true;
-            parentResolution.RemoveAmendment(this);
+            parentSection.RemoveAmendment(this);
             return true;
         }
 
-        public bool Deny(Resolution parentResolution)
+        public bool Deny(OperativeSection parentResolution)
         {
-            throw new NotImplementedException();
+            parentResolution.RemoveAmendment(this);
+            return true;
         }
     }
 }

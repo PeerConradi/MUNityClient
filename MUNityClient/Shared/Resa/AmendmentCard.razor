@@ -57,12 +57,12 @@
             this._activated = value;
             if (this.Amendment is MoveAmendment moveAmendment)
             {
-                var newParagraph = Resolution.FindOperativeParagraph(moveAmendment.NewTargetSectionId);
+                var newParagraph = Resolution.OperativeSection.FindOperativeParagraph(moveAmendment.NewTargetSectionId);
                 newParagraph.Visible = value;
             }
             else if (this.Amendment is AddAmendment addAmendment)
             {
-                var newParagraph = Resolution.FindOperativeParagraph(addAmendment.TargetSectionId);
+                var newParagraph = Resolution.OperativeSection.FindOperativeParagraph(addAmendment.TargetSectionId);
                 newParagraph.Visible = value;
             }
             Interaction.InvokeAsync(this.Amendment);
@@ -75,19 +75,19 @@
 
     public void ApplyAmendment()
     {
-        this.Amendment?.Apply(this.Resolution);
+        this.Amendment?.Apply(this.Resolution.OperativeSection);
         Interaction.InvokeAsync(this.Amendment);
     }
 
     public void DenyAmendment()
     {
-        this.Amendment?.Deny(this.Resolution);
+        this.Amendment?.Deny(this.Resolution.OperativeSection);
         Interaction.InvokeAsync(this.Amendment);
     }
 
     private void DeleteMe()
     {
-        this.Resolution.RemoveAmendment(this.Amendment);
+        this.Resolution.OperativeSection.RemoveAmendment(this.Amendment);
         Interaction.InvokeAsync(this.Amendment);
     }
 

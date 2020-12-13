@@ -14,8 +14,8 @@ namespace MUNityClientTest.ResolutionTest
         public void TestCreateInstance()
         {
             var resolution = new Resolution();
-            var operativeParagraph = resolution.CreateOperativeParagraph();
-            var amendment = resolution.CreateDeleteAmendment(operativeParagraph);
+            var operativeParagraph = resolution.OperativeSection.CreateOperativeParagraph();
+            var amendment = resolution.OperativeSection.CreateDeleteAmendment(operativeParagraph);
             Assert.NotNull(amendment);
             Assert.Contains(amendment, resolution.OperativeSection.DeleteAmendments);
             Assert.AreEqual(1, resolution.OperativeSection.DeleteAmendments.Count);
@@ -25,11 +25,11 @@ namespace MUNityClientTest.ResolutionTest
         public void TestRemoveAmendment()
         {
             var resolution = new Resolution();
-            var operativeParagraph = resolution.CreateOperativeParagraph();
-            var amendment = resolution.CreateDeleteAmendment(operativeParagraph);
+            var operativeParagraph = resolution.OperativeSection.CreateOperativeParagraph();
+            var amendment = resolution.OperativeSection.CreateDeleteAmendment(operativeParagraph);
             Assert.NotNull(amendment);
             Assert.Contains(amendment, resolution.OperativeSection.DeleteAmendments);
-            resolution.RemoveAmendment(amendment);
+            resolution.OperativeSection.RemoveAmendment(amendment);
             Assert.Contains(operativeParagraph, resolution.OperativeSection.Paragraphs);
         }
 
@@ -37,9 +37,9 @@ namespace MUNityClientTest.ResolutionTest
         public void TestApplyDeleteAmendment()
         {
             var resolution = new Resolution();
-            var operativeParagraph = resolution.CreateOperativeParagraph();
-            var amendment = resolution.CreateDeleteAmendment(operativeParagraph);
-            amendment.Apply(resolution);
+            var operativeParagraph = resolution.OperativeSection.CreateOperativeParagraph();
+            var amendment = resolution.OperativeSection.CreateDeleteAmendment(operativeParagraph);
+            amendment.Apply(resolution.OperativeSection);
             Assert.IsFalse(resolution.OperativeSection.Paragraphs.Contains(operativeParagraph));
             Assert.IsFalse(resolution.OperativeSection.DeleteAmendments.Contains(amendment));
         }
@@ -48,12 +48,12 @@ namespace MUNityClientTest.ResolutionTest
         public void TestApplyRemovesAllOtherAmendments()
         {
             var resolution = new Resolution();
-            var operativeParagraph = resolution.CreateOperativeParagraph();
-            var operativeParagraphTwo = resolution.CreateOperativeParagraph();
-            var deleteAmendment = resolution.CreateDeleteAmendment(operativeParagraph.OperativeParagraphId);
-            var changeAmendment = resolution.CreateChangeAmendment(operativeParagraph.OperativeParagraphId);
-            var moveAmendment = resolution.CreateMoveAmendment(operativeParagraph.OperativeParagraphId, 1);
-            deleteAmendment.Apply(resolution);
+            var operativeParagraph = resolution.OperativeSection.CreateOperativeParagraph();
+            var operativeParagraphTwo = resolution.OperativeSection.CreateOperativeParagraph();
+            var deleteAmendment = resolution.OperativeSection.CreateDeleteAmendment(operativeParagraph.OperativeParagraphId);
+            var changeAmendment = resolution.OperativeSection.CreateChangeAmendment(operativeParagraph.OperativeParagraphId);
+            var moveAmendment = resolution.OperativeSection.CreateMoveAmendment(operativeParagraph.OperativeParagraphId, 1);
+            deleteAmendment.Apply(resolution.OperativeSection);
             Assert.IsFalse(resolution.OperativeSection.ChangeAmendments.Any(n => n.TargetSectionId == operativeParagraph.OperativeParagraphId));
             Assert.IsFalse(resolution.OperativeSection.DeleteAmendments.Any(n => n.TargetSectionId == operativeParagraph.OperativeParagraphId));
             Assert.IsFalse(resolution.OperativeSection.MoveAmendments.Any(n => n.TargetSectionId == operativeParagraph.OperativeParagraphId));
@@ -63,10 +63,10 @@ namespace MUNityClientTest.ResolutionTest
         public void TestDenyDeleteAmendment()
         {
             var resolution = new Resolution();
-            var operativeParagraph = resolution.CreateOperativeParagraph();
-            var deleteAmendment = resolution.CreateDeleteAmendment(operativeParagraph);
-            var deleteAmendmentTwo = resolution.CreateDeleteAmendment(operativeParagraph);
-            deleteAmendment.Deny(resolution);
+            var operativeParagraph = resolution.OperativeSection.CreateOperativeParagraph();
+            var deleteAmendment = resolution.OperativeSection.CreateDeleteAmendment(operativeParagraph);
+            var deleteAmendmentTwo = resolution.OperativeSection.CreateDeleteAmendment(operativeParagraph);
+            deleteAmendment.Deny(resolution.OperativeSection);
             Assert.IsFalse(resolution.OperativeSection.DeleteAmendments.Any(n => n.TargetSectionId == operativeParagraph.OperativeParagraphId));
         }
     }

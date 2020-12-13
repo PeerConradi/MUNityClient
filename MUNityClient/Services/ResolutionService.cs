@@ -118,7 +118,6 @@ namespace MUNityClient.Services
             var resolution = await this._httpService.HttpClient.GetFromJsonAsync<Resolution>($"/api/Resolution/CreatePublic?title={title}");
             if (resolution == null)
                 return null;
-            FixResolution(resolution);
             await this.StoreResolution(resolution);
             return resolution;
         }
@@ -137,7 +136,6 @@ namespace MUNityClient.Services
             {
                 var testResolution = Mocking.Resolution.CreateTestResolution();
                 await this.StoreResolution(testResolution);
-                FixResolution(testResolution);
                 return testResolution;
             }
 
@@ -146,8 +144,6 @@ namespace MUNityClient.Services
                 var resolution = await this._httpService.HttpClient.GetFromJsonAsync<Resolution>($"/api/Resolution/GetPublic?id={id}");
                 if (resolution != null)
                 {
-                    FixResolution(resolution);
-
                     await this.StoreResolution(resolution);
                     return resolution;
                 }
@@ -159,32 +155,6 @@ namespace MUNityClient.Services
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// This is needed because when the model comes without/or with an empty Paragraph list it is set to null
-        /// and not to an empty list/array.
-        /// </summary>
-        /// <param name="resolution"></param>
-        private void FixResolution(Resolution resolution)
-        {
-            if (resolution.Header == null) resolution.Header = new ResolutionHeader();
-            if (resolution.Preamble == null) resolution.Preamble = new ResolutionPreamble();
-            if (resolution.Preamble.Paragraphs == null) resolution.Preamble.Paragraphs = new List<PreambleParagraph>();
-            if (resolution.OperativeSection == null) resolution.OperativeSection = new OperativeSection();
-            if (resolution.OperativeSection.Paragraphs == null) resolution.OperativeSection.Paragraphs = new List<OperativeParagraph>();
-            if (resolution.OperativeSection.DeleteAmendments == null) resolution.OperativeSection.DeleteAmendments = new List<DeleteAmendment>();
-            if (resolution.OperativeSection.AddAmendments == null) resolution.OperativeSection.AddAmendments = new List<AddAmendment>();
-            if (resolution.OperativeSection.MoveAmendments == null) resolution.OperativeSection.MoveAmendments = new List<MoveAmendment>();
-            if (resolution.OperativeSection.ChangeAmendments == null) resolution.OperativeSection.ChangeAmendments = new List<ChangeAmendment>();
-            resolution.OperativeSection.Paragraphs.RemoveAll(n => n == null);
-            resolution.Preamble.Paragraphs.RemoveAll(n => n == null);
-            resolution.OperativeSection.AddAmendments.RemoveAll(n => n == null);
-            resolution.OperativeSection.ChangeAmendments.RemoveAll(n => n == null);
-            resolution.OperativeSection.DeleteAmendments.RemoveAll(n => n == null);
-            resolution.OperativeSection.MoveAmendments.RemoveAll(n => n == null);
-            // Set the text to empty string if it is null.
-            resolution.OperativeSection.Paragraphs.ForEach(n => n.Text = n.Text ?? "");
         }
 
         /// <summary>

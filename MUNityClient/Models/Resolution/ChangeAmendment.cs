@@ -21,18 +21,18 @@ namespace MUNityClient.Models.Resolution
         public string Type { get; set; }
         public string NewText { get; set; }
 
-        public bool Apply(Resolution parentResolution)
+        public bool Apply(OperativeSection parentSection)
         {
-            parentResolution.OperativeSection.ChangeAmendments.Remove(this);
-            var target = parentResolution.FindOperativeParagraph(this.TargetSectionId);
+            parentSection.ChangeAmendments.Remove(this);
+            var target = parentSection.FindOperativeParagraph(this.TargetSectionId);
             if (target == null) return false;
             target.Text = this.NewText;
             return true;
         }
 
-        public bool Deny(Resolution parentResolution)
+        public bool Deny(OperativeSection parentSection)
         {
-            parentResolution.OperativeSection.ChangeAmendments.Remove(this);
+            parentSection.ChangeAmendments.Remove(this);
             return true;
         }
     }

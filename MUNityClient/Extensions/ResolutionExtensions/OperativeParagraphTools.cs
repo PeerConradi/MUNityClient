@@ -8,17 +8,17 @@ namespace MUNityClient.Extensions.ResolutionExtensions
 {
     public static class OperativeParagraphTools
     {
-        public static OperativeParagraph CreateOperativeParagraph(this Resolution resolution, string text = "")
+        public static OperativeParagraph CreateOperativeParagraph(this OperativeSection section, string text = "")
         {
             var paragraph = new OperativeParagraph();
             paragraph.Text = text;
-            resolution.OperativeSection.Paragraphs.Add(paragraph);
+            section.Paragraphs.Add(paragraph);
             return paragraph;
         }
 
-        public static OperativeParagraph CreateChildParagraph(this Resolution resolution, string parentId, string text = "")
+        public static OperativeParagraph CreateChildParagraph(this OperativeSection section, string parentId, string text = "")
         {
-            var parentParagraph = resolution.FindOperativeParagraph(parentId);
+            var parentParagraph = section.FindOperativeParagraph(parentId);
             if (parentParagraph == null)
                 throw new Exceptions.Resolution.OperativeParagraphNotFoundException();
 
@@ -28,31 +28,12 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             return newParagraph;
         }
 
-        public static OperativeParagraph CreateChildParagraph(this Resolution resolution, OperativeParagraph parent, string text = "") 
-            => resolution.CreateChildParagraph(parent.OperativeParagraphId, text);
+        public static OperativeParagraph CreateChildParagraph(this OperativeSection section, OperativeParagraph parent, string text = "") 
+            => section.CreateChildParagraph(parent.OperativeParagraphId, text);
 
-        public static OperativeParagraph FindOperativeParagraph(this Resolution resolution, string id)
+        public static OperativeParagraph FindOperativeParagraph(this OperativeSection section, string id)
         {
-            foreach (var paragraph in resolution.OperativeSection.Paragraphs)
-            {
-                var result = FindOperativeParagraphRecursive(paragraph, id);
-                if (result != null) return result;
-            }
-            return null;
-        }
-
-        private static OperativeParagraph FindOperativeParagraphRecursive(OperativeParagraph paragraph, string targetId)
-        {
-            if (paragraph.OperativeParagraphId == targetId) return paragraph;
-            if (paragraph.Children != null && paragraph.Children.Any())
-            {
-                foreach (var child in paragraph.Children)
-                {
-                    var result = FindOperativeParagraphRecursive(child, targetId);
-                    if (result != null) return result;
-                }
-            }
-            return null;
+            return section.FirstOrDefault(n => n.OperativeParagraphId == id);
         }
 
         private static OperativeParagraph FindOperativeParagraphPathRecursive(OperativeParagraph paragraph, string targetId, List<OperativeParagraph> path)
@@ -78,10 +59,10 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             return null;
         }
 
-        public static List<OperativeParagraph> GetOperativeParagraphPath(this Resolution resolution, string id)
+        public static List<OperativeParagraph> GetOperativeParagraphPath(this OperativeSection section, string id)
         {
             var path = new List<OperativeParagraph>();
-            foreach (var paragraph in resolution.OperativeSection.Paragraphs)
+            foreach (var paragraph in section.Paragraphs)
             {
                 var result = FindOperativeParagraphPathRecursive(paragraph, id, path);
                 if (result != null)
@@ -93,14 +74,14 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             return null;
         }
 
-        public static void RemoveOperativeParagraph(this Resolution resolution, OperativeParagraph paragraph)
+        public static void RemoveOperativeParagraph(this OperativeSection section, OperativeParagraph paragraph)
         {
-            var path = resolution.GetOperativeParagraphPath(paragraph.OperativeParagraphId);
+            var path = section.GetOperativeParagraphPath(paragraph.OperativeParagraphId);
             if (!path.Any())
                 throw new Exceptions.Resolution.OperativeParagraphNotFoundException();
             if (path.Count == 1)
             {
-                resolution.OperativeSection.Paragraphs.Remove(paragraph);
+                section.Paragraphs.Remove(paragraph);
             }
             else
             {
@@ -108,9 +89,9 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             }
 
             // TODO: Remove all Amendments of this paragraph and all its child paragraphs!
-            foreach (var amendment in resolution.OperativeSection.AddAmendments.Where(n => n.TargetSectionId == paragraph.OperativeParagraphId))
+            foreach (var amendment in section.AddAmendments.Where(n => n.TargetSectionId == paragraph.OperativeParagraphId))
             {
-                resolution.RemoveAmendment(amendment);
+                section.RemoveAmendment(amendment);
             }
         }
 
@@ -150,16 +131,16 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             }
         }
 
-        public static int InsertIntoRealPosition(this Resolution resolution, OperativeParagraph paragraph, int targetIndex, OperativeParagraph parentParagraph)
+        public static int InsertIntoRealPosition(this OperativeSection section, OperativeParagraph paragraph, int targetIndex, OperativeParagraph parentParagraph)
         {
             if (parentParagraph == null)
             {
-                if (targetIndex > resolution.OperativeSection.Paragraphs.Count) targetIndex = resolution.OperativeSection.Paragraphs.Count;
-                resolution.OperativeSection.Paragraphs.Insert(targetIndex, paragraph);
+                if (targetIndex > section.Paragraphs.Count) targetIndex = section.Paragraphs.Count;
+                section.Paragraphs.Insert(targetIndex, paragraph);
             }
             else
             {
-                if (resolution.FindOperativeParagraph(parentParagraph.OperativeParagraphId) == null)
+                if (section.FindOperativeParagraph(parentParagraph.OperativeParagraphId) == null)
                     throw new Exceptions.Resolution.OperativeParagraphNotFoundException("Target parent Paragraph not found in this Resolution");
 
                 parentParagraph.Children.Insert(targetIndex, paragraph);
@@ -173,16 +154,16 @@ namespace MUNityClient.Extensions.ResolutionExtensions
         /// </summary>
         /// <param name="paragraph"></param>
         /// <returns></returns>
-        public static string GetIndexNameOfOperativeParagraph(this Resolution resolution, string paragraphId)
+        public static string GetIndexNameOfOperativeParagraph(this OperativeSection section, string paragraphId)
         {
-            var path = resolution.GetOperativeParagraphPath(paragraphId);
+            var path = section.GetOperativeParagraphPath(paragraphId);
             var numbers = new List<int>();
             OperativeParagraph parent = null;
             foreach (var paragraph in path)
             {
                 if (parent == null)
                 {
-                    numbers.Add(resolution.OperativeSection.Paragraphs.Where(n => !n.IsVirtual).ToList().IndexOf(paragraph));
+                    numbers.Add(section.Paragraphs.Where(n => !n.IsVirtual).ToList().IndexOf(paragraph));
                 }
                 else
                 {
@@ -193,27 +174,67 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             return Conversion.ToPathname(numbers.ToArray());
         }
 
-        public static int IndexOfParagraph(this Resolution resolution, OperativeParagraph paragraph)
+        public static int IndexOfParagraph(this OperativeSection section, OperativeParagraph paragraph)
         {
-            int index = resolution.OperativeSection.Paragraphs.IndexOf(paragraph);
+            int index = section.Paragraphs.IndexOf(paragraph);
             if (index != -1) return index;
-            var path = resolution.GetOperativeParagraphPath(paragraph.OperativeParagraphId);
+            var path = section.GetOperativeParagraphPath(paragraph.OperativeParagraphId);
             var parentElement = path[path.Count - 1];
             return parentElement.Children.IndexOf(paragraph);
         }
 
         
 
-        public static List<string> GetAllOperativeParagraphIds(this Resolution resolution)
+        public static List<string> GetAllOperativeParagraphIds(this OperativeSection section)
         {
             var list = new List<string>();
-            list.AddRange(resolution.OperativeSection.Paragraphs.Select(n => n.OperativeParagraphId));
-            resolution.OperativeSection.Paragraphs.ForEach(n => AddAllChildrenRecursive(n, list));
+            list.AddRange(section.Paragraphs.Select(n => n.OperativeParagraphId));
+            section.Paragraphs.ForEach(n => AddAllChildrenRecursive(n, list));
             return list;
         }
 
+        public static List<OperativeParagraph> WhereParagraph(this OperativeSection operativeSection, Func<OperativeParagraph, bool> predicate)
+        {
+            var list = new List<OperativeParagraph>();
+            list.AddRange(operativeSection.Paragraphs.Where(predicate));
+            operativeSection.Paragraphs.ForEach(n => deepWhere(n, predicate, list));
+            return list;
+        }
+
+        private static void deepWhere(OperativeParagraph parentParagraph, Func<OperativeParagraph, bool> predicate, List<OperativeParagraph> resultList)
+        {
+            if (parentParagraph.Children != null && parentParagraph.Children.Any())
+            {
+                resultList.AddRange(parentParagraph.Children.Where(predicate));
+                parentParagraph.Children.ForEach(n => deepWhere(n, predicate, resultList));
+            }
+        }
+
+        public static OperativeParagraph FirstOrDefault(this OperativeSection operativeSection, Func<OperativeParagraph, bool> predicate)
+        {
+            var result = operativeSection.Paragraphs.FirstOrDefault(predicate);
+            if (result != null) return result;
+            foreach(var s in operativeSection.Paragraphs)
+            {
+                result = deepFirstOrDefault(s, predicate);
+                if (result != null) return result;
+            }
+            return null;
+        }
+
+        private static OperativeParagraph deepFirstOrDefault(this OperativeParagraph paragraph, Func<OperativeParagraph, bool> predicate)
+        {
+            var result = paragraph.Children.FirstOrDefault(predicate);
+            if (result != null) return result;
+            foreach(var child in paragraph.Children)
+            {
+                return deepFirstOrDefault(child, predicate);
+            }
+            return null;
+        }
+
         #region function linking
-            public static string GetIndexNameOfOperativeParagraph(this Resolution resolution, OperativeParagraph paragraph) => resolution.GetIndexNameOfOperativeParagraph(paragraph.OperativeParagraphId);
+            public static string GetIndexNameOfOperativeParagraph(this OperativeSection section, OperativeParagraph paragraph) => section.GetIndexNameOfOperativeParagraph(paragraph.OperativeParagraphId);
         #endregion
 
         #region internal
