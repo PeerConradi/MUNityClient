@@ -23,7 +23,7 @@
     if (this.SyncMode == SyncModes.Offline || this.SyncMode == SyncModes.ErrorWhenSyncing)
     {
         <div class="row d-flex justify-content-center my-1 align-items-center">
-            <div class="col-6 alert alert-warning alert-dismissible my-0">
+            <div class="col-8 alert alert-warning alert-dismissible my-0">
                 <b>Die Resolution wird nicht an den Server übertragen und ist lediglich offline im Speicher des Browsers gespeichert.</b>
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -107,20 +107,19 @@
                                 }
                                 else
                                 {
-                                    <div class="col-12">
+                                    <div class="col-12 my-3">
                                         @{
                                             var moveParent = this.Resolution.OperativeSection.MoveAmendments.FirstOrDefault(n => n.NewTargetSectionId == operative.OperativeParagraphId);
-
                                         }
 
                                         @if (operative.Visible)
                                         {
-                                            <div class="alert alert-primary">
-                                                An dieser Stelle ist ein eingeblendeter Virtueller Absatz
+                                            <div class="alert alert-primary m-0">
+                                                An dieser Stelle ist ein eingeblendeter Virtueller Absatz.
                                                 @if (moveParent != null)
                                                 {
                                                     var sourceParagraph = Resolution.OperativeSection.GetIndexNameOfOperativeParagraph(moveParent.TargetSectionId);
-                                                    <span>Der Absatz @sourceParagraph soll an diese Stelle geschoben werden.</span>
+                                                    <span>Der Absatz <span class="">@sourceParagraph</span> soll an diese Stelle geschoben werden.</span>
                                                 }
                                                 else
                                                 {
@@ -131,7 +130,7 @@
                                         }
                                         else
                                         {
-                                            <div class="alert alert-secondary mt-2"> An dieser Stelle ist ein ausgelbendeter Virtueller Absatz</div>
+                                            <div class="alert alert-secondary mt-2"> An dieser Stelle ist ein ausgeblendeter, virtueller Absatz</div>
                                         }
 
                                     </div>
@@ -150,7 +149,7 @@
         </div>
 
         <!-- Amendments -->
-        <div class="col-lg-4">
+        <div class="col-lg-4 p-1">
             <div class="card m-1">
                 <div class="card-header">
                     <h3>Änderungsanträge</h3>
@@ -560,6 +559,7 @@ else
 
     .paragraph-body {
         overflow-y: auto;
-        max-height: 65vh;
+        @(this.SyncMode == SyncModes.Offline || this.SyncMode == SyncModes.ErrorWhenSyncing ? "max-height: 54vh;" : "max-height: 65vh;")
+        
     }
 </style>
