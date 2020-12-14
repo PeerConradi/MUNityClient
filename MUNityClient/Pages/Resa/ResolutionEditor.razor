@@ -29,8 +29,13 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <button type="button col-2" class="btn btn-success" alt="Retry connection"><i class="fas fa-redo"></i></button>
-            <button type="button col-2" class="btn btn-primary" alt="Download resolution"><i class="fas fa-arrow-down"></i></button>
+            @* TODO: Bekommen wir hier Tooltip dran für "Erneut Versuchen" und Download *@
+            @if (this.SyncMode == SyncModes.ErrorWhenSyncing)
+            {
+                <button type="button" class="btn btn-success col-2" alt="Retry connection"><i class="fas fa-redo"></i></button>
+            }
+
+            <button type="button" class="btn btn-primary col-2" alt="Download resolution"><i class="fas fa-arrow-down"></i></button>
         </div>
     }
     else if (this.SyncMode == SyncModes.PingingServer)
@@ -227,6 +232,15 @@ else
     [Parameter]
     public string Id { get; set; }
 
+    private enum SyncModes
+    {
+        PingingServer,
+        Offline,
+        OnlineButNotSyncing,
+        Syncing,
+        Updated,
+        ErrorWhenSyncing
+    }
 
     private MUNityClient.Shared.Bootstrap.Modal AddAmendmentModal { get; set; }
     private MUNityClient.Shared.Bootstrap.Modal DeletePreambleParagraphModal { get; set; }
@@ -240,60 +254,134 @@ else
     private Boolean operativeExpandingState = true;
     private Boolean amendmentExpandingState = true;
 
-    private enum SyncModes
-    {
-        PingingServer,
-        Offline,
-        OnlineButNotSyncing,
-        Syncing,
-        Updated,
-        ErrorWhenSyncing
-    }
+    private System.Timers.Timer _updateTimer = new System.Timers.Timer(3000);
+
+    private List<PreambleParagraph> _preambleParagraphsToUpdate = new List<PreambleParagraph>();
+    private List<OperativeParagraph> _operativeParagraphsToUpdate = new List<OperativeParagraph>();
+    private bool fullUpdate = false;
+
+    private Services.SocketHandlers.ResaSocketHandler _socketHandler;
 
     private SyncModes SyncMode = SyncModes.PingingServer;
-
-    public ResolutionEditor()
-    {
-
-    }
 
     protected override async Task OnInitializedAsync()
     {
         // Get the resolution from any source (local or online)
         this.Resolution = await this.resolutionService.GetResolution(Id);
-
+        _updateTimer.Elapsed += UpdateTimerElapsed;
         if (Resolution != null)
         {
-            // Das ganze kann im Hintergrund stattfinden und solange kann
-            // Der Benutzer schon einmal arbeiten, denn die Resolution ist ja auf die eine
-            // oder anderer Weise rein gekommen (offline oder online)
-            _ = this.resolutionService.IsOnline().ContinueWith(async (result) =>
+            CheckResolutionOnline();
+            AppendEvents();
+        }
+    }
+
+    private void CheckResolutionOnline()
+    {
+        // Das ganze kann im Hintergrund stattfinden und solange kann
+        // Der Benutzer schon einmal arbeiten, denn die Resolution ist ja auf die eine
+        // oder anderer Weise rein gekommen (offline oder online)
+        _ = this.resolutionService.IsOnline().ContinueWith(async (result) =>
+        {
+            if (result.Result == true)
             {
-                if (result.Result == true)
+                var canEdit = await this.resolutionService.CanEditResolution(this.Resolution.ResolutionId);
+                if (!canEdit)
                 {
-                    var canEdit = await this.resolutionService.CanEditResolution(this.Resolution.ResolutionId);
-                    if (!canEdit)
-                    {
-                        this.SyncMode = SyncModes.OnlineButNotSyncing;
-                    }
-                    else
-                    {
-                        // Reload Resolution because the one in the local storage may be outdated!
-                        this.Resolution = await resolutionService.GetResolutionFromServer(Id);
-                        this.SyncMode = SyncModes.Updated;
-                        var signalRHub = await this.resolutionService.Subscribe(this.Resolution);
-                        AppendEvents();
-                    }
+                    this.SyncMode = SyncModes.OnlineButNotSyncing;
                 }
                 else
                 {
-                    this.SyncMode = SyncModes.Offline;
+                    // Reload Resolution because the one in the local storage may be outdated!
+                    this.Resolution = await resolutionService.GetResolutionFromServer(Id);
+                    this.SyncMode = SyncModes.Updated;
+                    this._socketHandler = await this.resolutionService.Subscribe(this.Resolution);
+                    AppendEvents();
                 }
-                this.StateHasChanged();
-            });
+            }
+            else
+            {
+                this.SyncMode = SyncModes.Offline;
+            }
+            this.StateHasChanged();
+        });
+    }
 
-            AppendEvents();
+    private async void UpdateTimerElapsed(object timer, System.Timers.ElapsedEventArgs args)
+    {
+        SyncMode = SyncModes.Syncing;
+        this.StateHasChanged();
+
+        bool somethingErrored = false;
+
+        if (!fullUpdate)
+        {
+            // Update Preamble
+            if (_preambleParagraphsToUpdate.Any())
+            {
+                _preambleParagraphsToUpdate.ForEach(async n =>
+                {
+                    var tan = this.resolutionService.GenerateTan();
+                    _socketHandler.IgnoreTransactions.Add(tan);
+                    var result = await this.resolutionService.UpdateResolutionPreambleParagraph(this.Resolution.ResolutionId, n, tan);
+                    if (!result.IsSuccessStatusCode) somethingErrored = true;
+                });
+            }
+
+            // Update Operative Section
+            if (_operativeParagraphsToUpdate.Any())
+            {
+                _operativeParagraphsToUpdate.ForEach(async n =>
+                {
+                    var tan = this.resolutionService.GenerateTan();
+                    _socketHandler.IgnoreTransactions.Add(tan);
+                    var result = await this.resolutionService.UpdateResolutionOperativeParagraph(this.Resolution.ResolutionId, n, tan);
+                    if (!result.IsSuccessStatusCode) somethingErrored = true;
+                });
+            }
         }
+        else
+        {
+            var result = await this.resolutionService.SyncResolutionWithServer(this.Resolution);
+            if (!result) somethingErrored = true;
+        }
+        this._operativeParagraphsToUpdate.Clear();
+        this._preambleParagraphsToUpdate.Clear();
+        fullUpdate = false;
+
+        if (somethingErrored)
+            this.SyncMode = SyncModes.ErrorWhenSyncing;
+        else
+            this.SyncMode = SyncModes.Updated;
+
+        this.StateHasChanged();
+        this._updateTimer.Stop();
+    }
+
+    private void QueueSyncing(PreambleParagraph paragraph)
+    {
+        if (!this._preambleParagraphsToUpdate.Contains(paragraph))
+            this._preambleParagraphsToUpdate.Add(paragraph);
+
+        if (!this._updateTimer.Enabled)
+            this._updateTimer.Start();
+    }
+
+    private void QueueSyncing(OperativeParagraph paragraph)
+    {
+        if (!this._operativeParagraphsToUpdate.Contains(paragraph))
+            this._operativeParagraphsToUpdate.Add(paragraph);
+
+        if (!this._updateTimer.Enabled)
+            this._updateTimer.Start();
+    }
+
+    private void QueueSyncAll()
+    {
+        this.fullUpdate = true;
+
+        if (!this._updateTimer.Enabled)
+            this._updateTimer.Start();
     }
 
     private void AppendEvents()
@@ -310,16 +398,12 @@ else
         });
     }
 
-    private async void PreambleTextChanged(PreambleParagraph sender, string oldText, string newText)
+    private void PreambleTextChanged(PreambleParagraph sender, string oldText, string newText)
     {
         this.Resolution.Date = DateTime.Now;
         if (SyncMode == SyncModes.Syncing || SyncMode == SyncModes.Updated)
         {
-            var result = await this.resolutionService.UpdateResolutionPreambleParagraph(this.Resolution.ResolutionId, sender);
-            if (result.IsSuccessStatusCode)
-                SyncMode = SyncModes.Updated;
-            else
-                SyncMode = SyncModes.ErrorWhenSyncing;
+            QueueSyncing(sender);
         }
         else if (SyncMode == SyncModes.Offline)
         {
@@ -328,14 +412,12 @@ else
         this.StateHasChanged();
     }
 
-    private async void OperativeTextChanged(OperativeParagraph sender, string oldText, string newText)
+    private void OperativeTextChanged(OperativeParagraph sender, string oldText, string newText)
     {
         this.Resolution.Date = DateTime.Now;
         if (SyncMode == SyncModes.Syncing || SyncMode == SyncModes.Updated)
         {
-            SyncMode = SyncModes.Syncing;
-            await this.resolutionService.UpdateResolutionOperativeParagraph(this.Resolution.ResolutionId, sender);
-            SyncMode = SyncModes.Updated;
+            QueueSyncing(sender);
         }
         else if (SyncMode == SyncModes.Offline)
         {
@@ -344,13 +426,12 @@ else
         this.StateHasChanged();
     }
 
-    private async void OperativeNoticesChanged(OperativeParagraph sender)
+    private void OperativeNoticesChanged(OperativeParagraph sender)
     {
         this.Resolution.Date = DateTime.Now;
         if (SyncMode == SyncModes.Syncing || SyncMode == SyncModes.Updated)
         {
-            await this.resolutionService.UpdateResolutionOperativeParagraph(this.Resolution.ResolutionId, sender);
-            SyncMode = SyncModes.Updated;
+            QueueSyncing(sender);
         }
         else if (SyncMode == SyncModes.Offline)
         {
@@ -359,14 +440,12 @@ else
         this.StateHasChanged();
     }
 
-    private async void PreambleNoticesChanged(PreambleParagraph sender)
+    private void PreambleNoticesChanged(PreambleParagraph sender)
     {
         this.Resolution.Date = DateTime.Now;
         if (SyncMode == SyncModes.Syncing || SyncMode == SyncModes.Updated)
         {
-            SyncMode = SyncModes.Syncing;
-            await this.resolutionService.UpdateResolutionPreambleParagraph(this.Resolution.ResolutionId, sender);
-            SyncMode = SyncModes.Updated;
+            QueueSyncing(sender);
         }
         else if (SyncMode == SyncModes.Offline)
         {
@@ -375,21 +454,11 @@ else
         this.StateHasChanged();
     }
 
-    private async void SaveResolution()
+    private void SaveResolution()
     {
         if (SyncMode == SyncModes.Syncing || SyncMode == SyncModes.Updated)
         {
-            SyncMode = SyncModes.Syncing;
-            this.StateHasChanged();
-            var result = await this.resolutionService.SyncResolutionWithServer(this.Resolution);
-            if (result)
-            {
-                SyncMode = SyncModes.Updated;
-            }
-            else
-            {
-                SyncMode = SyncModes.ErrorWhenSyncing;
-            }
+            QueueSyncAll();
         }
         else if (SyncMode == SyncModes.Offline)
         {

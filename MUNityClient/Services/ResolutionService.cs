@@ -182,18 +182,18 @@ namespace MUNityClient.Services
             return await this._localStorage.GetItemAsync<Resolution>(GetResolutionLocalStorageName(id));
         }
 
-        public async Task<HttpResponseMessage> UpdateResolutionPreambleParagraph(string resolutionid, PreambleParagraph paragraph)
+        public async Task<HttpResponseMessage> UpdateResolutionPreambleParagraph(string resolutionid, PreambleParagraph paragraph, string tan)
         {
             var client = await this._httpService.GetAuthClient();
             var content = JsonContent.Create(paragraph);
-            return await client.PatchAsync($"/api/Resolution/UpdatePreambleParagraph?resolutionid={resolutionid}", content);
+            return  await client.PatchAsync($"/api/Resolution/UpdatePreambleParagraph?resolutionid={resolutionid}&tan={tan}", content);
         }
 
-        public async Task<HttpResponseMessage> UpdateResolutionOperativeParagraph(string resolutionid, OperativeParagraph paragraph)
+        public async Task<HttpResponseMessage> UpdateResolutionOperativeParagraph(string resolutionid, OperativeParagraph paragraph, string tan)
         {
             var client = await this._httpService.GetAuthClient();
             var content = JsonContent.Create(paragraph);
-            return await client.PatchAsync($"/api/Resolution/UpdateOperativeParagraph?resolutionid={resolutionid}", content);
+            return await client.PatchAsync($"/api/Resolution/UpdateOperativeParagraph?resolutionid={resolutionid}&tan={tan}", content);
         }
 
         public async void SaveOfflineResolution(Resolution resolution)
@@ -201,57 +201,26 @@ namespace MUNityClient.Services
             await this.StoreResolution(resolution);
         }
 
+        public string GenerateTan()
+        {
+            var chars = "abcdefghjklmopqrstuvwxyz0123456789";
+            string tan = "";
+            var rnd = new Random();
+            for (int i=0;i<5;i++)
+            {
+                tan += chars[rnd.Next(0, chars.Length)];
+            }
+            return tan;
+        }
+
         #region SignalR WebSocket
 
-        public async Task<HubConnection> Subscribe(Resolution resolution)
+        public async Task<SocketHandlers.ResaSocketHandler> Subscribe(Resolution resolution)
         {
-            var hub = new HubConnectionBuilder().WithUrl($"{Program.API_URL}/resasocket").Build();
-
-            hub.On<Resolution>("ResolutionChanged", (newResolution) => SocketResolutionChanged(resolution, newResolution));
-            hub.On<string, PreambleParagraph>("PreambleParagraphChanged", (resolutionId, paragraph) => SocketPreambleParagraphChanged(resolution, resolutionId, paragraph));
-            hub.On<string, OperativeParagraph>("OperativeParagraphChanged", (resolutionId, paragraph) => SocketOperativeParagraphChanged(resolution, resolutionId, paragraph));
-
-            await hub.StartAsync();
-            await this._httpService.HttpClient.GetAsync($"/api/Resolution/SubscribeToResolution?resolutionid={resolution.ResolutionId}&connectionid={hub.ConnectionId}");
-            return hub;
-        }
-
-
-        private async Task SocketResolutionChanged(Resolution targetResolution, Resolution newResolution)
-        {
-            if (newResolution.ResolutionId != targetResolution.ResolutionId) return;
-
-            targetResolution.Preamble = newResolution.Preamble ?? new ResolutionPreamble();
-            if (targetResolution.OperativeSection != null && newResolution.OperativeSection != null)
-            {
-                Console.WriteLine("Operative Paragraph changed");
-                targetResolution.OperativeSection.Paragraphs = newResolution.OperativeSection.Paragraphs ?? new List<OperativeParagraph>();
-            }
-            targetResolution.Header = newResolution.Header ?? new ResolutionHeader();
-
-            await StoreResolution(targetResolution);
-        }
-
-        private void SocketPreambleParagraphChanged(Resolution targetResolution, string resolutionId, PreambleParagraph newParagraph)
-        {
-            if (resolutionId == targetResolution.ResolutionId)
-            {
-                var targetParagraph = targetResolution.Preamble.Paragraphs.FirstOrDefault(n => n.PreambleParagraphId == newParagraph.PreambleParagraphId);
-                if (targetParagraph != null)
-                {
-                    targetParagraph.Text = newParagraph.Text;
-                    targetParagraph.Notices = newParagraph.Notices;
-                }
-            }
-        }
-
-        private void SocketOperativeParagraphChanged(Resolution targetREsolution, string resolutionId, OperativeParagraph changedParagraph)
-        {
-            if (resolutionId != targetREsolution.ResolutionId) return;
-            var paragraph = targetREsolution.OperativeSection.Paragraphs.FirstOrDefault(n => n.OperativeParagraphId == changedParagraph.OperativeParagraphId);
-            if (paragraph == null) return;
-            paragraph.Text = changedParagraph.Text;
-            paragraph.Notices = changedParagraph.Notices;
+            var handler = await SocketHandlers.ResaSocketHandler.CreateHandler(resolution);
+            var connId = handler.HubConnection.ConnectionId;
+            await this._httpService.HttpClient.GetAsync($"/api/Resolution/SubscribeToResolution?resolutionid={resolution.ResolutionId}&connectionid={connId}");
+            return handler;
         }
 
         #endregion
