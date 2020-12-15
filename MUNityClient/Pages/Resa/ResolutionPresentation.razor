@@ -66,6 +66,7 @@ else
                         this.Resolution = await this.resolutionService.GetResolutionFromServer(Id);
 
                         var socket = await this.resolutionService.Subscribe(resolution);
+                        socket.ResolutionChanged += SocketResolutionHasChanged;
                         this.SyncMode = SyncModes.FromServer;
                     }
                 }
@@ -76,6 +77,15 @@ else
                 }
                 this.StateHasChanged();
             });
+        }
+    }
+
+    private void SocketResolutionHasChanged(Resolution resolution)
+    {
+        if (resolution.ResolutionId == this.Resolution.ResolutionId)
+        {
+            this.Resolution = resolution;
+            this.StateHasChanged();
         }
     }
 

@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MUNityClient.Models.ListOsSpeakers;
+using MUNityClient.Models.ListOfSpeakers;
 using Microsoft.JSInterop;
 
 namespace MUNityClient.Services

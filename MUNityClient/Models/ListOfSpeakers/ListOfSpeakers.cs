@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MUNityClient.Models.ListOsSpeakers
+namespace MUNityClient.Models.ListOfSpeakers
 {
     public class ListOfSpeakers
     {
