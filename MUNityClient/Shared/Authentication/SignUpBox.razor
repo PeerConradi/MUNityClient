@@ -1,47 +1,83 @@
 ﻿@inject MUNityClient.Services.UserService userService;
 
-<h3>SignUpBox</h3>
-<EditForm Model="@this.Request" OnSubmit="@Register">
-    <label>Benutzername</label>
-    <InputText @bind-Value="this.Request.Username" />
 
-    <label>Vorname</label>
-    <InputText @bind-Value="this.Request.Forename" />
+<EditForm Model="@this.Request" OnSubmit="@Register" class="text-center border border-light p-5">
+    <p class="h4 mb-4">Registrieren</p>
 
-    <label>Nachname</label>
-    <InputText @bind-Value="this.Request.Lastname" />
 
-    <label>E-Mail</label>
-    <InputText @bind-Value="this.Request.Mail" />
-
-    <label>Geburtstag</label>
-    <InputDate @bind-Value="this.Request.Birthday" />
-
-    <label>Passwort</label>
-    <InputText type="password" @bind-Value="this.Request.Password" />
-
-    <label>Passwort wiederholen</label>
-    <InputText type="password" @bind-Value="this.RepeatPassword" />
-
-    @if (this.RegisterState != ERegisterState.InProgress)
-    {
-        <button type="submit">Account erstellen</button>
-    }
-
-</EditForm>
-
-@if (this.RegisterState == ERegisterState.Failed)
+    @if (this.RegisterState == ERegisterState.Failed)
 {
-    <p>Fehler bei der Registrierung.</p>
+    <div class="alert alert-danger" role="alert">
+         Fehler bei der Registrierung.
+    </div>
 }
 else if (this.RegisterState == ERegisterState.Success)
 {
-    <p>Registrierung erfolgreich</p>
+    <div class="alert alert-success" role="alert">
+         Registrierung erfolgreich
+    </div>
 }
 else if (this.RegisterState == ERegisterState.PasswordsDontMatch)
 {
-    <p>Die eingegebenen Passwörter stimmen nicht überein!</p>
+    <div class="alert alert-danger" role="alert">
+         Die eingegebenen Passwörter stimmen nicht überein!
+    </div>
 }
+
+
+    <div class="form-row mb-4">
+        <div class="col">
+            <InputText @bind-Value="this.Request.Username" class="form-control" placeholder="Nutzername" />
+        </div>
+    </div>
+
+    <div class="form-row mb-4">
+        <div class="col">
+            <InputText @bind-Value="this.Request.Forename" class="form-control" placeholder="Vorname" />
+        </div>
+        <div class="col">
+            <InputText @bind-Value="this.Request.Lastname" class="form-control" placeholder="Nachname" />
+        </div>
+    </div>
+
+    <div class="form-row mb-4">
+        <div class="col">
+            <InputDate @bind-Value="this.Request.Birthday" class="form-control" placeholder="Geburtstag" />
+        </div>
+    </div>
+
+    <InputText @bind-Value="this.Request.Mail" type="email" class="form-control mb-4" placeholder="E-mail" />
+
+
+    <InputText type="password" @bind-Value="this.Request.Password" class="form-control custom-pass-top"
+        placeholder="Passwort" aria-describedby="defaultRegisterFormPasswordHelpBlock" />
+    <InputText type="password" @bind-Value="this.RepeatPassword" class="form-control custom-pass-bottom"
+        placeholder="Passwort bestätigen" aria-describedby="defaultRegisterFormPasswordHelpBlock" />
+        @if (this.Request.Password != this.RepeatPassword && this.Request.Password != "")
+        {
+        <small class="text-danger">Die Passwörter stimmen nicht überein!</small>
+        }
+    @* TODO: Pass min requirements?
+        <small id="defaultRegisterFormPasswordHelpBlock" class="form-text text-muted mb-4">
+        At least 8 characters and 1 digit
+        </small>
+    *@
+
+
+    <button class="btn btn-info my-4 btn-block" type="submit">
+        <div class="d-flex align-items-center justify-content-center">
+            Registrieren
+
+            @if (this.RegisterState == ERegisterState.InProgress)
+                {
+                    <div class="ml-2 spinner-border" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                }
+            </div>
+        </button>
+
+    </EditForm>
 
 @code {
     public MUNityClient.Models.User.RegisterRequest Request { get; set; } = new Models.User.RegisterRequest();
@@ -78,3 +114,17 @@ else if (this.RegisterState == ERegisterState.PasswordsDontMatch)
         this.RegisterState = ERegisterState.Failed;
     }
 }
+
+
+<style>
+    .custom-pass-top {
+        border-bottom-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+    }
+
+    .custom-pass-bottom {
+        border-top-left-radius: 0px;
+        border-top-right-radius: 0px;
+        border-top-width: 0px;
+    }
+</style>

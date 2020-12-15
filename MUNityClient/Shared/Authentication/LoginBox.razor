@@ -4,7 +4,7 @@
 
 <EditForm Model="@this.Request" OnSubmit="@Login" class="text-center border border-light p-5">
     <p class="h4 mb-4">Login</p>
-    <InputText @bind-Value="this.Request.Username" placeholder="Username" class="form-control mb-4" />
+    <InputText @bind-Value="this.Request.Username" placeholder="Nutzername" class="form-control mb-4" />
     <InputText type="password" class="form-control mb-4" @bind-Value="this.Request.Password" placeholder="Passwort" />
 
     <div class="d-flex justify-content-around">
