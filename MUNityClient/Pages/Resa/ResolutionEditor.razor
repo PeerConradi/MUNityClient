@@ -336,6 +336,7 @@ else
                     this.Resolution = await resolutionService.GetResolutionFromServer(Id);
                     this.SyncMode = SyncModes.Updated;
                     this._socketHandler = await this.resolutionService.Subscribe(this.Resolution);
+                    this._socketHandler.ResolutionChanged += ResolutionChangedInSocket;
                     AppendEvents();
                 }
             }
@@ -345,6 +346,12 @@ else
             }
             this.StateHasChanged();
         });
+    }
+
+    private void ResolutionChangedInSocket(Resolution resolution)
+    {
+        this.Resolution = resolution;
+        this.StateHasChanged();
     }
 
     private async void UpdateTimerElapsed(object timer, System.Timers.ElapsedEventArgs args)

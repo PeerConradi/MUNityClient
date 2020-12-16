@@ -26,13 +26,20 @@ else if (Status == EStatus.Allowed)
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <MUNityClient.Shared.Resa.NewAmendmentForm Resolution="_resolution"  @ref="NewAmendmentForm"></MUNityClient.Shared.Resa.NewAmendmentForm>
+                        @* Der ganze Kram kann am Ende in den Presentation Mode wandern, wenn dort der Schalter  für "Beameransicht/Leseansicht" existiert. *@
+                        <button class="btn btn-primary" @onclick="() => ShowNewAmendmentModal()">Änderungsantrag einreichen!</button>
                     </div>
                 </div>
-                
+
             </div>
         </div>
-        
+
+        <MUNityClient.Shared.Bootstrap.Modal Title="Neuer Änderungsantrag" @ref="AddAmendmentModal"
+                                             OnSubmitCallback="NewAmendment">
+            <MUNityClient.Shared.Resa.NewAmendmentForm Resolution="this._resolution" @ref="NewAmendmentForm">
+            </MUNityClient.Shared.Resa.NewAmendmentForm>
+        </MUNityClient.Shared.Bootstrap.Modal>
+
     }
     else
     {
@@ -44,6 +51,8 @@ else if (Status == EStatus.Allowed)
 @code {
     [Parameter]
     public string Id { get; set; }
+
+    private MUNityClient.Shared.Bootstrap.Modal AddAmendmentModal { get; set; }
 
     private MUNityClient.Shared.Resa.NewAmendmentForm NewAmendmentForm { get; set; }
 
@@ -74,5 +83,24 @@ else if (Status == EStatus.Allowed)
 
         StateHasChanged();
 
+    }
+
+    private void ShowNewAmendmentModal()
+    {
+        this.AddAmendmentModal.Open();
+    }
+
+    private async void NewAmendment()
+    {
+        var amendment = this.NewAmendmentForm.GetAmendment();
+        if (amendment == null)
+        {
+            // TODO: Meldung zeigen Resolution konnte nicht erstellt werden!
+        }
+        else if (amendment is DeleteAmendment deleteAmendment)
+        {
+            await this.resolutionService.PostDeleteAmendment(this._resolution.ResolutionId, deleteAmendment);
+        }
+        this.AddAmendmentModal.Close();
     }
 }
