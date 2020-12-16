@@ -4,27 +4,91 @@
 {
     <div class="col-12">
         <div class="card">
-            <div class="card-header bg-gradient-dark">
-                <div class="badge badge-danger">@DeleteAmendments.Count() Anträge auf Streichung</div>
-                <div class="badge badge-info">@ChangeAmendments.Count() Anträge auf Änderung</div>
-                <div class="badge badge-light">@MoveAmendments.Count() Anträge auf Verschiebung</div>
-            </div>
             <div class="card-body">
-                @Pathname
-                <MUNityClient.Shared.General.MarkdownView Content="@Paragraph.Text"></MUNityClient.Shared.General.MarkdownView>
 
-                @foreach(var activeDeleteAmendments in DeleteAmendments.Where(n => n.Activated))
+                @if (DeleteAmendments.Where(n => n.Activated).Count() < 1 &&
+                ChangeAmendments.Where(n => n.Activated).Count() < 1 &&
+                MoveAmendments.Where(n => n.Activated).Count() < 1)
                 {
-            <p>ABSATZ STREICHEN Eingebracht durch: @activeDeleteAmendments.SubmitterName (TODO: Text rot und durchstreichen darunter Einbringer: SubmitterName) </p>
+                    <div class="row mx-0 mt-0 ">
+                        @* @Pathname *@
+                        <MUNityClient.Shared.General.MarkdownView Content="@Paragraph.Text">
+                        </MUNityClient.Shared.General.MarkdownView>
+                    </div>
+                } else {
+                    @if (DeleteAmendments.Any(n => n.Activated))
+                    {
+                        <div class="card border-danger">
+                            <div class="card-body text-danger">
+                            <h5><i class="fas fa-plus-square mr-2"></i>Absatz streichen</h5>
+                            <br>
+                            <del>@Paragraph.Text</del>
+                            <br>
+                            <i class="fas fa-pen"></i>
+                            @foreach (var activeDeleteAmendments in DeleteAmendments.Where(n => n.Activated))
+                            {
+                                @activeDeleteAmendments.SubmitterName <span>, </span>
+                            }
+                            </div>
+                        </div>
+                    }
+                    @foreach (var activChangeAmendments in ChangeAmendments.Where(n => n.Activated))
+                    {
+                    <div class="card border-primary">
+                        <div class="card-body text-primary">
+                            <h5><i class="fas fa-plus-square mr-2"></i>Absatz ändern</h5>
+                            <br>
+                            <del class="text-danger">@Paragraph.Text</del>
+                            <br>
+                            @activChangeAmendments.NewText
+                            <i class="fas fa-pen"></i>
+                            @activChangeAmendments.SubmitterName
+                        </div>
+                    </div>
+                    }
+                    @foreach (var activeMoveAmendments in MoveAmendments.Where(n => n.Activated))
+                    {
+                        <div class="card">
+                            <div class="card-body">
+                                <h5><i class="fas fa-arrow-left mr-2"></i>Absatz verschieben</h5>
+                                <br>
+                                @Paragraph.Text
+                                <i class="fas fa-pen mr-2"></i>
+                                @activeMoveAmendments.SubmitterName
+                            </div>
+                        </div>
+                    }
                 }
-                @foreach(var activChangeAmendments in ChangeAmendments.Where(n => n.Activated))
-                {
-                    <p>ABSATZ ÄNDERN: (TODO: Text rot und durchstreichen, neuer Text daneben oder darunter und auch Einbringer anzeigen)</p>
-                }
-                @foreach(var activeMoveAmendments in MoveAmendments.Where(n => n.Activated))
-                {
-                    <p>Absatz verschieben: (TODO: Absatz rot und durchstreichen. Zielposition wird durch den Virtuellen Absatz angegeben!)</p>
-                }
+
+
+                <div class="row mx-0 mb-0 mt-4">
+                    @if (@DeleteAmendments.Count() > 0)
+                    {
+                        <div class="badge badge-danger">@DeleteAmendments.Count() @(DeleteAmendments.Count() > 1 ? "Anträge" :
+                                    "Antrag") auf Streichung</div>
+                    }
+                    @if (@ChangeAmendments.Count() > 0)
+                    {
+                        <div class="badge badge-info">@ChangeAmendments.Count() @(ChangeAmendments.Count() > 1 ? "Anträge" :
+                                    "Antrag") auf Änderung</div>
+                    }
+                    @if (@MoveAmendments.Count() > 0)
+                    {
+                        <div class="badge badge-light">@MoveAmendments.Count() @(MoveAmendments.Count() > 1 ? "Anträge" :
+                                    "Antrag") auf Verschiebung</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="col-12">
+        <div class="card">
+            <div class="row m-0 card-body text-danger d-flex align-items-center">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                Paragraph nicht gefunden!
             </div>
         </div>
     </div>
@@ -32,7 +96,6 @@
 
 
 @code {
-
     private OperativeParagraph _paragraph;
     [Parameter]
     public OperativeParagraph Paragraph
@@ -48,7 +111,7 @@
     }
 
     [Parameter]
-    public string Pathname {get; set; }
+    public string Pathname { get; set; }
 
     [Parameter]
     public IEnumerable<DeleteAmendment> DeleteAmendments { get; set; }

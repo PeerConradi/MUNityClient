@@ -7,7 +7,7 @@
 {
 
     <!-- Header -->
-    <div class="row">
+    <div class="row m-0 p-0">
         <div class="col-12">
             <h3>@Resolution.Header.Topic</h3>
             @if (!string.IsNullOrEmpty(this.Resolution.Header.SubmitterName))
@@ -33,57 +33,75 @@
 
 
     <!-- Preamble -->
-    <div class="row">
-        @foreach(var pp in this.Resolution.Preamble.Paragraphs)
-        {   
+    <div class="row p-0 m-0 mb-4">
+        @foreach (var pp in this.Resolution.Preamble.Paragraphs)
+        {
             <ResaReaderPreambleParagraph Paragraph="pp"></ResaReaderPreambleParagraph>
         }
-    </div>
+        </div>
 
     <!-- Operative Section -->
-<div class="row">
-    @foreach (var op in Resolution.OperativeSection.Paragraphs)
-    {
-        if (!op.IsVirtual)
+    <div class="row p-0 m-0">
+        @foreach (var op in Resolution.OperativeSection.Paragraphs)
         {
-            <ResaReaderOperativeParagraph Paragraph="op"
-                                          Pathname="@Resolution.OperativeSection.GetIndexNameOfOperativeParagraph(op)"
-                                          DeleteAmendments="this.Resolution.OperativeSection.DeleteAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"
-                                          ChangeAmendments="this.Resolution.OperativeSection.ChangeAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"
-                                          MoveAmendments="this.Resolution.OperativeSection.MoveAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"></ResaReaderOperativeParagraph>
-        }
-        else
-        {
-            @* Dieser Paragraph kann in Zukunft dazu kommen durch einen Änderungsantrag auf verschieben oder einen Änderungsantrag auf Hinzufügen.
-                Um zu ermitteln wie dieser Absatz zustande kommt können diese Funktionen verwendet werden:
-                bool durchVerschieben = Resolution.OperativeSection.MoveAmendments.Any(n => n.NewTargetSectionId == op.OperativeParagraphId);
-                bool durchHinzufuegen = Resolution.OPerativeSection.AddAmendments.Any(n => n.TargetSectionId == op.OperativeParagraphId);
-
-                Um bei einem Verschieben den Ausgangsabsatz zu bekommen:
-                var aenderungsantrag = Resolution.OperativeSection.MoveAmendments.FirstOrDefault(n => n.NewTargetSectionId == op.OperativeParagraphId);
-                if (aenderungsantrag != null)
-                {
-                    var quellParagraph = Resolution.FindOperativeParagraph(aenderungsantrag.TargetSectionId);
-                }
-            *@
-
-            if (op.Visible)
+            if (!op.IsVirtual)
             {
-
-                <div class="col-12">
-                    <div class="card border-success">
-                        <div class="card-body">
-                            <p>@op.Text</p>
-                        </div>
-                    </div>
-                </div>
+                <ResaReaderOperativeParagraph Paragraph="op"
+                    Pathname="@Resolution.OperativeSection.GetIndexNameOfOperativeParagraph(op)"
+                    DeleteAmendments="this.Resolution.OperativeSection.DeleteAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"
+                    ChangeAmendments="this.Resolution.OperativeSection.ChangeAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)"
+                    MoveAmendments="this.Resolution.OperativeSection.MoveAmendments.Where(n => n.TargetSectionId == op.OperativeParagraphId)">
+                </ResaReaderOperativeParagraph>
             }
+            else
+            {
+                @* Dieser Paragraph kann in Zukunft dazu kommen durch einen Änderungsantrag auf verschieben oder einen
+                    Änderungsantrag auf Hinzufügen.
+                    Um zu ermitteln wie dieser Absatz zustande kommt können diese Funktionen verwendet werden:
+                    bool durchVerschieben = Resolution.OperativeSection.MoveAmendments.Any(n => n.NewTargetSectionId ==
+                    op.OperativeParagraphId);
+                    bool durchHinzufuegen = Resolution.OPerativeSection.AddAmendments.Any(n => n.TargetSectionId ==
+                    op.OperativeParagraphId);
+
+                    Um bei einem Verschieben den Ausgangsabsatz zu bekommen:
+                    var aenderungsantrag = Resolution.OperativeSection.MoveAmendments.FirstOrDefault(n => n.NewTargetSectionId ==
+                    op.OperativeParagraphId);
+                    if (aenderungsantrag != null)
+                    {
+                    var quellParagraph = Resolution.FindOperativeParagraph(aenderungsantrag.TargetSectionId);
+                    }
+                *@
+
+                if (op.Visible)
+                {
+                    <div class="col-12">
+                        @if (Resolution.OperativeSection.MoveAmendments.Any(n => n.NewTargetSectionId == op.OperativeParagraphId))
+                        {
+                            <div class="card border-light">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-arrow-right mr-2"></i>Hierher verschoben</h5>
+                                    <p>@op.Text</p>
+                                </div>
+                            </div>
+                        }
+                        @if (Resolution.OperativeSection.AddAmendments.Any(n => n.TargetSectionId == op.OperativeParagraphId))
+                        {
+                            <div class="card border-success">
+                                <div class="card-body text-success">
+                                    <h5><i class="fas fa-plus-square mr-2"></i>Absatz hinzufügen</h5>
+                                    <p>@op.Text</p>
+                                    <i class="fas fa-pen"></i> @(Resolution.OperativeSection.AddAmendments.Single(n => n.TargetSectionId ==
+                                               op.OperativeParagraphId).SubmitterName)
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+
+
         }
-
-
-    }
-</div>
-    
+    </div>
 }
 else
 {
@@ -91,7 +109,6 @@ else
 }
 
 @code {
-
     [Parameter]
     public Resolution Resolution { get; set; }
 
