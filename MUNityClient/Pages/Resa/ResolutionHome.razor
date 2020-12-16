@@ -4,7 +4,9 @@
 
 <h3>MUNity Resolutions-Editor</h3>
 
-<button @onclick="CreateResolution" class="btn btn-success">Resolution erstellen</button>
+<button @onclick="CreatePublicResolution" class="btn btn-success">Öffentliche Resolution erstellen</button>
+
+<button @onclick="CreateLocalResolution" class="btn btn-success">Lokale Resolution erstellen</button>
 
 <NavLink href="resa/edit/test">Open Resolution Editor with Test</NavLink>
 
@@ -46,9 +48,18 @@ else
 
     private List<MUNityClient.Models.Resolution.ResolutionInfo> localResolutions;
 
-    private async Task CreateResolution()
+    private async Task CreateLocalResolution()
     {
         var resolution = await this.resolutionService.CreateResolution();
+        if (resolution != null)
+        {
+            navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}");
+        }
+    }
+
+    private async Task CreatePublicResolution()
+    {
+        var resolution = await this.resolutionService.CreatePublicResolution("Neue Resolution");
         if (resolution != null)
         {
             navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}");

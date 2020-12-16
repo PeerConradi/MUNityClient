@@ -196,6 +196,20 @@ namespace MUNityClient.Services
             return await client.PatchAsync($"/api/Resolution/UpdateOperativeParagraph?resolutionid={resolutionid}&tan={tan}", content);
         }
 
+        public async Task<bool> CanUserPostAmendments(string resolutionId)
+        {
+            var client = await this._httpService.GetAuthClient();
+            var result = await client.GetFromJsonAsync<bool>($"/api/Resolution/CanUserPostAmendments?resolutionId={resolutionId}");
+            return result;
+        }
+
+        public async Task<HttpResponseMessage> PostDeleteAmendment(string resolutionId, DeleteAmendment amendment)
+        {
+            var client = await this._httpService.GetAuthClient();
+            var content = JsonContent.Create(amendment);
+            return await client.PostAsync($"/api/Resolution/PostDeleteAmendment?resolutionId={resolutionId}", content);
+        }
+
         public async void SaveOfflineResolution(Resolution resolution)
         {
             await this.StoreResolution(resolution);
