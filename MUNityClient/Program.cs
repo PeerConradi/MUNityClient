@@ -26,6 +26,7 @@ namespace MUNityClient
             builder.Services.AddScoped<Services.UserService>();
             builder.Services.AddScoped<Services.ResolutionService>();
             builder.Services.AddScoped<Services.ListOfSpeakerService>();
+            builder.Services.AddScoped<Services.SimulationService>();
             builder.Services.AddScoped<IHtmlSanitizer, HtmlSanitizer>(x =>
             {
                 // Configure sanitizer rules as needed here.

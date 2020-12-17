@@ -1,0 +1,43 @@
+﻿@using MUNityClient.Models.Simulation.Schema;
+
+@inject MUNityClient.Services.SimulationService simulationService;
+@inject NavigationManager nagvigationManager;
+
+<h3>Neues virtuelles Gremium erstellen</h3>
+
+<div class="row">
+
+    <div class="col-12">
+        <EditForm Model="InputModel" OnSubmit="SubmitForm">
+            <DataAnnotationsValidator></DataAnnotationsValidator>
+            <div class="form-group">
+                <label>Name</label>
+                <InputText @bind-Value="InputModel.Name" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Passwort</label>
+                <InputText @bind-Value="InputModel.Password" class="form-control" type="password" />
+            </div>
+            <div class="form-group">
+                <label>Mein Anzeigename</label>
+                <InputText @bind-Value="InputModel.UserDisplayName" class="form-control" />
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-block btn-primary">Simulation erstellen</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+
+
+@code {
+
+    private CreateSchema InputModel = new CreateSchema();
+
+
+    private async void SubmitForm()
+    {
+        var simulation = await simulationService.CreateSimulation(InputModel);
+    }
+}

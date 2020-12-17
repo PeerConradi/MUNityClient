@@ -1,0 +1,60 @@
+﻿@page "/sim/home"
+
+@inject Services.SimulationService simulationService;
+@inject NavigationManager navigation;
+
+@* Erstellen *@
+<MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee></MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee>
+
+@* Simulationen aus den Tokens *@
+
+@if (Tokens != null)
+{
+    <div class="row">
+        <div class="col-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Beitreten</th>
+                        <th>Entfernen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var token in Tokens)
+                    {
+                        <tr>
+                            <td>@token.Name</td>
+                            <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(token.SimulationId)">Beitreten</button></td>
+                            <td><button class="btn btn-small btn-danger">Entfernen</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+}
+
+
+@* TODO: An dieser Stelle könnte ein Lobby Browser erscheinen*@
+
+@* TODO: Sollte es einen Lobby Browser geben muss bei der Auswahl hier eine Abfrage sein mit welchem Namen man
+    beitreten möchte, sofern kein Token gespeichert ist. Ist ein Token gespeichert kann man beitreten.
+*@
+
+@code {
+
+    private ICollection<Models.Simulation.SimulationToken> Tokens { get; set; }
+
+    private void EnterSimulation(int id)
+    {
+        // TODO: Zustand anfragen und dann entweder in die Lobby oder direkt ins Game!
+        navigation.NavigateTo($"/sim/lobby/{id}");
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        Tokens = await simulationService.GetStoredTokens();
+    }
+}

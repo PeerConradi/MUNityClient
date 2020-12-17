@@ -1,0 +1,58 @@
+﻿@* Dies ist eine Teilnehmendenansicht an dieser Stelle werden den Nutzern Rollen zugewiesen bzw. können sich diese ihre Rollen auswählen. *@
+<h3>SimulationPrePhase</h3>
+
+<div class="row">
+    <div class="col-8">
+        <div class="card">
+            <div class="card-header">
+                Gremium/Lobby
+            </div>
+            <div class="card-body">
+                @* Die Tabelle könnte auch noch eine Spalte für die Flagge bekommen, das hat aber wirklich keine Prio. *@
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Rolle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>1</th>
+                            <td>Max Mustermann</td>
+                            <td>Delegierter Deutschland</td>
+                        </tr>
+                        @* Diese Zeile ist zum Beispiel der Benutzer. Hier soll er/sie in diesem Fall eine Rolle auswählen können.*@
+                        <tr class="table-primary">
+                            <th>2</th>
+                            <th>VORNAME NACHNAME</th>
+                            <td>
+                                <select>
+                                    <option>Bundesrepublik Deutschland</option>
+                                    <option>Vereinigtes Königreich</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>3</th>
+                            <th>Mike Mustermann</th>
+                            <th>Delegierter Österreich</th>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-4">
+        Einstellungsansicht.
+
+        @* Button sollte nur von dem Admin gesehen werden können. *@
+        <button class="btn btn-block btn-primary">Starten</button>
+    </div>
+</div>
+
+@code {
+
+}

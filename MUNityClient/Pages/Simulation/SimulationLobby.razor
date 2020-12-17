@@ -1,0 +1,28 @@
+﻿@page "/sim/lobby/{id}"
+
+@inject Services.SimulationService simulationService;
+
+@if (Simulation == null)
+{
+    <p>Lobby wird geladen!</p>
+}
+else
+{
+    <p>PLATZHALTER FÜR SimulationPrePhase</p>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+
+    public Models.Simulation.Simulation Simulation { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        int id = 0;
+        if (int.TryParse(Id, out id))
+            this.Simulation = await simulationService.GetSimulation(id);
+        //return base.OnInitializedAsync();
+    }
+}
