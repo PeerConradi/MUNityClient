@@ -7,64 +7,66 @@
         <div class="card-body pb-0 px-0 row m-0 d-flex justify-content-center">
             <i class="fas fa-5x fa-cloud text-primary mb-4"></i>
             <p class="col-12 text-justify">
-                Eine Cloud Resolution wird auf dem MUN Server gespeichert. Du kannst sie über deinen Browser bearbeiten und sie für andere Freigeben.
-                Teilnehmende können auf die Resolution zugreifen. Kooperatives Zusammenarbeiten mit dem Sekretariat ist möglich. Sie ist live auf verschiedenen Geräten abrufbar.
+                Eine Cloud Resolution wird auf dem MUN Server gespeichert. Du kannst sie über deinen Browser bearbeiten
+                und sie für andere Freigeben.
+                Teilnehmende können auf die Resolution zugreifen. Kooperatives Zusammenarbeiten mit dem Sekretariat ist
+                möglich. Sie ist live auf verschiedenen Geräten abrufbar.
             </p>
-            <button @onclick="CreatePublicResolution" class="btn btn-success m-0 col-12">Cloud Resolution erstellen</button>
+            <button @onclick="CreatePublicResolution" class="btn btn-success m-0 col-12">Cloud Resolution
+                erstellen</button>
         </div>
     </div>
     <div class="card col-11 col-md-5 p-0 my-3">
         <div class="card-body pb-0 px-0 row m-0 d-flex justify-content-center">
             <i class="fas fa-5x fa-download text-primary mb-4"></i>
             <p class="col-12 text-justify">
-                Eine lokale Resolution ist eine Resolution in deinem Browser. Sie ist nur für dich in verschiedenen Tabs des selben Browsers aufrufbar, nicht jedoch in anderen
+                Eine lokale Resolution ist eine Resolution in deinem Browser. Sie ist nur für dich in verschiedenen
+                Tabs
+                des selben Browsers aufrufbar, nicht jedoch in anderen
                 Browsern oder auf anderen Geräten. Verwende diese Option nur
-                wenn keine Internetverbindung besteht, oder zum Ausprobieren des Tools.
+                wenn keine Internetverbindung besteht, oder zum Ausprobieren der Anwendung.
             </p>
-            <button @onclick="CreateLocalResolution" class="btn btn-success m-0 col-12">Lokale Resolution erstellen</button>
+            <button @onclick="CreateLocalResolution" class="btn btn-success m-0 col-12">Lokale Resolution
+                erstellen</button>
         </div>
     </div>
+</div>
+<div class="row mx-0 mb-0 mt-4 col-12 d-flex justify-content-center">
+    @if (localResolutions != null && localResolutions.Count() > 0)
+    {
+        <div class="card-deck">
+            @foreach (var resa in localResolutions)
+            {
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h3 class="card-title">@resa.Title</h3>
+                        <p class="card-text">Letzte Änderung: @resa.LastChangedDate.ToString("HH:mm") -  @resa.LastChangedDate.ToString("dd.MM.yyyy")
+                            </p>
+                        <button type="button" class="btn btn-primary btn-md"
+                            @onclick="() => OpenResolution(resa.ResolutionId)">Bearbeiten</button>
+                        <button type="button" class="btn btn-primary btn-md"
+                            @onclick="() => OpenReader(resa.ResolutionId)">Lesen</button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        if (loadingLocalsDone)
+        {
+            <p>Es wurden keine Lokal gespeicherten Resolutionen gefunden</p>
+        }
+        else
+        {
+            <p>Lokale Resolutionen werden geladen</p>
+        }
 
-
+    }
 </div>
 
 @* TODO: Delete?! *@
 @* <NavLink href="resa/edit/test">Open Resolution Editor with Test</NavLink> *@
-
-
-<h1>Lokal gespeicherte Resolutionen:</h1>
-
-@if (localResolutions != null)
-{
-    <div class="card-deck">
-        @foreach (var resa in localResolutions)
-        {
-            <div class="card mb-4">
-                <div class="card-body">
-                    <h3 class="card-title">@resa.Title</h3>
-                    <p class="card-text">@resa.LastChangedDate.ToLocalTime().ToLongDateString() -
-                        @resa.LastChangedDate.ToLocalTime().ToShortTimeString()</p>
-                    <button type="button" class="btn btn-light-blue btn-md"
-                        @onclick="() => OpenResolution(resa.ResolutionId)">Bearbeiten</button>
-                    <button type="button" class="btn btn-light-blue btn-md"
-                        @onclick="() => OpenReader(resa.ResolutionId)">Lesen</button>
-                </div>
-            </div>
-        }
-    </div>
-}
-else
-{
-    if (loadingLocalsDone)
-    {
-        <p>Es wurden keine Lokal gespeicherten Resolutionen gefunden</p>
-    }
-    else
-    {
-        <p>Lokale Resolutionen werden geladen</p>
-    }
-
-}
 
 
 @code {
@@ -74,7 +76,7 @@ else
 
     private async Task CreateLocalResolution()
     {
-        var resolution = await this.resolutionService.CreateResolution();
+        var resolution = await this.resolutionService.CreateResolution("Neue lokale Resolution");
         if (resolution != null)
         {
             navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}");
@@ -83,7 +85,7 @@ else
 
     private async Task CreatePublicResolution()
     {
-        var resolution = await this.resolutionService.CreatePublicResolution("Neue Resolution");
+        var resolution = await this.resolutionService.CreatePublicResolution("Neue Cloud Resolution");
         if (resolution != null)
         {
             navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}");
