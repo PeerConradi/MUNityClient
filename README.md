@@ -17,9 +17,9 @@ This application is under development and cannot be used at the moment. Please c
 | ------------------- | ----------------------------------- | ---------------------------------------------------------------- |
 | User Managment      | ![5%](https://progress-bar.dev/5) | Login and Registration done                                        |
 | ConferenceManagment | ![0%](https://progress-bar.dev/1) | NOT STARTED                                                  |
-| ResaEditor          | ![40%](https://progress-bar.dev/40) | Started basic communication, a little but buggy. |
+| ResaEditor          | ![45%](https://progress-bar.dev/45) | First online amendment implementation |
 | Speakerlist         | ![20%](https://progress-bar.dev/20) | Logic working offline                                     |
-| Simulation          | ![0%](https://progress-bar.dev/0)   | NOT STARTED                                                    |
+| Simulation          | ![5%](https://progress-bar.dev/5)   | Started Service                                           |
 | Administration      | ![0%](https://progress-bar.dev/0)   | NOT STARTED                                              |
 | Dockerize           | ![0%](https://progress-bar.dev/0) | NOT STARTED       |
 
