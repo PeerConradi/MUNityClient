@@ -5,17 +5,14 @@ using System.Threading.Tasks;
 
 namespace MUNityClient.Models.Simulation
 {
-    public class SimulationToken
+    public class SimulationListItem
     {
         public int SimulationId { get; set; }
 
         public string Name { get; set; }
 
-        public string Token { get; set; }
-    }
+        public bool UsingPassword { get; set; }
 
-    public class SimulationTokenWithPin : SimulationToken
-    {
-        public string Pin { get; set; }
+        public Simulation.GamePhases Phase { get; set; }
     }
 }

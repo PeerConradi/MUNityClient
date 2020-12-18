@@ -8,13 +8,14 @@
 }
 else
 {
-    <p>PLATZHALTER FÜR SimulationPrePhase</p>
+    <MUNityClient.Shared.VirtualCommittee.SimulationPrePhase Id="@Simulation.SimulationId"></MUNityClient.Shared.VirtualCommittee.SimulationPrePhase>
 }
 
 @code {
     [Parameter]
     public string Id { get; set; }
 
+    public Models.Simulation.SimulationAuth MyAuth { get; set; }
 
     public Models.Simulation.Simulation Simulation { get; set; }
 
@@ -22,7 +23,10 @@ else
     {
         int id = 0;
         if (int.TryParse(Id, out id))
+        {
             this.Simulation = await simulationService.GetSimulation(id);
+        }
+
         //return base.OnInitializedAsync();
     }
 }

@@ -3,38 +3,98 @@
 @inject Services.SimulationService simulationService;
 @inject NavigationManager navigation;
 
-@* Erstellen *@
-<MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee></MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee>
-
-@* Simulationen aus den Tokens *@
-
-@if (Tokens != null)
+@if (ConntectionState == ConnectionStates.Connected)
 {
-    <div class="row">
-        <div class="col-12">
+    @* Erstellen *@
+    <MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee></MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee>
+
+    <h1>Simulationen</h1>
+    @if (Simulations != null)
+    {
+        if (Simulations.Any())
+        {
             <table class="table">
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Mit Passwort</th>
+                        <th>Status/Phase</th>
                         <th>Beitreten</th>
-                        <th>Entfernen</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var token in Tokens)
+                    @foreach (var simulation in this.Simulations)
                     {
                         <tr>
-                            <td>@token.Name</td>
-                            <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(token.SimulationId)">Beitreten</button></td>
-                            <td><button class="btn btn-small btn-danger">Entfernen</button></td>
+                            <td>@simulation.Name</td>
+                            <td>@simulation.UsingPassword.ToString()</td>
+
+                            @if (simulation.Phase == Models.Simulation.Simulation.GamePhases.Lobby)
+                            {
+                                <td>Vorbereitungsphase</td>
+                                <td><button class="btn btn-small btn-success">Beitreten</button></td>
+                            }
+                            else if (simulation.Phase == Models.Simulation.Simulation.GamePhases.Online)
+                            {
+                                <td>Aktiv</td>
+                                <td><button class="btn btn-small btn-success">Beitreten</button></td>
+                            }
+                            else if (simulation.Phase == Models.Simulation.Simulation.GamePhases.Offline)
+                            {
+                                <td>Offline</td>
+                                <td><button class="btn btn-small btn-info">Einleiten</button></td>
+                            }
                         </tr>
                     }
                 </tbody>
             </table>
+        }
+        else
+        {
+            <p>Keine Simulationen gefunden :(</p>
+        }
+    }
+
+    @* Simulationen aus den Tokens *@
+
+    @if (Tokens != null)
+    {
+        <h1>Gespeicherte Sessions</h1>
+        <div class="row">
+            <div class="col-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Beitreten</th>
+                            <th>Entfernen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var token in Tokens)
+                        {
+                            <tr>
+                                <td>@token.Name</td>
+                                <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(token.SimulationId)">Beitreten</button></td>
+                                <td><button class="btn btn-small btn-danger">Entfernen</button></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-    
+    }
 }
+else if (ConntectionState == ConnectionStates.Connecting)
+{
+    <p>Verbindung wird hergestellt.</p>
+}
+else if (ConntectionState == ConnectionStates.CantReachServer)
+{
+    <p>Server nicht erreichbar.</p>
+}
+
+
 
 
 @* TODO: An dieser Stelle könnte ein Lobby Browser erscheinen*@
@@ -45,7 +105,18 @@
 
 @code {
 
+    private enum ConnectionStates
+    {
+        Connecting,
+        Connected,
+        CantReachServer
+    }
+
+    private ConnectionStates ConntectionState { get; set; } = ConnectionStates.Connecting;
+
     private ICollection<Models.Simulation.SimulationToken> Tokens { get; set; }
+
+    private ICollection<Models.Simulation.SimulationListItem> Simulations { get; set; }
 
     private void EnterSimulation(int id)
     {
@@ -55,6 +126,13 @@
 
     protected async override Task OnInitializedAsync()
     {
-        Tokens = await simulationService.GetStoredTokens();
+        var serverOnline = await this.simulationService.IsOnline();
+        this.ConntectionState = (serverOnline) ? ConnectionStates.Connected : ConnectionStates.CantReachServer;
+
+        if (serverOnline)
+        {
+            Tokens = await simulationService.GetStoredTokens();
+            Simulations = await simulationService.GetSimulationList();
+        }
     }
 }

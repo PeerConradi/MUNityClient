@@ -15,5 +15,8 @@ namespace MUNityClient.Models.Simulation.Schema
 
         [Required]
         public string UserDisplayName { get; set; }
+
+        [Required]
+        public string AdminPassword { get; set; }
     }
 }

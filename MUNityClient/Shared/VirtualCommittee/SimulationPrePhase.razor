@@ -1,58 +1,169 @@
-﻿@* Dies ist eine Teilnehmendenansicht an dieser Stelle werden den Nutzern Rollen zugewiesen bzw. können sich diese ihre Rollen auswählen. *@
-<h3>SimulationPrePhase</h3>
+﻿@inject MUNityClient.Services.SimulationService simulationService;
+@* Dies ist eine Teilnehmendenansicht an dieser Stelle werden den Nutzern Rollen zugewiesen bzw. können sich diese ihre Rollen auswählen. *@
+@if (Simulation != null)
+{
+    <h3>@Simulation.Name</h3>
 
-<div class="row">
-    <div class="col-8">
-        <div class="card">
-            <div class="card-header">
-                Gremium/Lobby
+    <div class="row">
+        <div class="col-8">
+            <div class="card">
+                <div class="card-header">
+                    Gremium/Lobby
+                </div>
+                <div class="card-body">
+                    @* Die Tabelle könnte auch noch eine Spalte für die Flagge bekommen, das hat aber wirklich keine Prio. *@
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Rolle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Simulation.Users != null && Auth != null)
+                            {
+                                int index = 0;
+                                @foreach (var user in Simulation.Users)
+                                {
+                                    @if (user.SimulationUserId != Auth.SimulationUserId)
+                                    {
+                                        @* Das ist nicht der verbundene Benutzer also eine Normale Zeile ausgeben. *@
+                                        <tr>
+                                            <th>@index</th>
+                                            <td>@user.DisplayName</td>
+                                            <td>@(Simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)?.Name ?? "Keine Rolle")</td>
+                                        </tr>
+                                    }
+                                    else
+                                    {
+                                        @* Das ist der Benutzer der Verbunden ist selbst. Deshalb kann er/sie eine Rolle
+                    auswählen *@
+                                        <tr class="table-primary">
+                                            <th>@index</th>
+                                            <th>@user.DisplayName</th>
+                                            <td>
+                                                @if (Simulation.Roles != null)
+                                                {
+                                                    <select class="form-control">
+                                                        @foreach (var role in Simulation.Roles)
+                                                        {
+                                                            <option value="@role.SimulationRoleId">@role.Name</option>
+                                                        }
+                                                    </select>
+                                                }
+                                                else
+                                                {
+                                                    <p>Rollen werden geladen.</p>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                    index++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    @if (Auth != null && Auth.CanCreateRole)
+                    {
+                        <button class="btn btn-block btn-success">Rolle hinzufügen</button>
+                    }
+                </div>
             </div>
-            <div class="card-body">
-                @* Die Tabelle könnte auch noch eine Spalte für die Flagge bekommen, das hat aber wirklich keine Prio. *@
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Name</th>
-                            <th scope="col">Rolle</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th>1</th>
-                            <td>Max Mustermann</td>
-                            <td>Delegierter Deutschland</td>
-                        </tr>
-                        @* Diese Zeile ist zum Beispiel der Benutzer. Hier soll er/sie in diesem Fall eine Rolle auswählen können.*@
-                        <tr class="table-primary">
-                            <th>2</th>
-                            <th>VORNAME NACHNAME</th>
-                            <td>
-                                <select>
-                                    <option>Bundesrepublik Deutschland</option>
-                                    <option>Vereinigtes Königreich</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>3</th>
-                            <th>Mike Mustermann</th>
-                            <th>Delegierter Österreich</th>
-                        </tr>
-                    </tbody>
-                </table>
+        </div>
+
+        <div class="col-4">
+            <div class="card">
+                <div class="card-header">
+                    Einstellungen
+                </div>
+                <div class="card-body">
+                    @if (Presets != null && Presets.Any() && Auth.CanCreateRole)
+                    {
+                        <div class="form-group">
+                            <label>Vorlage</label>
+                            <select @bind="SelectedPresetId" class="form-control">
+                                <option value="null">-</option>
+                                @foreach (var preset in Presets)
+                                {
+                                    <option value="@preset.Id">@preset.Name</option>
+                                }
+                            </select>
+                            @if (SelectedPreset != null)
+                            {
+                                <small class="text-danger">Achtung die Vorlage überschreibt einen Großteil der Einstellungen</small>
+                                <br />
+                                <small>Staaten: </small>
+                                <small>@string.Join(", ", SelectedPreset.Roles.Select(n => n.Name))</small>
+                            }
+                        </div>
+
+                        @*
+                        Erstellung von neuer Rollen muss irgendwann kommen ist mir jetzt egal. Wir können die in den Presets die
+                        echten MUN SH und MUN BW Gremien hinterlegen.
+                        @if (SelectedPreset != null)
+                        {
+                            <div class="form-group">
+                                <button class="btn btn-block btn-primary" @onclick="() => ActivatePreset()">Vorlage Anwenden</button>
+                            </div>
+                        }*@
+
+                    }
+
+                </div>
+                <div class="card-footer">
+                    @if (Auth != null && Auth.CanCreateRole)
+                    {
+                        <button class="btn btn-block btn-primary">Starten</button>
+                    }
+                </div>
             </div>
         </div>
     </div>
+}
+else
+{
+    <p>Lobby wird geladen.</p>
+}
 
-    <div class="col-4">
-        Einstellungsansicht.
-
-        @* Button sollte nur von dem Admin gesehen werden können. *@
-        <button class="btn btn-block btn-primary">Starten</button>
-    </div>
-</div>
 
 @code {
+    [Parameter]
+    public int? Id { get; set; }
 
+    private Models.Simulation.SimulationAuth Auth { get; set; }
+
+    private Models.Simulation.Simulation Simulation { get; set; }
+
+    private IEnumerable<Models.Simulation.SimulationPreset> Presets { get; set; }
+    private Models.Simulation.SimulationPreset SelectedPreset { get; set; }
+    private string SelectedPresetId
+    {
+        get => SelectedPreset?.Id ?? "";
+        set => SelectedPreset = Presets.FirstOrDefault(n => n.Id == value);
+    }
+
+    private async Task ActivatePreset()
+    {
+        if (this.Id != null && this.SelectedPresetId != null)
+        {
+
+            await this.simulationService.ApplyPreset(Id.Value, SelectedPresetId);
+            this.Simulation.Roles = await this.simulationService.GetRoles(Id.Value);
+        }
+    }
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (Id != null)
+        {
+            this.Simulation = await this.simulationService.GetSimulation(Id.Value);
+            this.Auth = await this.simulationService.GetMyAuth(Id.Value);
+            this.Presets = await this.simulationService.GetPresets();
+        }
+
+        //return base.OnInitializedAsync();
+    }
 }
