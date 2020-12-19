@@ -48,8 +48,8 @@ namespace MUNityClient.Models.Simulation
         /// </summary>
         public string Status { get; set; }
 
-        public IEnumerable<SimulationRole> Roles { get; set; }
+        public List<SimulationRole> Roles { get; set; }
 
-        public IEnumerable<SimulationUser> Users { get; set; }
+        public List<SimulationUser> Users { get; set; }
     }
 }

@@ -12,5 +12,11 @@ namespace MUNityClient.Models.Simulation
         public string DisplayName { get; set; }
 
         public int RoleId { get; set; }
+
+        /// <summary>
+        /// Kommt nicht aus dem Datenmodell sondern ist eine Interne variable um ggf. kommende
+        /// Meldungen zu holen
+        /// </summary>
+        public string CurrentRequest { get; set; }
     }
 }

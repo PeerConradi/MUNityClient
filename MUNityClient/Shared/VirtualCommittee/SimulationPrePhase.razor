@@ -1,8 +1,12 @@
-﻿@inject MUNityClient.Services.SimulationService simulationService;
+﻿@using MUNityClient.Models.Simulation;
+@using System.Linq; 
+
+@inject MUNityClient.Services.SimulationService simulationService;
+@inject NavigationManager navigationManager;
 @* Dies ist eine Teilnehmendenansicht an dieser Stelle werden den Nutzern Rollen zugewiesen bzw. können sich diese ihre Rollen auswählen. *@
-@if (Simulation != null)
+@if (_simulation != null)
 {
-    <h3>@Simulation.Name</h3>
+    <h3>@_simulation.Name</h3>
 
     <div class="row">
         <div class="col-8">
@@ -21,18 +25,18 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if (Simulation.Users != null && Auth != null)
+                            @if (_simulation.Users != null && _auth != null)
                             {
                                 int index = 0;
-                                @foreach (var user in Simulation.Users)
+                                @foreach (var user in _simulation.Users)
                                 {
-                                    @if (user.SimulationUserId != Auth.SimulationUserId)
+                                    @if (user.SimulationUserId != _auth.SimulationUserId)
                                     {
                                         @* Das ist nicht der verbundene Benutzer also eine Normale Zeile ausgeben. *@
                                         <tr>
                                             <th>@index</th>
                                             <td>@user.DisplayName</td>
-                                            <td>@(Simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)?.Name ?? "Keine Rolle")</td>
+                                            <td>@(_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)?.Name ?? "Keine Rolle")</td>
                                         </tr>
                                     }
                                     else
@@ -43,14 +47,23 @@
                                             <th>@index</th>
                                             <th>@user.DisplayName</th>
                                             <td>
-                                                @if (Simulation.Roles != null)
+                                                @if (_simulation.Roles != null)
                                                 {
-                                                    <select class="form-control">
-                                                        @foreach (var role in Simulation.Roles)
-                                                        {
-                                                            <option value="@role.SimulationRoleId">@role.Name</option>
-                                                        }
-                                                    </select>
+                                                    @if (_auth.CanSelectRole)
+                                                    {
+                                                        <select class="form-control" @bind="SelectedRole">
+                                                            <option value="-2">Keine Rolle</option>
+                                                            @foreach (var role in _simulation.Roles)
+                                                            {
+                                                                <option value="@role.SimulationRoleId">@role.Name</option>
+                                                            }
+                                                        </select>
+                                                    }
+                                                    else
+                                                    {
+                                                        <p>Sie fürfen sich keine Rolle zuweisen.</p>
+                                                    }
+
                                                 }
                                                 else
                                                 {
@@ -65,12 +78,15 @@
                         </tbody>
                     </table>
                 </div>
+                @*
+                    Rollenerstellung vorerst deaktiviert. Arbeite halt mit den Presets...
                 <div class="card-footer">
                     @if (Auth != null && Auth.CanCreateRole)
                     {
                         <button class="btn btn-block btn-success">Rolle hinzufügen</button>
                     }
                 </div>
+                *@
             </div>
         </div>
 
@@ -80,13 +96,13 @@
                     Einstellungen
                 </div>
                 <div class="card-body">
-                    @if (Presets != null && Presets.Any() && Auth.CanCreateRole)
+                    @if (_presets != null && _presets.Any() && _auth.CanCreateRole)
                     {
                         <div class="form-group">
                             <label>Vorlage</label>
                             <select @bind="SelectedPresetId" class="form-control">
                                 <option value="null">-</option>
-                                @foreach (var preset in Presets)
+                                @foreach (var preset in _presets)
                                 {
                                     <option value="@preset.Id">@preset.Name</option>
                                 }
@@ -99,24 +115,19 @@
                                 <small>@string.Join(", ", SelectedPreset.Roles.Select(n => n.Name))</small>
                             }
                         </div>
-
-                        @*
-                        Erstellung von neuer Rollen muss irgendwann kommen ist mir jetzt egal. Wir können die in den Presets die
-                        echten MUN SH und MUN BW Gremien hinterlegen.
                         @if (SelectedPreset != null)
                         {
                             <div class="form-group">
                                 <button class="btn btn-block btn-primary" @onclick="() => ActivatePreset()">Vorlage Anwenden</button>
                             </div>
-                        }*@
-
+                        }
                     }
 
                 </div>
                 <div class="card-footer">
-                    @if (Auth != null && Auth.CanCreateRole)
+                    @if (_auth != null && _auth.CanCreateRole)
                     {
-                        <button class="btn btn-block btn-primary">Starten</button>
+                        <button class="btn btn-block btn-primary" @onclick="() => StartPhase()">Starten</button>
                     }
                 </div>
             </div>
@@ -133,16 +144,30 @@ else
     [Parameter]
     public int? Id { get; set; }
 
-    private Models.Simulation.SimulationAuth Auth { get; set; }
+    private Models.Simulation.SimulationAuth _auth { get; set; }
 
-    private Models.Simulation.Simulation Simulation { get; set; }
+    private Models.Simulation.Simulation _simulation { get; set; }
 
-    private IEnumerable<Models.Simulation.SimulationPreset> Presets { get; set; }
+    private IEnumerable<Models.Simulation.SimulationPreset> _presets { get; set; }
     private Models.Simulation.SimulationPreset SelectedPreset { get; set; }
     private string SelectedPresetId
     {
         get => SelectedPreset?.Id ?? "";
-        set => SelectedPreset = Presets.FirstOrDefault(n => n.Id == value);
+        set => SelectedPreset = _presets.FirstOrDefault(n => n.Id == value);
+    }
+
+    private int SelectedRole
+    {
+        get => this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId).RoleId;
+        set
+        {
+            SelectRole(value);
+        }
+    }
+
+    private async Task StartPhase()
+    {
+        var response = await this.simulationService.SetPhase(this._simulation.SimulationId, (int)Models.Simulation.Simulation.GamePhases.Online);
     }
 
     private async Task ActivatePreset()
@@ -151,7 +176,7 @@ else
         {
 
             await this.simulationService.ApplyPreset(Id.Value, SelectedPresetId);
-            this.Simulation.Roles = await this.simulationService.GetRoles(Id.Value);
+            this._simulation.Roles = await this.simulationService.GetRoles(Id.Value);
         }
     }
 
@@ -159,11 +184,67 @@ else
     {
         if (Id != null)
         {
-            this.Simulation = await this.simulationService.GetSimulation(Id.Value);
-            this.Auth = await this.simulationService.GetMyAuth(Id.Value);
-            this.Presets = await this.simulationService.GetPresets();
+            var socket = await this.simulationService.Subscribe(Id.Value);
+            AppendEvents(socket);
+            this._simulation = await this.simulationService.GetSimulation(Id.Value);
+            this._auth = await this.simulationService.GetMyAuth(Id.Value);
+            this._presets = await this.simulationService.GetPresets();
         }
 
         //return base.OnInitializedAsync();
+    }
+
+    private void AppendEvents(MUNityClient.Services.SocketHandlers.SimulationSocketHandler handler)
+    {
+        handler.UserDisconnected += UserDisconnected;
+        handler.UserConnected += UserConnected;
+        handler.UserRoleChanged += UserRoleChanged;
+        handler.PhaseChanged += PhaseChanged;
+    }
+
+
+
+    private void UserDisconnected(int sender, SimulationUser user)
+    {
+        if (this._simulation == null) return;
+
+        this._simulation.Users.RemoveAll(n => n.SimulationUserId == user.SimulationUserId);
+        this.StateHasChanged();
+    }
+
+    private void UserConnected(int sender, SimulationUser user)
+    {
+        if (this._simulation == null) return;
+
+        // Nutzer bereits Verbunden, Wohl einen Disconnect verpasst.
+        if (this._simulation.Users.Any(n => n.SimulationUserId == user.SimulationUserId))
+            return;
+
+        this._simulation.Users.Add(user);
+        this.StateHasChanged();
+    }
+
+    private void UserRoleChanged(int sender, int userId, int roleId)
+    {
+        if (_simulation == null) return;
+        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
+        if (user != null)
+        {
+            user.RoleId = roleId;
+            this.StateHasChanged();
+        }
+    }
+
+    private void PhaseChanged(int sender, Models.Simulation.Simulation.GamePhases phase)
+    {
+        if (phase == Models.Simulation.Simulation.GamePhases.Online)
+        {
+            navigationManager.NavigateTo($"/sim/run/{_simulation.SimulationId}");
+        }
+    }
+
+    private async Task SelectRole(int roleId)
+    {
+        await this.simulationService.PickRole(this._simulation.SimulationId, roleId);
     }
 }

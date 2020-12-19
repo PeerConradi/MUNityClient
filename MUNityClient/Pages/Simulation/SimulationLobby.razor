@@ -1,6 +1,7 @@
 ﻿@page "/sim/lobby/{id}"
 
 @inject Services.SimulationService simulationService;
+@inject NavigationManager navigationManager;
 
 @if (Simulation == null)
 {
@@ -25,6 +26,10 @@ else
         if (int.TryParse(Id, out id))
         {
             this.Simulation = await simulationService.GetSimulation(id);
+            if (Simulation.Phase == Models.Simulation.Simulation.GamePhases.Online)
+            {
+                navigationManager.NavigateTo($"/sim/run/{id}");
+            }
         }
 
         //return base.OnInitializedAsync();
