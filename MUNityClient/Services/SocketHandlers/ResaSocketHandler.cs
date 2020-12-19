@@ -42,13 +42,10 @@ namespace MUNityClient.Services.SocketHandlers
         {
             if (newResolution.ResolutionId != _resolution.ResolutionId) return;
 
-            _resolution.Preamble = newResolution.Preamble ?? new ResolutionPreamble();
-            if (_resolution.OperativeSection != null && newResolution.OperativeSection != null)
-            {
-                Console.WriteLine("Operative Paragraph changed");
-                _resolution.OperativeSection.Paragraphs = newResolution.OperativeSection.Paragraphs ?? new List<OperativeParagraph>();
-            }
-            _resolution.Header = newResolution.Header ?? new ResolutionHeader();
+            _resolution.Header = newResolution.Header ?? _resolution.Header;
+            _resolution.Preamble = newResolution.Preamble ?? _resolution.Preamble;
+            _resolution.OperativeSection = newResolution.OperativeSection ?? _resolution.OperativeSection;
+            
             ResolutionChanged?.Invoke(this._resolution);
         }
 

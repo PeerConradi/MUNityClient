@@ -3,37 +3,44 @@
 
 @if (CardVisible)
 {
-    <div class="border col-6 col-md-4 col-lg-12 py-3">
+<div class="border col-6 col-md-4 col-lg-12 py-3">
 
-        @if (Amendment is ChangeAmendment)
-        {
-            <h5 class="card-title text-center">Antrag auf Textänderung</h5>
-        }
-        <p class="text-center">
-            <i class="fas fa-calendar fa-lg text-primary mx-2"
-                alt="submit date"></i>@Amendment.SubmitTime.ToString("dd.MM.yyyy")
-            <i class="fas fa-clock fa-lg text-primary ml-2 mr-1" alt="submit time"></i>
-            @Amendment.SubmitTime.ToString("HH:mm")
-        </p>
-        <p class="text-center">
-            @Amendment.SubmitterName
-        </p>
+    @if (Amendment is ChangeAmendment)
+    {
+        <h5 class="card-title text-center">Antrag auf Textänderung</h5>
+    }
+    <p class="text-center">
+        <i class="fas fa-calendar fa-lg text-primary mx-2"
+           alt="submit date"></i>@Amendment.SubmitTime.ToString("dd.MM.yyyy")
+        <i class="fas fa-clock fa-lg text-primary ml-2 mr-1" alt="submit time"></i>
+        @Amendment.SubmitTime.ToString("HH:mm")
+    </p>
+    <p class="text-center">
+        @Amendment.SubmitterName
+    </p>
 
-        <p class="custom-control custom-checkbox">
-            <input type="checkbox" class="custom-control-input" @bind-value="Activated" id="customControlAutosizing">
-            <label class="custom-control-label" for="customControlAutosizing">Auf Ansichten markieren</label>
-        </p>
-
-        <div class="row p-0 m-0 justify-content-between">
-            <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-                <button class="btn btn-success btn-sm m-0 px-2" @onclick="ApplyAmendment"><i
-                        class="fas fa-check mr-2"></i>Annehmen</button>
-                <button class="btn btn-warning btn-sm  m-0 px-2" @onclick="DenyAmendment"><i
-                        class="fas fa-ban mr-2"></i>Ablehnen</button>
-            </div>
-            <button class="btn btn-danger btn-sm  m-0 px-2" @onclick="DeleteMe"><i class="fas fa-trash mr-2"></i>Löschen</button>
-        </div>
+    <!-- Default checkbox -->
+    <div class="form-check">
+        <input class="form-check-input"
+               type="checkbox"
+               @bind-value="Activated" />
+        <label class="form-check-label">
+            Antrag hervorheben
+        </label>
     </div>
+
+    <div class="row p-0 m-0 justify-content-between">
+        <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
+            <button class="btn btn-success btn-sm m-0 px-2" @onclick="ApplyAmendment">
+                <i class="fas fa-check mr-2"></i>Annehmen
+            </button>
+            <button class="btn btn-warning btn-sm  m-0 px-2" @onclick="DenyAmendment">
+                <i class="fas fa-ban mr-2"></i>Ablehnen
+            </button>
+        </div>
+        <button class="btn btn-danger btn-sm  m-0 px-2" @onclick="DeleteMe"><i class="fas fa-trash mr-2"></i>Löschen</button>
+    </div>
+</div>
 }
 
 
@@ -55,6 +62,7 @@
         set
         {
             this._activated = value;
+            this.Amendment.Activated = value;
             if (this.Amendment is MoveAmendment moveAmendment)
             {
                 var newParagraph = Resolution.OperativeSection.FindOperativeParagraph(moveAmendment.NewTargetSectionId);

@@ -1,0 +1,142 @@
+﻿@page "/sim/run/{id}"
+
+@inject Services.SimulationService simulationService;
+
+@if (_simulation != null && _auth != null)
+{
+    <div class="row">
+        <div class="col-8">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">Gremiumansicht</div>
+                        <div class="body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <td>Name</td>
+                                        <td>Rolle</td>
+                                        <td>Antrag</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var user in _simulation.Users)
+                                    {
+                                    <tr class='@((user.SimulationUserId == _auth.SimulationUserId) ? "table-primary" : "" )'>
+                                        <td>@user.DisplayName</td>
+                                        <td>@user.RoleId</td>
+                                        <td>
+                                        @if (!string.IsNullOrEmpty(user.CurrentRequest))
+                                        {
+                                            <div class="alert alert-primary">
+                                                @user.CurrentRequest
+                                                @if (_auth.CanCreateRole)
+                                                {
+                                                    <button class="btn btn-success" @onclick="() => AcceptRequest(user.SimulationUserId, user.CurrentRequest)">Bestätigen</button>
+                                                }
+                                                <button class="btn btn-danger" @onclick="() => DeleteRequest(user.SimulationUserId, user.CurrentRequest)">Löschen</button>
+                                            </div>
+                                        }
+                                        </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">Steuerung</div>
+                        <div class="card-body">
+                            <div class="btn btn-primary" @onclick='() => MakeRequest("Redebeitrag")'>Antrag auf Redebeitrag</div>
+                            <div class="btn btn-primary" @onclick='() => MakeRequest("Frage")'>Antrag auf Frage/Kurzbemerkung</div>
+                            <div class="btn btn-primary" @onclick='() => MakeRequest("GO")'>Antrag an Geschäftsordnung</div>
+                            <div class="btn btn-primary" @onclick='() => MakeRequest("Persoenlich")'>Persönlicher Antrag</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-4">
+            <h1>Platzhalter für die Redeliste</h1>
+        </div>
+    </div>
+}
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private Models.Simulation.Simulation _simulation;
+
+    private Models.Simulation.SimulationAuth _auth;
+
+    protected override async Task OnInitializedAsync()
+    {
+        int id = 0;
+        if (int.TryParse(Id, out id))
+        {
+            this._simulation = await simulationService.GetSimulation(id);
+            this._auth = await simulationService.GetMyAuth(id);
+            var socket = await simulationService.Subscribe(id);
+            AddHandlers(socket);
+            this.StateHasChanged();
+        }
+    }
+
+    private void AddHandlers(Services.SocketHandlers.SimulationSocketHandler socket)
+    {
+        socket.UserRequest += UserRequest;
+        socket.UserRequestAccpted += UserRequestAccepted;
+        socket.UserRequestDeleted += UserRequestDeleted;
+    }
+
+    private void UserRequest(int sender, int userId, string request)
+    {
+        if (this._simulation == null) return;
+        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
+        if (user == null) return;
+        user.CurrentRequest = request;
+        this.StateHasChanged();
+    }
+
+    private void UserRequestAccepted(int sender, int userId, string request)
+    {
+        if (this._simulation == null) return;
+        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
+        if (user == null) return;
+        user.CurrentRequest = null;
+        this.StateHasChanged();
+    }
+
+    private void UserRequestDeleted(int sender, int userId, string request)
+    {
+        if (this._simulation == null) return;
+        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
+        if (user == null) return;
+        user.CurrentRequest = null;
+        this.StateHasChanged();
+    }
+
+    private async Task MakeRequest(string request)
+    {
+        if (this._simulation == null) return;
+        await this.simulationService.MakeRequest(this._simulation.SimulationId, request);
+    }
+
+    private async Task AcceptRequest(int userId, string request)
+    {
+        if (this._simulation == null) return;
+        await this.simulationService.AcceptRequest(this._simulation.SimulationId, userId, request);
+    }
+
+    private async Task DeleteRequest(int userId, string request)
+    {
+        if (this._simulation == null) return;
+        await this.simulationService.DeleteRequest(this._simulation.SimulationId, userId, request);
+    }
+}

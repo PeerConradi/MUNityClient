@@ -14,11 +14,25 @@ namespace MUNityClient
 {
     public class Program
     {
-        public static readonly string API_URL = "https://localhost:44349";
+        public static string API_URL = "https://localhost:44349";
 
         public static async Task Main(string[] args)
         {
+
+
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+            if (Environment.GetEnvironmentVariables().Contains("API_ENDPOINT"))
+            {
+                Console.WriteLine("Load Entpoint from environment");
+                API_URL = Environment.GetEnvironmentVariable("API_ENDPOINT");
+            }
+            else
+            {
+                Console.WriteLine("Using default endpoint.");
+            }
+            
+
             builder.RootComponents.Add<App>("app");
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(API_URL) });
             builder.Services.AddBlazoredLocalStorage();
@@ -26,6 +40,7 @@ namespace MUNityClient
             builder.Services.AddScoped<Services.UserService>();
             builder.Services.AddScoped<Services.ResolutionService>();
             builder.Services.AddScoped<Services.ListOfSpeakerService>();
+            builder.Services.AddScoped<Services.SimulationService>();
             builder.Services.AddScoped<IHtmlSanitizer, HtmlSanitizer>(x =>
             {
                 // Configure sanitizer rules as needed here.

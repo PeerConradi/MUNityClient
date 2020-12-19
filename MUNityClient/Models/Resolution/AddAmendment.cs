@@ -21,8 +21,6 @@ namespace MUNityClient.Models.Resolution
         public DateTime SubmitTime { get; set; }
         public string Type { get; set; }
 
-        public string Text { get; set; }
-
         public bool Apply(OperativeSection parentSection)
         {
             var targetParagraph = parentSection.FindOperativeParagraph(this.TargetSectionId);
