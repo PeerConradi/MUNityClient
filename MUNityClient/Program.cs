@@ -24,7 +24,12 @@ namespace MUNityClient
 
             if (Environment.GetEnvironmentVariables().Contains("API_ENDPOINT"))
             {
+                Console.WriteLine("Load Entpoint from environment");
                 API_URL = Environment.GetEnvironmentVariable("API_ENDPOINT");
+            }
+            else
+            {
+                Console.WriteLine("Using default endpoint.");
             }
             
 
