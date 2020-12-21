@@ -42,10 +42,12 @@
                         <h3 class="card-title">@resa.Title</h3>
                         <p class="card-text">Letzte Änderung: @resa.LastChangedDate.ToString("HH:mm") -  @resa.LastChangedDate.ToString("dd.MM.yyyy")
                             </p>
-                        <button type="button" class="btn btn-primary btn-md"
-                            @onclick="() => OpenResolution(resa.ResolutionId)">Bearbeiten</button>
-                        <button type="button" class="btn btn-primary btn-md"
-                            @onclick="() => OpenReader(resa.ResolutionId)">Lesen</button>
+                            <a href="/resa/edit/@resa.ResolutionId">
+                                <button type="button" class="btn btn-primary btn-md">Bearbeiten</button>
+                            </a>
+                            <a href="/resa/read/@resa.ResolutionId">
+                                <button type="button" class="btn btn-primary btn-md">Lesen</button>
+                            </a>
                     </div>
                 </div>
             }
@@ -90,20 +92,6 @@
         {
             navigationManager.NavigateTo($"resa/edit/{resolution.ResolutionId}");
         }
-    }
-
-    private EventCallback OpenResolution(string id)
-    {
-        navigationManager.NavigateTo($"resa/edit/{id}");
-        return EventCallback.Empty;
-    }
-
-
-
-    private EventCallback OpenReader(string id)
-    {
-        navigationManager.NavigateTo($"resa/read/{id}");
-        return EventCallback.Empty;
     }
 
     protected override async Task OnInitializedAsync()
