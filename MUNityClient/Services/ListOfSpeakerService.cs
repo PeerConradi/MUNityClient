@@ -10,6 +10,7 @@ namespace MUNityClient.Services
 {
     public class ListOfSpeakerService
     {
+
         public delegate void OnStorageChanged();
 
         public event OnStorageChanged StorageChanged;

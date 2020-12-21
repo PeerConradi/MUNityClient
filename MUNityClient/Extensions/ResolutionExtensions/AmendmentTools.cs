@@ -71,6 +71,7 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             if (amendment is AddAmendment addAmendment)
             {
                 section.AddAmendments.RemoveAll(n => n.TargetSectionId == amendment.TargetSectionId);
+                section.Paragraphs.RemoveAll(n => n.OperativeParagraphId == amendment.TargetSectionId);
             }
             else if (amendment is ChangeAmendment changeAmendment)
             {
@@ -146,7 +147,7 @@ namespace MUNityClient.Extensions.ResolutionExtensions
             var virtualParagraph = new OperativeParagraph(text);
             virtualParagraph.IsVirtual = true;
             virtualParagraph.Visible = false;
-            var position = section.InsertIntoRealPosition(virtualParagraph, targetIndex, parentParagraph);
+            section.InsertIntoRealPosition(virtualParagraph, targetIndex, parentParagraph);
             var amendment = new AddAmendment();
             amendment.TargetSectionId = virtualParagraph.OperativeParagraphId;
             section.PushAmendment(amendment);

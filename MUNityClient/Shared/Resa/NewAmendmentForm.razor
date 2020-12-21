@@ -177,7 +177,7 @@
             bool isFirstLevel = this.Resolution.OperativeSection.Paragraphs.Contains(parent);
 
             var indexOfHead = this.Resolution.OperativeSection.IndexOfParagraph(parent);
-            return this.Resolution.OperativeSection.CreateAddAmendment(indexOfHead, data.NewText ?? "", isFirstLevel ? null : parent);
+            return this.Resolution.OperativeSection.CreateAddAmendment(indexOfHead + 1, data.NewText ?? "", isFirstLevel ? null : parent);
         }
 
         return null;

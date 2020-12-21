@@ -137,10 +137,10 @@ namespace MUNityClient.Managing.ResolutionManaging
 
             public bool Detect(Resolution resolution)
             {
-                var ghosts = resolution.OperativeSection.WhereParagraph(n => n.IsVirtual && (resolution.OperativeSection.MoveAmendments.All(a => a.NewTargetSectionId != n.OperativeParagraphId) &&
-                    resolution.OperativeSection.AddAmendments.All(a => a.TargetSectionId != n.OperativeParagraphId)));
-
-
+                var ghosts = resolution.OperativeSection.WhereParagraph(n => n.IsVirtual && (
+                    resolution.OperativeSection.MoveAmendments.All(a => a.NewTargetSectionId != n.OperativeParagraphId) &&
+                    resolution.OperativeSection.AddAmendments.All(a => a.TargetSectionId != n.OperativeParagraphId))
+                );
 
                 if (ghosts.Any())
                 {
@@ -150,7 +150,7 @@ namespace MUNityClient.Managing.ResolutionManaging
                     }
                 }
 
-                return false;
+                return bugs != "";
             }
 
             public bool Fix(Resolution resolution)

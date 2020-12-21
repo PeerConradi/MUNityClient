@@ -15,7 +15,6 @@
             sanitizer.AllowedAttributes.Add("class");
         }
         var markdownHtml = Markdig.Markdown.ToHtml(text ?? "");
-        Console.WriteLine(markdownHtml);
         var sanitizedHtml = sanitizer.Sanitize(markdownHtml);
         this.convertedMarkdown = (MarkupString)sanitizedHtml;
         base.OnParametersSet();

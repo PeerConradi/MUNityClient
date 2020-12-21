@@ -29,7 +29,7 @@ namespace MUNityClient.Models.Resolution
 
             targetParagraph.IsVirtual = false;
             targetParagraph.Visible = true;
-            parentSection.RemoveAmendment(this);
+            parentSection.AddAmendments.Remove(this);
             return true;
         }
 

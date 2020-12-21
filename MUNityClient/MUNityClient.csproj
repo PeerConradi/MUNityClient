@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Managing\Interop\" />
     <Folder Include="Pages\Conference\" />
   </ItemGroup>
 
