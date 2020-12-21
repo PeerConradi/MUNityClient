@@ -8,12 +8,98 @@
 
 @if (Speakerlist != null)
 {
-    <div class="row m-0 p-0 col-12 d-flex justify-content-center">
-        <div class="row col-1 m-0 p-0 d-flex justify-content-right align-items-center text-primary">
-            <i type="button" title="Lese Ansicht öffnen" class="col-12 fas fa-external-link-alt fa-lg mb-4" @onclick="() => OpenReaderSpectatorView()"></i>
-            <i type ="button" title="Redezeiten einstellen" class="col-12 fas fa-cog fa-lg" @onclick="() => SpeakingTimeConfigModal.Open()"></i>
+    <div class="row m-0 px-2 col-12 d-flex justify-content-center">
+        <div class="row col-12 m-0 p-0 d-flex align-items-center text-primary">
+            <div class="col row">
+                @if (invalidFormatSpeakerTime)
+                {
+                <div class="col alert alert-danger my-0 ml-0 mr-3" role="alert">
+                    Formatfehler in der Sprecher Zeitangabe!
+                </div>
+                }
+                @if(invalidFormatQuestionTime){
+                <div class="col alert alert-danger my-0 mr-0 ml-3" role="alert">
+                    Formatfehler in der Frage Zeitangabe!
+                </div>
+                }
+            </div>
+            <div class="col-5 col-md-2 d-flex justify-content-end">
+                <i type="button" title="Lese Ansicht öffnen" class="fas fa-external-link-alt fa-lg p-2" @onclick="() => OpenReaderSpectatorView()"></i>
+                <i type ="button" title="Redezeiten einstellen" class="fas fa-cog fa-lg p-2" @onclick="() => SpeakingTimeConfigModal.Open()"></i>
+            </div>
         </div>
-
+        <div class="card col-12 mx-0 mt-3 p-0">
+            <div class="card-body row col-12 m-0 p-0">
+                <div class="col-6 m-0 p-3 header-info">
+                    <div class="row m-0 p-0 d-flex justify-content-between">
+                        <div class="col p-0 m-0">
+                            <div class="col-12">
+                                <i class="fas fa-user-alt mr-2"></i>
+                                @if (Speakerlist.CurrentSpeaker != null)
+                                {
+                                    @Speakerlist.CurrentSpeaker.Name
+                                } else {
+                                    <span>-</span>
+                                }
+                            </div>
+                            <div class="col-12 hover-enabled">
+                                <span type="button" class="py-2 text-danger" @onclick="() => this.Speakerlist.ClearCurrentSpeaker()"><i class="fas fa-trash mr-2"></i>Kopf leeren</span>
+                            </div>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="col-12">
+                                <h4 class="m-0 text-center @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 11 ? "text-danger" : "")">
+                                    @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 0 ? "-" : "")
+                                    @Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
+                            </div>
+                            <div class="col-12 hover-enabled">
+                                <span type="button" class="p-2 text-success" @onclick="() => this.Speakerlist.AddSpeakerSeconds(10)">+10</span>
+                                <span type="button" class="p-2 text-danger" @onclick="() => this.Speakerlist.AddSpeakerSeconds(-10)">-10</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h5>Warteliste</h5>
+                     @foreach (var speaker in Speakerlist.Speakers)
+                        {
+                            <div class="card border p-2">@speaker.Name</div>
+                        }
+                </div>
+                <div class="col-6 m-0 p-3 header-info">
+                    <div class="row m-0 p-0 d-flex justify-content-between">
+                        <div class="col p-0 m-0">
+                            <div class="col-12 text-primary">
+                                <i class="fas fa-comment mr-2"></i>
+                                @if (Speakerlist.CurrentQuestion != null)
+                                {
+                                    @Speakerlist.CurrentQuestion.Name
+                                } else {
+                                    <span>-</span>
+                                }
+                            </div>
+                            <div class="col-12 hover-enabled">
+                                <span type="button" class="py-2 text-danger" @onclick="() => this.Speakerlist.ClearCurrentQuestion()"><i class="fas fa-trash mr-2"></i>Kopf leeren</span>
+                            </div>
+                        </div>
+                        <div class="col-3 p-0">
+                            <div class="col-12">
+                                <h4 class="m-0 text-center @(Speakerlist.RemainingQuestionTime.TotalSeconds < 11 ? "text-danger" : "")">
+                                    @(Speakerlist.RemainingQuestionTime.TotalSeconds < 0 ? "-" : "")
+                                    @Speakerlist.RemainingQuestionTime.ToString(@"mm\:ss")</h4>
+                            </div>
+                            <div class="col-12 hover-enabled">
+                                <span type="button" class="p-2 text-success" @onclick="() => this.Speakerlist.AddQuestionSeconds(10)">+10</span>
+                                <span type="button" class="p-2 text-danger" @onclick="() => this.Speakerlist.AddQuestionSeconds(-10)">-10</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h5>Warteliste</h5>
+                     @foreach (var question in Speakerlist.Questions)
+                        {
+                            <div class="card border p-2">@question.Name</div>
+                        }
+                </div>
+            </div>
+        </div>
     </div>
 
     <br>
@@ -25,16 +111,16 @@
 
         <MUNityClient.Shared.Bootstrap.Modal Title="Sprechzeiten konfigurieren" @ref="SpeakingTimeConfigModal"
                                          OnSubmitCallback="SaveSettings">
-        <EditForm Model="@Settings">
-                        <div class="form-group">
-                            <label>Redzeit</label>
-                            <InputText @bind-Value="Settings.Speakertime" class="form-control" />
-                        </div>
-                        <div class="form-group">
-                            <label>Zeit für Fragen, Kurzbemerkdungen und Antwort</label>
-                            <InputText @bind-Value="Settings.Questiontime" class="form-control" />
-                        </div>
-                    </EditForm>
+            <EditForm Model="@Settings">
+                <div class="form-group">
+                    <label>Redezeit</label>
+                    <InputText @bind-Value="Settings.Speakertime" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label>Zeit für Fragen, Kurzbemerkdungen und Antwort</label>
+                    <InputText @bind-Value="Settings.Questiontime" class="form-control" />
+                </div>
+            </EditForm>
     </MUNityClient.Shared.Bootstrap.Modal>
 
 
@@ -255,17 +341,23 @@
 
     private SpeakerToAdd NewSpeaker = new SpeakerToAdd();
 
+    private Boolean invalidFormatSpeakerTime = false;
+    private Boolean invalidFormatQuestionTime = false;
+
     private void SaveSettings()
     {
-        var spekaerTime = Speakerlist.SpeakerTime;
+        var speakerTime = Speakerlist.SpeakerTime;
         var questionTime = Speakerlist.QuestionTime;
-        if (TimeSpan.TryParseExact(Settings.Speakertime, @"mm\:ss", null, out spekaerTime))
+        if (TimeSpan.TryParseExact(Settings.Speakertime, @"mm\:ss", null, out speakerTime))
         {
-            this.Speakerlist.SpeakerTime = spekaerTime;
+            invalidFormatSpeakerTime = false;
+            invalidFormatQuestionTime = false;
+            this.Speakerlist.SpeakerTime = speakerTime;
         }
         else
         {
             // Die Eingabe der Redezeit ist ungültig!
+            invalidFormatSpeakerTime = true;
         }
 
         if (TimeSpan.TryParseExact(Settings.Questiontime, @"mm\:ss", null, out questionTime))
@@ -275,6 +367,7 @@
         else
         {
             // Die Eingegebene Zeit für Fragen und Kurzbemerkungen ist ungültig.
+            invalidFormatQuestionTime = true;
         }
     }
 
@@ -334,3 +427,16 @@
         await jsRuntime.InvokeAsync<object>("open", url, "_blank");
     }
 }
+
+
+<style>
+    .header-info .hover-enabled {
+        transition: .3s ease;
+        height: 0%;
+        overflow-y: hidden;
+    }
+
+    .header-info:hover .hover-enabled {
+        height: 60%;
+    }
+</style>
