@@ -8,6 +8,98 @@ namespace MUNityClient.Extensions.ResolutionExtensions
 {
     public static class OperativeParagraphTools
     {
+        private static IEnumerable<string> OperativeParagraphOperators
+        {
+            get
+            {
+                yield return "akzeptiert";
+                yield return "anerkennt";
+                yield return "appelliert eindringlich";
+                yield return "appelliert";
+                yield return "beauftrag";
+                yield return "bedauert";
+                yield return "bedenkt";
+                yield return "befürwortet";
+                yield return "begrüßt (wärmstens)";
+                yield return "behält sich vor";
+                yield return "beklagt";
+                yield return "bekräftigt";
+                yield return "bekundet.*hocherfreut";
+                yield return "bekundet";
+                yield return "bemerkt";
+                yield return "bestätigt";
+                yield return "betont";
+                yield return "betrachtet";
+                yield return "billigt";
+                yield return "bittet.*nachdrücklich";
+                yield return "bittet";
+                yield return "dankt";
+                yield return "delegiert";
+                yield return "drängt";
+                yield return "empfiehlt dringend";
+                yield return "empfiehlt";
+                yield return "entschließt sich";
+                yield return "erinnert an";
+                yield return "erinnert";
+                yield return "erkennt an";
+                yield return "erklärt erneut";
+                yield return "erklärt";
+                yield return "ermutigt";
+                yield return "ernennt";
+                yield return "ersucht";
+                yield return "erwägt";
+                yield return "fordert.*auf";
+                yield return "gratuliert";
+                yield return "hebt hervor";
+                yield return "hofft";
+                yield return "ist sich bewusst";
+                yield return "ist fest überzeugt";
+                yield return "ist überzeugt";
+                yield return "kommt überein";
+                yield return "kommt zu dem Schluss";
+                yield return "kommt zu der Überzeugung";
+                yield return "legt nahe";
+                yield return "legt dringend nahe";
+                yield return "lobt feierlich";
+                yield return "macht Gebraucht von";
+                yield return "macht sich zu eigen";
+                yield return "nimmt an";
+                yield return "nimmt hocherfreut zur Kenntnis";
+                yield return "nimmt mit Bedauern zur Kenntnis";
+                yield return "nimmt zur Kenntnis";
+                yield return "räumt ein";
+                yield return "ruft abermals auf";
+                yield return "ruft auf";
+                yield return "schlägt vor";
+                yield return "schließt sich an";
+                yield return "setzt von neuem ein";
+                yield return "setzt ein";
+                yield return "stellt fest";
+                yield return "unterstreicht";
+                yield return "unterstützt";
+                yield return "verlangt unmissverständlich";
+                yield return "vermerkt";
+                yield return "verpflichtet sich";
+                yield return "versichert";
+                yield return "verurteilt.*entschieden";
+                yield return "verurteilt";
+                yield return "verweist";
+                yield return "wiederholt";
+                yield return "weist auf die Tatsache hin";
+                yield return "weist auf.*hin";
+                yield return "würdigt";
+                yield return "zieht ernsthaft in Erwägung";
+                yield return "zieht in Erwägung";
+
+                // Sicherheitsrat Operatoren
+                yield return "autorisiert";
+                yield return "beschließt";
+                yield return "entsendet";
+                yield return "verabschiedet";
+                yield return "verschärft";
+            }
+        }
+
         public static OperativeParagraph CreateOperativeParagraph(this OperativeSection section, string text = "")
         {
             var paragraph = new OperativeParagraph();
@@ -235,6 +327,21 @@ namespace MUNityClient.Extensions.ResolutionExtensions
 
         public static bool HasValidOperator(this OperativeParagraph paragraph)
         {
+            foreach(var op in OperativeParagraphOperators)
+            {
+                if (op.Contains(".*"))
+                {
+                    // Regex Match
+                    if (System.Text.RegularExpressions.Regex.Match(paragraph.Text, op).Success)
+                        return true;
+                }
+                else
+                {
+                    if (paragraph.Text.StartsWith("_" + op + "_") || paragraph.Text.StartsWith(op + " ") || paragraph.Text == op)
+                        return true;
+                }
+            }
+
             return false;
         }
 
