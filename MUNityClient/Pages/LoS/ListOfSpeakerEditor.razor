@@ -8,18 +8,24 @@
 
 @if (Speakerlist != null)
 {
-    <div class="row">
-        <button class="btn btn-block btn-primary" @onclick="() => OpenReaderSpectatorView()">Teilnehmendenansicht in neuem Tab öffnen</button>
+    <div class="row m-0 p-0 col-12 d-flex justify-content-center">
+        <div class="row col-1 m-0 p-0 d-flex justify-content-right align-items-center text-primary">
+            <i type="button" title="Lese Ansicht öffnen" class="col-12 fas fa-external-link-alt fa-lg mb-4" @onclick="() => OpenReaderSpectatorView()"></i>
+            <i type ="button" title="Redezeiten einstellen" class="col-12 fas fa-cog fa-lg" @onclick="() => SpeakingTimeConfigModal.Open()"></i>
+        </div>
+
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    Einstellungen
-                </div>
-                <div class="card-body">
-                    <EditForm Model="@Settings" OnSubmit="SaveSettings">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+
+        <MUNityClient.Shared.Bootstrap.Modal Title="Sprechzeiten konfigurieren" @ref="SpeakingTimeConfigModal"
+                                         OnSubmitCallback="SaveSettings">
+        <EditForm Model="@Settings">
                         <div class="form-group">
                             <label>Redzeit</label>
                             <InputText @bind-Value="Settings.Speakertime" class="form-control" />
@@ -28,13 +34,9 @@
                             <label>Zeit für Fragen, Kurzbemerkdungen und Antwort</label>
                             <InputText @bind-Value="Settings.Questiontime" class="form-control" />
                         </div>
-
-                        <button class="btn btn-success" type="submit">Speichern</button>
                     </EditForm>
-                </div>
-            </div>
-        </div>
-    </div>
+    </MUNityClient.Shared.Bootstrap.Modal>
+
 
     <div class="row">
         <div class="col-6">
@@ -221,6 +223,8 @@
     public string Id { get; set; }
 
     public ListOfSpeakers Speakerlist { get; set; }
+
+    private MUNityClient.Shared.Bootstrap.Modal SpeakingTimeConfigModal { get; set; }
 
     private class SpeakerToAdd
     {
