@@ -3,25 +3,25 @@
 
 @if (CardVisible)
 {
-<div class="border col-6 col-md-4 col-lg-12 py-3">
+<div class="border col-6 col-md-4 col-lg-12 py-3 text-primary">
 
     @if (Amendment is ChangeAmendment)
     {
-        <h4 class="card-title text-center text-primary"><i class="fas fa-pen mr-2"></i>Textänderung</h4>
+        <h4 class="card-title text-center"><i class="fas fa-pen mr-2"></i>Textänderung</h4>
     } else if(Amendment is DeleteAmendment){
-        <h4 class="card-title text-center text-danger"><i class="fas fa-trash mr-2"></i>Streichung</h4>
+        <h4 class="card-title text-center"><i class="fas fa-trash mr-2"></i>Streichung</h4>
     } else if(Amendment is AddAmendment){
-        <h4 class="card-title text-center text-success"><i class="fas fa-plus-square mr-2"></i>Hinzufügen</h4>
+        <h4 class="card-title text-center"><i class="fas fa-plus-square mr-2"></i>Hinzufügen</h4>
     } else if(Amendment is MoveAmendment){
         <h4 class="card-title text-center"><i class="fas fa-arrow-left mr-2"></i>Verschieben</h4>
     }
     <p class="text-center">
-        <i class="fas fa-user-edit mr-2 text-primary"></i>@Amendment.SubmitterName
+        <i class="fas fa-user-edit mr-2"></i>@Amendment.SubmitterName
     </p>
     <p class="text-center">
-        <i class="fas fa-calendar fa-lg text-primary mx-2"
+        <i class="fas fa-calendar fa-lg mx-2"
            alt="submit date"></i>@Amendment.SubmitTime.ToString("dd.MM.yyyy")
-        <i class="fas fa-clock fa-lg text-primary ml-2 mr-1" alt="submit time"></i>
+        <i class="fas fa-clock fa-lg ml-2 mr-1" alt="submit time"></i>
         @Amendment.SubmitTime.ToString("HH:mm")
     </p>
 

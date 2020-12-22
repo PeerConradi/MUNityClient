@@ -26,7 +26,7 @@
                 @* Option Buttons *@
                 <div class="col-3 col-sm-2 px-0">
                     <div role="button" type="button" @onclick="@(() => this.Paragraph.IsLocked = !this.Paragraph.IsLocked)"
-                        title="Bearbeitung sperren" class="col-12 p-0 text-center px-2 py-3 custom-button text-warning"
+                        title="Bearbeitung sperren" class="col-12 p-0 text-center px-2 py-3 custom-button text-primary"
                         alt="lock">
                         @if (this.Paragraph.IsLocked)
                         {
@@ -46,7 +46,7 @@
                         }
                         else
                         {
-                            <i class="text-danger fa-lg fas fa-times"></i>
+                            <i class="text-primary fa-lg fas fa-times"></i>
                         }
                     </div>
                     <div role="button" type="button" class="col-12 p-0 text-center px-2 py-3 custom-button text-danger"
