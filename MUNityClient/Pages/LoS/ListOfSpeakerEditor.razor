@@ -9,267 +9,340 @@
 @if (Speakerlist != null)
 {
     <div class="row m-0 px-2 col-12 d-flex justify-content-center">
-        <div class="row col-12 m-0 p-0 d-flex align-items-center text-primary">
+        @* Settings/Alert Row *@
+        <div class="row col-12 m-0 p-0 d-flex align-items-center">
             <div class="col row">
                 @if (invalidFormatSpeakerTime)
                 {
-                <div class="col alert alert-danger my-0 ml-0 mr-3" role="alert">
-                    Formatfehler in der Sprecher Zeitangabe!
-                </div>
+                    <div class="col alert alert-danger my-0 ml-0 mr-3" role="alert">
+                        Formatfehler in der Sprecher Zeitangabe!
+                    </div>
                 }
-                @if(invalidFormatQuestionTime){
-                <div class="col alert alert-danger my-0 mr-0 ml-3" role="alert">
-                    Formatfehler in der Frage Zeitangabe!
-                </div>
+                @if (invalidFormatQuestionTime)
+                {
+                    <div class="col alert alert-danger my-0 mr-0 ml-3" role="alert">
+                        Formatfehler in der Frage Zeitangabe!
+                    </div>
                 }
             </div>
             <div class="col-5 col-md-2 d-flex justify-content-end">
-                <i type="button" title="Lese Ansicht öffnen" class="fas fa-external-link-alt fa-lg p-2" @onclick="() => OpenReaderSpectatorView()"></i>
-                <i type ="button" title="Redezeiten einstellen" class="fas fa-cog fa-lg p-2" @onclick="() => SpeakingTimeConfigModal.Open()"></i>
+                <i type="button" title="Lese Ansicht öffnen" class="fas fa-external-link-alt fa-lg p-2"
+                    @onclick="() => OpenReaderSpectatorView()"></i>
+                <i type="button" title="Redezeiten einstellen" class="fas fa-cog fa-lg p-2"
+                    @onclick="() => SpeakingTimeConfigModal.Open()"></i>
             </div>
         </div>
+        @* Speaker List Card *@
         <div class="card col-12 mx-0 mt-3 p-0">
             <div class="card-body row col-12 m-0 p-0">
-                <div class="col-6 m-0 p-3 header-info">
-                    <div class="row m-0 p-0 d-flex justify-content-between">
-                        <div class="col p-0 m-0">
-                            <div class="col-12">
+                @* Speakers *@
+                <div class="col-6 m-0 p-3">
+                    <div class="row m-0 p-0 d-flex justify-content-between header-info border-bottom">
+                        <div class="col p-0 m-0 mr-2">
+                            <h5 class="col-12 p-0">
                                 <i class="fas fa-user-alt mr-2"></i>
                                 @if (Speakerlist.CurrentSpeaker != null)
                                 {
                                     @Speakerlist.CurrentSpeaker.Name
-                                } else {
-                                    <span>-</span>
                                 }
-                            </div>
-                            <div class="col-12 hover-enabled">
-                                <span type="button" class="py-2 text-danger" @onclick="() => this.Speakerlist.ClearCurrentSpeaker()"><i class="fas fa-trash mr-2"></i>Kopf leeren</span>
-                            </div>
-                        </div>
-                        <div class="col-3 p-0">
-                            <div class="col-12">
-                                <h4 class="m-0 text-center @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 11 ? "text-danger" : "")">
-                                    @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 0 ? "-" : "")
-                                    @Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
-                            </div>
-                            <div class="col-12 hover-enabled">
-                                <span type="button" class="p-2 text-success" @onclick="() => this.Speakerlist.AddSpeakerSeconds(10)">+10</span>
-                                <span type="button" class="p-2 text-danger" @onclick="() => this.Speakerlist.AddSpeakerSeconds(-10)">-10</span>
-                            </div>
-                        </div>
-                    </div>
-                    <h5>Warteliste</h5>
-                     @foreach (var speaker in Speakerlist.Speakers)
-                        {
-                            <div class="card border p-2">@speaker.Name</div>
-                        }
-                </div>
-                <div class="col-6 m-0 p-3 header-info">
-                    <div class="row m-0 p-0 d-flex justify-content-between">
-                        <div class="col p-0 m-0">
-                            <div class="col-12 text-primary">
-                                <i class="fas fa-comment mr-2"></i>
-                                @if (Speakerlist.CurrentQuestion != null)
+                                else
                                 {
-                                    @Speakerlist.CurrentQuestion.Name
-                                } else {
                                     <span>-</span>
                                 }
-                            </div>
-                            <div class="col-12 hover-enabled">
-                                <span type="button" class="py-2 text-danger" @onclick="() => this.Speakerlist.ClearCurrentQuestion()"><i class="fas fa-trash mr-2"></i>Kopf leeren</span>
-                            </div>
+                                <span type="button" class="text-danger hover-enabled" title="Kopf leeren"
+                                    @onclick="() => this.Speakerlist.ClearCurrentSpeaker()"><i
+                                        class="fas fa-trash ml-3"></i></span>
+                            </h5>
                         </div>
-                        <div class="col-3 p-0">
-                            <div class="col-12">
-                                <h4 class="m-0 text-center @(Speakerlist.RemainingQuestionTime.TotalSeconds < 11 ? "text-danger" : "")">
-                                    @(Speakerlist.RemainingQuestionTime.TotalSeconds < 0 ? "-" : "")
-                                    @Speakerlist.RemainingQuestionTime.ToString(@"mm\:ss")</h4>
-                            </div>
-                            <div class="col-12 hover-enabled">
-                                <span type="button" class="p-2 text-success" @onclick="() => this.Speakerlist.AddQuestionSeconds(10)">+10</span>
-                                <span type="button" class="p-2 text-danger" @onclick="() => this.Speakerlist.AddQuestionSeconds(-10)">-10</span>
-                            </div>
+                        <div class="col-6 row m-0 p-0 d-flex justify-content-end">
+                            <span type="button" class="py-1 px-3 text-danger hover-enabled"
+                                @onclick="() => this.Speakerlist.AddSpeakerSeconds(-10)">-10</span>
+                            <h3
+                                class="m-0 text-center @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 11 ? "text-danger" : "")">
+                                @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 0 ? "-" : "")
+                                @Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h3>
+                            <span type="button" class="py-1 px-3 text-success hover-enabled"
+                                @onclick="() => this.Speakerlist.AddSpeakerSeconds(10)">+10</span>
                         </div>
                     </div>
-                    <h5>Warteliste</h5>
-                     @foreach (var question in Speakerlist.Questions)
+                    @* Controls *@
+                    <div class="col-12 p-0 my-3">
+                        @if (Speakerlist.Status == ListOfSpeakers.EStatus.Speaking)
                         {
-                            <div class="card border p-2">@question.Name</div>
-                        }
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-
-        <MUNityClient.Shared.Bootstrap.Modal Title="Sprechzeiten konfigurieren" @ref="SpeakingTimeConfigModal"
-                                         OnSubmitCallback="SaveSettings">
-            <EditForm Model="@Settings">
-                <div class="form-group">
-                    <label>Redezeit</label>
-                    <InputText @bind-Value="Settings.Speakertime" class="form-control" />
-                </div>
-                <div class="form-group">
-                    <label>Zeit für Fragen, Kurzbemerkdungen und Antwort</label>
-                    <InputText @bind-Value="Settings.Questiontime" class="form-control" />
-                </div>
-            </EditForm>
-    </MUNityClient.Shared.Bootstrap.Modal>
-
-
-    <div class="row">
-        <div class="col-6">
-            <div class="card border-primary">
-                <div class="card-body">
-                    Aktueller RednerIn
-                    @if (Speakerlist.CurrentSpeaker != null)
-                    {
-                        <h4>@Speakerlist.CurrentSpeaker.Name</h4>
-                        <h4>Verbleibende Redezeit</h4>
-
-                        @if (Speakerlist.RemainingSpeakerTime.TotalSeconds > 10)
-                        {
-                            <h4>@Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
-                        }
-                        else if (Speakerlist.RemainingSpeakerTime.TotalSeconds <= 10 && Speakerlist.RemainingSpeakerTime.TotalSeconds >= 0)
-                        {
-                            <h4 class="text-danger">@Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
+                            <i title="Rede pausieren" type="button" class="fas mx-2 fa-lg fa-pause"
+                                @onclick="() => Speakerlist.PauseSpeaker()"></i>
                         }
                         else
                         {
-                            <h4 class="text-danger">Zeitüberschreitung um: @Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
+                            <i title="Rede fortsetzen" type="button" class="fas mx-2 fa-lg fa-play"
+                                @onclick="() => Speakerlist.ResumeSpeaker()"></i>
                         }
-
-                        <button class="btn btn-danger" @onclick="() => this.Speakerlist.ClearCurrentSpeaker()">Kopf leeren/Aktuelle(n) RednerIn entfernen</button>
-                        <button class="btn btn-success" @onclick="() => this.Speakerlist.AddSpeakerSeconds(10)">+ 10 Sekunden</button>
-                        <button class="btn btn-danger" @onclick="() => this.Speakerlist.AddSpeakerSeconds(-10)">- 10 Sekunden</button>
+                        <i title="Nächste Rede" type="button" class="fas mx-2 fa-lg fa-step-forward"
+                            @onclick="() => Speakerlist.NextSpeaker()"></i>
+                        <i title="Redezeit zurücksetzen" type="button" class="fas fa-lg fa-undo ml-3"
+                            @onclick="() => Speakerlist.StartSpeaker()"></i>
+                    </div>
+                    <h5>Warteliste</h5>
+                    @foreach (var speaker in Speakerlist.Speakers)
+                    {
+                        <div class="card border p-2">@speaker.Name</div>
+                    }
+                    @if (Speakerlist.ListClosed)
+                    {
+                        <button @onclick="() => Speakerlist.ListClosed = true" class="btn btn-outline-success">Redeliste
+                            öffnen</button>
                     }
                     else
                     {
-                        <h4>Niemand :(</h4>
+                        <div type="button" @onclick="() => Speakerlist.ListClosed = false" class="border mx-0 mt-2 p-2"><i
+                                class="fas fa-ban mr-2 text-danger"></i>Redeliste
+                            schließen</div>
                     }
-
-                    <h3>Warteliste Redebeitrag</h3>
-
-                    <ul>
-                        @foreach (var speaker in Speakerlist.Speakers)
+                </div>
+                @* Comments *@
+                <div class="col-6 m-0 p-3">
+                    <div class="row m-0 p-0 d-flex justify-content-between header-info border-bottom">
+                        <div class="col p-0 m-0 mr-2">
+                            <h5 class="col-12 p-0">
+                                <i class="fas fa-user-alt mr-2"></i>
+                                @if (Speakerlist.CurrentQuestion != null)
+                                {
+                                    @Speakerlist.CurrentQuestion.Name
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                                <span type="button" class="text-danger hover-enabled" title="Kopf leeren"
+                                    @onclick="() => this.Speakerlist.ClearCurrentQuestion()"><i
+                                        class="fas fa-trash ml-3"></i></span>
+                            </h5>
+                        </div>
+                        <div class="col-6 row m-0 p-0 d-flex justify-content-end">
+                            <span type="button" class="py-1 px-3 text-danger hover-enabled"
+                                @onclick="() => this.Speakerlist.AddQuestionSeconds(-10)">-10</span>
+                            <h3
+                                class="m-0 text-center @(Speakerlist.RemainingQuestionTime.TotalSeconds < 11 ? "text-danger" : "")">
+                                @(Speakerlist.RemainingQuestionTime.TotalSeconds < 0 ? "-" : "")
+                                @Speakerlist.RemainingQuestionTime.ToString(@"mm\:ss")</h3>
+                            <span type="button" class="py-1 px-3 text-success hover-enabled"
+                                @onclick="() => this.Speakerlist.AddQuestionSeconds(10)">+10</span>
+                        </div>
+                    </div>
+                    @* Controls *@
+                    <div class="col-12 p-0 my-3">
+                        @if (Speakerlist.Status == ListOfSpeakers.EStatus.Question)
                         {
-                            <li>@speaker.Name</li>
+                            <i title="Rede pausieren" type="button" class="fas mx-2 fa-lg fa-pause"
+                                @onclick="() => Speakerlist.PauseQuestion()"></i>
                         }
-                    </ul>
+                        else
+                        {
+                            <i title="Rede fortsetzen" type="button" class="fas mx-2 fa-lg fa-play"
+                                @onclick="() => Speakerlist.ResumeQuestion()"></i>
+                        }
+                        <i title="Nächste Rede" type="button" class="fas mx-2 fa-lg fa-step-forward"
+                            @onclick="() => Speakerlist.NextQuestion()"></i>
+                        <i title="Redezeit zurücksetzen" type="button" class="fas fa-lg fa-undo ml-3"
+                            @onclick="() => Speakerlist.StartQuestion()"></i>
+                    </div>
+                    <h5>Warteliste</h5>
+                    @foreach (var question in Speakerlist.Questions)
+                    {
+                        <div class="card border p-2">@question.Name</div>
+                    }
+                    @if (Speakerlist.QuestionsClosed)
+                    {
+                        <button @onclick="() => Speakerlist.QuestionsClosed = true" class="btn btn-outline-success">Redeliste
+                            öffnen</button>
+                    }
+                    else
+                    {
+                        <div type="button" @onclick="() => Speakerlist.QuestionsClosed = false" class="border mx-0 mt-2 p-2"><i
+                                class="fas fa-ban mr-2 text-danger"></i>Redeliste
+                            schließen</div>
+                    }
                 </div>
             </div>
+        </div>
+        <div class="col-12 mx-0 mt-3 p-0">
+
+        </div>
+    </div>
+
+
+    <MUNityClient.Shared.Bootstrap.Modal Title="Sprechzeiten konfigurieren" @ref="SpeakingTimeConfigModal"
+        OnSubmitCallback="SaveSettings">
+        <EditForm Model="@Settings">
+            <div class="form-group">
+                <label>Redezeit</label>
+                <InputText @bind-Value="Settings.Speakertime" class="form-control" />
+            </div>
+            <div class="form-group">
+                <label>Zeit für Fragen, Kurzbemerkungen und Antworten</label>
+                <InputText @bind-Value="Settings.Questiontime" class="form-control" />
+            </div>
+        </EditForm>
+    </MUNityClient.Shared.Bootstrap.Modal>
+
+
+    @* <div class="row">
+        <div class="col-6">
+        <div class="card border-primary">
+        <div class="card-body">
+        Aktueller RednerIn
+        @if (Speakerlist.CurrentSpeaker != null)
+        {
+        <h4>@Speakerlist.CurrentSpeaker.Name</h4>
+        <h4>Verbleibende Redezeit</h4>
+
+        @if (Speakerlist.RemainingSpeakerTime.TotalSeconds > 10)
+        {
+        <h4>@Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
+        }
+        else if (Speakerlist.RemainingSpeakerTime.TotalSeconds <= 10 && Speakerlist.RemainingSpeakerTime.TotalSeconds >= 0)
+        {
+        <h4 class="text-danger">@Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
+        }
+        else
+        {
+        <h4 class="text-danger">Zeitüberschreitung um: @Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h4>
+        }
+
+        <button class="btn btn-danger" @onclick="() => this.Speakerlist.ClearCurrentSpeaker()">Kopf leeren/Aktuelle(n) RednerIn
+        entfernen</button>
+        <button class="btn btn-success" @onclick="() => this.Speakerlist.AddSpeakerSeconds(10)">+ 10 Sekunden</button>
+        <button class="btn btn-danger" @onclick="() => this.Speakerlist.AddSpeakerSeconds(-10)">- 10 Sekunden</button>
+        }
+        else
+        {
+        <h4>Niemand :(</h4>
+        }
+
+        <h3>Warteliste Redebeitrag</h3>
+
+        <ul>
+        @foreach (var speaker in Speakerlist.Speakers)
+        {
+        <li>@speaker.Name</li>
+        }
+        </ul>
+        </div>
+        </div>
         </div>
 
         <div class="col-6">
-            <div class="card border-secondary">
-                <div class="card-body">
-                    Aktuelle Frage/Kurzbemerkung
-                    @if (Speakerlist.CurrentQuestion != null)
-                    {
-                        <h4>@Speakerlist.CurrentQuestion.Name</h4>
-                        <h4>Verbleibende Zeit</h4>
-                        <h4>@Speakerlist.RemainingQuestionTime.ToString(@"mm\:ss")</h4>
-                        <button class="btn btn-danger" @onclick="() => this.Speakerlist.ClearCurrentQuestion()">Kopf leeren/Aktuelle(n) FragestellerIn entfernen</button>
-                        <button class="btn btn-success" @onclick="() => this.Speakerlist.AddQuestionSeconds(10)">+ 10 Sekunden</button>
-                        <button class="btn btn-danger" @onclick="() => this.Speakerlist.AddQuestionSeconds(-10)">- 10 Sekunden</button>
-                    }
-                    else
-                    {
-                        <h3>Niemand</h3>
-                    }
+        <div class="card border-secondary">
+        <div class="card-body">
+        Aktuelle Frage/Kurzbemerkung
+        @if (Speakerlist.CurrentQuestion != null)
+        {
+        <h4>@Speakerlist.CurrentQuestion.Name</h4>
+        <h4>Verbleibende Zeit</h4>
+        <h4>@Speakerlist.RemainingQuestionTime.ToString(@"mm\:ss")</h4>
+        <button class="btn btn-danger" @onclick="() => this.Speakerlist.ClearCurrentQuestion()">Kopf leeren/Aktuelle(n)
+        FragestellerIn entfernen</button>
+        <button class="btn btn-success" @onclick="() => this.Speakerlist.AddQuestionSeconds(10)">+ 10 Sekunden</button>
+        <button class="btn btn-danger" @onclick="() => this.Speakerlist.AddQuestionSeconds(-10)">- 10 Sekunden</button>
+        }
+        else
+        {
+        <h3>Niemand</h3>
+        }
 
-                    <h3>Warteliste Fragen und Khhurzbemerkungen</h3>
+        <h3>Warteliste Fragen und Khhurzbemerkungen</h3>
 
-                    <ul>
-                        @foreach (var question in Speakerlist.Questions)
-                        {
-                            <li>@question.Name</li>
-                        }
-                    </ul>
-                </div>
-            </div>
+        <ul>
+        @foreach (var question in Speakerlist.Questions)
+        {
+        <li>@question.Name</li>
+        }
+        </ul>
         </div>
-    </div>
+        </div>
+        </div>
+        </div> *@
 
-    <hr />
 
-    <div class="row">
+    @* <div class="row">
         <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    Steuerung
-                </div>
-                <div class="card-body">
-                    @* Zur Info: *@
-                    @if (Speakerlist.Status == ListOfSpeakers.EStatus.Answer)
-                    {
-                        <div class="alert alert-primary">Der Redner antwortet auf die Frage</div>
-                    }
-                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.AnswerPaused)
-                    {
-                        <div class="alert alert-primary">Die Antwort für den Redner wurde pausiert.</div>
-                    }
-                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.Question)
-                    {
-                        <div class="alert alert-secondary">Es wird eine Frage gestellt</div>
-                    }
-                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.QuestionPaused)
-                    {
-                        <div class="alert alert-secondary">Die Frage wurde pausiert.</div>
-                    }
-                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.SpeakerPaused)
-                    {
-                        <div class="alert alert-primary">Der Redebeitrag wurde pausiert.</div>
-                    }
-                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.Speaking)
-                    {
-                        <div class="alert alert-primary">Der Redebeitrag läuft</div>
-                    }
-                    else if (Speakerlist.Status == ListOfSpeakers.EStatus.Stopped)
-                    {
-                        <div class="alert alert-info">Die Redeliste wird gehalten.</div>
-                    }
-
-                    <button @onclick="() => Speakerlist.NextSpeaker()" class="btn btn-primary">Nächster Redner</button>
-                    <button @onclick="() => Speakerlist.StartSpeaker()" class="btn btn-primary">Redezeit (neu)starten</button>
-                    <button @onclick="() => Speakerlist.PauseSpeaker()" class="btn btn-primary">Redner pausieren</button>
-                    <button @onclick="() => Speakerlist.ResumeSpeaker()" class="btn btn-primary">Redebeitrag Fortsetzen</button>
-                    <button @onclick="() => Speakerlist.NextQuestion()" class="btn btn-secondary">Nächste Frage</button>
-                    <button @onclick="() => Speakerlist.StartQuestion()" class="btn btn-secondary">Frage (neu)starten</button>
-                    <button @onclick="() => Speakerlist.PauseQuestion()" class="btn btn-secondary">Frage pausieren</button>
-                    <button @onclick="() => Speakerlist.ResumeQuestion()" class="btn btn-secondary">Frage fortsetzen</button>
-
-                    @if (Speakerlist.ListClosed)
-                    {
-                        <button @onclick="() => Speakerlist.ListClosed = true" class="btn btn-success">Redeliste öffnen</button>
-                    }
-                    else
-                    {
-                        <button @onclick="() => Speakerlist.ListClosed = false" class="btn btn-danger">Redeliste schließen</button>
-                    }
-
-                    @if (Speakerlist.QuestionsClosed)
-                    {
-                        <button @onclick="() => Speakerlist.QuestionsClosed = true" class="btn btn-success">Fragen und Kurzbemerkungen öffnen</button>
-                    }
-                    else
-                    {
-                        <button @onclick="() => Speakerlist.QuestionsClosed = false" class="btn btn-danger">Fragen und Kurzbemerkungen schließen</button>
-                    }
-
-
-                </div>
-            </div>
+        <div class="card">
+        <div class="card-header">
+        Steuerung
         </div>
-    </div>
+        <div class="card-body">
+        @* Zur Info:
+        @if (Speakerlist.Status == ListOfSpeakers.EStatus.Answer)
+        {
+        <div class="alert alert-primary">Der Redner antwortet auf die Frage</div>
+        }
+        else if (Speakerlist.Status == ListOfSpeakers.EStatus.AnswerPaused)
+        {
+        <div class="alert alert-primary">Die Antwort für den Redner wurde pausiert.</div>
+        }
+        else if (Speakerlist.Status == ListOfSpeakers.EStatus.Question)
+        {
+        <div class="alert alert-secondary">Es wird eine Frage gestellt</div>
+        }
+        else if (Speakerlist.Status == ListOfSpeakers.EStatus.QuestionPaused)
+        {
+        <div class="alert alert-secondary">Die Frage wurde pausiert.</div>
+        }
+        else if (Speakerlist.Status == ListOfSpeakers.EStatus.SpeakerPaused)
+        {
+        <div class="alert alert-primary">Der Redebeitrag wurde pausiert.</div>
+        }
+        else if (Speakerlist.Status == ListOfSpeakers.EStatus.Speaking)
+        {
+        <div class="alert alert-primary">Der Redebeitrag läuft</div>
+        }
+        else if (Speakerlist.Status == ListOfSpeakers.EStatus.Stopped)
+        {
+        <div class="alert alert-info">Die Redeliste wird gehalten.</div>
+        }
+
+        <button @onclick="() => Speakerlist.NextSpeaker()" class="btn btn-primary">Nächster Redner</button>
+        <button @onclick="() => Speakerlist.StartSpeaker()" class="btn btn-primary">Redezeit
+        (neu)starten</button>
+        <button @onclick="() => Speakerlist.PauseSpeaker()" class="btn btn-primary">Redner pausieren</button>
+        <button @onclick="() => Speakerlist.ResumeSpeaker()" class="btn btn-primary">Redebeitrag
+        Fortsetzen</button>
+
+
+        <button @onclick="() => Speakerlist.NextQuestion()" class="btn btn-secondary">Nächste Frage</button>
+        <button @onclick="() => Speakerlist.StartQuestion()" class="btn btn-secondary">Frage
+        (neu)starten</button>
+        <button @onclick="() => Speakerlist.PauseQuestion()" class="btn btn-secondary">Frage pausieren</button>
+        <button @onclick="() => Speakerlist.ResumeQuestion()" class="btn btn-secondary">Frage
+        fortsetzen</button>
+
+        @if (Speakerlist.ListClosed)
+        {
+        <button @onclick="() => Speakerlist.ListClosed = true" class="btn btn-success">Redeliste öffnen</button>
+        }
+        else
+        {
+        <button @onclick="() => Speakerlist.ListClosed = false" class="btn btn-danger">Redeliste
+        schließen</button>
+        }
+
+        @if (Speakerlist.QuestionsClosed)
+        {
+        <button @onclick="() => Speakerlist.QuestionsClosed = true" class="btn btn-success">Fragen und
+        Kurzbemerkungen öffnen</button>
+        }
+        else
+        {
+        <button @onclick="() => Speakerlist.QuestionsClosed = false" class="btn btn-danger">Fragen und
+        Kurzbemerkungen schließen</button>
+        }
+
+
+        </div>
+        </div>
+        </div>
+        </div>
+    *@
 
     <div class="row">
         <div class="col-12">
@@ -293,15 +366,14 @@
 
                     @if (!Speakerlist.QuestionsClosed)
                     {
-                        <button @onclick="() => AddToQuestions()" class="btn btn-secondary">Auf Fragen und Kurzbemerkungen setzen</button>
+                        <button @onclick="() => AddToQuestions()" class="btn btn-secondary">Auf Fragen und Kurzbemerkungen
+                            setzen</button>
                     }
 
                 </div>
             </div>
         </div>
     </div>
-
-
 }
 
 @code {
@@ -432,11 +504,10 @@
 <style>
     .header-info .hover-enabled {
         transition: .3s ease;
-        height: 0%;
-        overflow-y: hidden;
+        opacity: 0%;
     }
 
     .header-info:hover .hover-enabled {
-        height: 60%;
+        opacity: 100%;
     }
 </style>
