@@ -166,6 +166,7 @@ namespace MUNityClient.Models.ListOfSpeakers
 
         public void ResumeSpeaker()
         {
+
             if (CurrentSpeaker != null)
             {
                 if (Status == EStatus.SpeakerPaused)
@@ -173,8 +174,11 @@ namespace MUNityClient.Models.ListOfSpeakers
                 else if (Status == EStatus.AnswerPaused)
                     this.StartSpeakerTime = DateTime.Now.AddSeconds(RemainingSpeakerTime.TotalSeconds - QuestionTime.TotalSeconds);
                 else
-                    this.StartQuestionTime = DateTime.Now;
+                {
+                    this.StartSpeakerTime = DateTime.Now;
+                }
 
+                //this.StartQuestionTime = DateTime.Now;
                 this.Status = EStatus.Speaking;
             }
             else
