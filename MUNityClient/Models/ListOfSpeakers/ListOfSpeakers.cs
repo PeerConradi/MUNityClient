@@ -65,7 +65,7 @@ namespace MUNityClient.Models.ListOfSpeakers
         {
             get
             {
-                if (Status == EStatus.Stopped || Status == EStatus.Speaking || Status == EStatus.Answer) return PausedQuestionTime;
+                if (Status != EStatus.Question && Status != EStatus.QuestionPaused) return PausedQuestionTime;
 
                 var finishTime = StartQuestionTime.AddSeconds(QuestionTime.TotalSeconds);
                 return finishTime - DateTime.Now;
@@ -178,7 +178,8 @@ namespace MUNityClient.Models.ListOfSpeakers
                     this.StartSpeakerTime = DateTime.Now;
                 }
 
-                //this.StartQuestionTime = DateTime.Now;
+                // Fixes a small glitch in the Question time!
+                this.StartQuestionTime = DateTime.Now;
                 this.Status = EStatus.Speaking;
             }
             else
