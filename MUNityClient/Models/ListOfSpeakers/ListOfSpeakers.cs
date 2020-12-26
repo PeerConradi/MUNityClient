@@ -56,6 +56,8 @@ namespace MUNityClient.Models.ListOfSpeakers
                     //       |---------------|<-------->|
                     //                          Verbleibende Zeit
                 }
+
+                // Fall für das Fortsetzen eienr Antwort!
                 var finishTimeQuestion = StartSpeakerTime.AddSeconds(QuestionTime.TotalSeconds);
                 return finishTimeQuestion - DateTime.Now;
             }
