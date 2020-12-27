@@ -1,5 +1,5 @@
-﻿@using MUNityClient.Models.Resolution;
-@using MUNityClient.Extensions.ResolutionExtensions;
+﻿@using MUNitySchema.Models.Resolution;
+@using MUNity.Extensions.ResolutionExtensions;
 
 @if (Resolution != null && this.NewAmendmentModel != null)
 {
@@ -121,12 +121,12 @@
         }
     }
 
-    public IAmendment GetAmendment()
+    public AbstractAmendment GetAmendment()
     {
         if (this.NewAmendmentModel == null || string.IsNullOrEmpty(this.NewAmendmentModel.AmendmentType))
             return null;
 
-        IAmendment newAmendment = null;
+        AbstractAmendment newAmendment = null;
 
         if (this.NewAmendmentModel.AmendmentType == "change")
         {

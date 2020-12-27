@@ -5,10 +5,11 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
-using MUNityClient.Models.Resolution;
+using MUNitySchema.Models.Resolution;
 using Blazored.LocalStorage;
-using MUNityClient.Extensions.ResolutionExtensions;
 using Microsoft.JSInterop;
+using MUNityClient.Models.Resolution;
+using MUNity.Extensions.ResolutionExtensions;
 
 namespace MUNityClient.Services
 {
@@ -131,7 +132,7 @@ namespace MUNityClient.Services
             var storedResolutionInfos = await GetStoredResolutions();
             if (storedResolutionInfos == null) storedResolutionInfos = new List<ResolutionInfo>();
             var foundEntry = storedResolutionInfos.FirstOrDefault(n => n.ResolutionId == updatedResolution.ResolutionId);
-            var info = updatedResolution.GetInfo();
+            var info = (ResolutionInfo)updatedResolution;
             if (foundEntry != null)
             {
                 foundEntry.LastChangedDate = info.LastChangedDate;

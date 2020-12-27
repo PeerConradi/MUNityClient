@@ -1,5 +1,5 @@
-﻿@using MUNityClient.Models.Resolution;
-@using MUNityClient.Extensions.ResolutionExtensions;
+﻿@using MUNitySchema.Models.Resolution;
+@using MUNity.Extensions.ResolutionExtensions;
 
 @if (CardVisible)
 {
@@ -58,7 +58,7 @@
     public Resolution Resolution { get; set; }
 
     [Parameter]
-    public IAmendment Amendment { get; set; }
+    public AbstractAmendment Amendment { get; set; }
 
     [Parameter]
     public EventCallback Interaction { get; set; }
