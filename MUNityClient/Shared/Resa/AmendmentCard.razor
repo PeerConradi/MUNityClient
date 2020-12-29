@@ -3,52 +3,69 @@
 
 @if (CardVisible)
 {
-<div class="border col-6 col-md-4 col-lg-12 py-3">
+<div class="border col-6 col-md-4 col-lg-12 px-2 py-3 @(Activated ? "border-primary" : "")">
 
-    @if (Amendment is ChangeAmendment)
-    {
-        <h4 class="card-title text-center"><i class="fas fa-pen mr-2"></i>Textänderung</h4>
-    } else if(Amendment is DeleteAmendment){
-        <h4 class="card-title text-center"><i class="fas fa-trash mr-2"></i>Streichung</h4>
-    } else if(Amendment is AddAmendment){
-        <h4 class="card-title text-center"><i class="fas fa-plus-square mr-2"></i>Hinzufügen</h4>
-    } else if(Amendment is MoveAmendment){
-        <h4 class="card-title text-center"><i class="fas fa-arrow-left mr-2"></i>Verschieben</h4>
-    }
-    <p class="text-center">
-        <i class="fas fa-user-edit mr-2"></i>@Amendment.SubmitterName
-    </p>
-    <p class="text-center">
-        <i class="fas fa-calendar fa-lg mx-2"
-           alt="submit date"></i>@Amendment.SubmitTime.ToString("dd.MM.yyyy")
-        <i class="fas fa-clock fa-lg ml-2 mr-1" alt="submit time"></i>
-        @Amendment.SubmitTime.ToString("HH:mm")
-    </p>
-
-    <div class="row d-flex justify-content-center mb-3">
-       <button type="button" class="btn btn-sm m-0 btn@(Activated ? "-outline" : "")-primary" data-mdb-ripple-color="dark" @onclick="SwitchActivated">
-       @if (!Activated)
-       {
-            <i class="fas fa-eye mr-2"></i>
-             <span>Hervorheben</span>
-        } else {
-            <i class="fas fa-eye-slash mr-2"></i>
-            <span>Hervorheben beenden</span>
-        }
-       </button>
-    </div>
-
-    <div class="row p-0 m-0 justify-content-between">
-        <div class="btn-group btn-group-sm" role="group" aria-label="Basic example">
-            <button class="btn btn-success btn-sm m-0 px-2" @onclick="ApplyAmendment">
-                <i class="fas fa-check mr-2"></i>Annehmen
-            </button>
-            <button class="btn btn-warning btn-sm  m-0 px-2" @onclick="DenyAmendment">
-                <i class="fas fa-ban mr-2"></i>Ablehnen
-            </button>
+    <div class="row m-0 p-0 d-flex justify-content-between">
+        <div class="row text-center col-7 p-0 m-0 d-flex justify-conetent-start">
+            <h4 class="col-12 m-0 p-0 text-left">
+            @if (Amendment is ChangeAmendment)
+            {
+                <span>
+                    <i class="fas fa-pen mr-2"></i>Änderung
+                </span>
+            } else if(Amendment is DeleteAmendment){
+                <span>
+                    <i class="fas fa-trash mr-2"></i>Streichung
+                </span>
+            } else if(Amendment is AddAmendment){
+                <span>
+                    <i class="fas fa-plus-square mr-2"></i>Hinzufügen
+                </span>
+            } else if(Amendment is MoveAmendment){
+                <span>
+                    <i class="fas fa-arrow-left mr-2"></i>Verschieben
+                </span>
+            }
+            </h4>
+            <span class="col-12 m-0 p-0 text-left"><i class="fas fa-hashtag mr-1"></i>@Pathname</span>
         </div>
-        <button class="btn btn-danger btn-sm  m-0 px-2" @onclick="DeleteMe"><i class="fas fa-trash mr-2"></i>Löschen</button>
+
+        <div class="row m-0 p-0 col d-flex justify-content-end">
+            <span>
+                <i class="fas fa-calendar fa-lg mx-2"
+                    alt="submit date"></i>@Amendment.SubmitTime.ToString("dd.MM.yyyy")
+            </span>
+            <span>
+                <i class="fas fa-clock fa-lg ml-2 mr-1" alt="submit time"></i>
+                    @Amendment.SubmitTime.ToString("HH:mm")
+            </span>
+            <span class="d-flex align-items-center">
+                <i class="fas fa-user-edit mr-2"></i><span class="text-truncate d-inline-block truncate">@Amendment.SubmitterName</span>
+            </span>
+        </div>
+        
     </div>
+    
+        <div class="row p-0 mx-0 mb-0 mt-4" role="group">
+            <button class="btn btn-success btn-sm m-0 px-2 col-2" title="Antrag annehmen" @onclick="ApplyAmendment">
+                <i class="fas fa-check mr-2"></i>
+            </button>
+            <button class="btn btn-warning btn-sm  m-0 px-2 col-2" title="Antrag ablehnen" @onclick="DenyAmendment">
+                <i class="fas fa-ban mr-2"></i>
+            </button>
+                <button type="button" title="Antrag auf Teilnehmenden-Ansicht @(Activated ? "verstecken" : "hervorheben")"
+                 class="btn btn-sm m-0 px-2 col btn@(Activated ? "-outline" : "")-primary" data-mdb-ripple-color="dark" @onclick="SwitchActivated">
+                @if (!Activated)
+                {
+                        <i class="fas fa-eye mr-2"></i>
+                        <span class="text-truncate">Anzeigen</span>
+                    } else {
+                        <i class="fas fa-eye-slash mr-2 "></i>
+                        <span class="text-truncate">Verstecken</span>
+                    }
+            </button>
+           <button class="btn btn-danger btn-sm col m-0 px-2" title="Antrag löschen" @onclick="DeleteMe"><i class="fas fa-trash mr-2"></i>Löschen</button>
+        </div>
 </div>
 }
 
@@ -62,6 +79,8 @@
 
     [Parameter]
     public EventCallback Interaction { get; set; }
+
+    public String Pathname = "Kein Pfad gefunden";
 
 
     private bool _activated;
@@ -117,5 +136,18 @@
             this._activated = this.Amendment.Activated;
         }
         base.OnInitialized();
+
+        Pathname = @Resolution.OperativeSection.GetIndexNameOfOperativeParagraph(Amendment.TargetSectionId);
     }
 }
+
+
+<style>
+    .border-primary {
+        border-width: 2px!important;
+    }
+
+    .truncate {
+        max-width: 170px;
+    }
+</style>

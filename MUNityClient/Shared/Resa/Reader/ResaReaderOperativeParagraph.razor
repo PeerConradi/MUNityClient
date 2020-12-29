@@ -6,7 +6,6 @@
         <div class="card">
             <div class="card-body">
 
-                @* Mit Pathname sieht irgendwie nicht aus, falls das in der Praxis doch gewünscht sein sollte, überleg ich mir was *@
                 <h4> Absatz @Pathname</h4> 
                 @if (DeleteAmendments.Where(n => n.Activated).Count() < 1 &&
                 ChangeAmendments.Where(n => n.Activated).Count() < 1 &&
