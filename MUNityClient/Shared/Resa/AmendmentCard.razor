@@ -47,12 +47,12 @@
     </div>
     
         <div class="row p-0 mx-0 mb-0 mt-4" role="group">
-            <button class="btn btn-success btn-sm m-0 px-2 col-2" title="Antrag annehmen" @onclick="ApplyAmendment">
-                <i class="fas fa-check mr-2"></i>
+            <button class="btn btn-success btn-sm m-0 px-2 col" title="Antrag annehmen" @onclick="ApplyAmendment">
+                <i class="fas fa-check mr-2"></i>Annehmen
             </button>
-            <button class="btn btn-warning btn-sm  m-0 px-2 col-2" title="Antrag ablehnen" @onclick="DenyAmendment">
+            @* <button class="btn btn-warning btn-sm  m-0 px-2 col-2" title="Antrag ablehnen" @onclick="DenyAmendment">
                 <i class="fas fa-ban mr-2"></i>
-            </button>
+            </button> *@
                 <button type="button" title="Antrag auf Teilnehmenden-Ansicht @(Activated ? "verstecken" : "hervorheben")"
                  class="btn btn-sm m-0 px-2 col btn@(Activated ? "-outline" : "")-primary" data-mdb-ripple-color="dark" @onclick="SwitchActivated">
                 @if (!Activated)
@@ -64,8 +64,26 @@
                         <span class="text-truncate">Verstecken</span>
                     }
             </button>
-           <button class="btn btn-danger btn-sm col m-0 px-2" title="Antrag löschen" @onclick="DeleteMe"><i class="fas fa-trash mr-2"></i>Löschen</button>
+            @if(Amendment is DeleteAmendment){
+                <button class="btn btn@(DeleteMenuToggle ? "-outline-danger" : "-danger") btn-sm col m-0 px-2" title="Antrag löschen" @onclick="() => DeleteMenuToggle = !DeleteMenuToggle"><i class="fas fa-trash mr-2"></i>Löschen</button>
+            } else {
+                <button class="btn btn-danger btn-sm col m-0 px-2" title="Antrag löschen" @onclick="DeleteMe"><i class="fas fa-trash mr-2"></i>Löschen</button>
+            }
         </div>
+            @if (Amendment is DeleteAmendment && DeleteMenuToggle)
+            {
+                <div class="row col-12 m-0 p-0">
+                    <button class="btn btn-danger btn-sm col m-0 px-2" title="Antrag ablehnen" @onclick="DenyAmendment">
+                    Alle Anträge löschen
+                    </button>
+                    <button class="btn btn-warning btn-sm col m-0 px-2" title="Antrag löschen" @onclick="DeleteMe">
+                    Diesen Antrag löschen
+                    </button>
+                </div>
+            }
+
+
+
 </div>
 }
 
@@ -81,6 +99,7 @@
     public EventCallback Interaction { get; set; }
 
     public String Pathname = "Kein Pfad gefunden";
+    public Boolean DeleteMenuToggle = false;
 
 
     private bool _activated;
