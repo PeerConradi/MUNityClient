@@ -90,6 +90,12 @@
                     </div>
                 </div>
             </div>
+            <div class="row m-0 py-0 pr-0 pl-2">
+                @foreach (var child in Paragraph.Children)
+                {
+                    @child
+                }
+            </div>
         </div>
         @* Comment Panel *@
         <div class="m-0 col comments @(commentsExpanded ? "comments-expanded" : "comments-collapsed") p-0">
@@ -121,6 +127,9 @@ else if (!Dismissed)
     public bool Dismissed { get; set; } = false;
 
     public Boolean commentsExpanded = false;
+
+
+    
 
     public string Comment
     {

@@ -39,21 +39,26 @@
                 <i class="fas fa-clock fa-lg ml-2 mr-1" alt="submit time"></i>
                     @Amendment.SubmitTime.ToString("HH:mm")
             </span>
-            <span class="d-flex align-items-center">
-                <i class="fas fa-user-edit mr-2"></i><span class="text-truncate d-inline-block truncate">@Amendment.SubmitterName</span>
-            </span>
+        </div>
+
+        <div class="col-12 m-0 p-0 d-flex align-items-center my-3">
+                <i class="fas fa-user-edit mr-2"></i>
+                <input class="d-inline-block border-0 w-100" type="text"
+                 @bind="Amendment.SubmitterName" placeholder="Autor + Unterstützer" title="Autor + Unterstützer"></input>
+                @* <span class="text-truncate d-inline-block truncate">@Amendment.SubmitterName</span> *@
         </div>
         
     </div>
-        
-        <div class="row p-0 mx-0 mb-0 mt-4" role="group">
-            <button class="btn btn-success btn-sm m-0 px-2 col-2" title="Antrag annehmen" @onclick="ApplyAmendment">
-                <i class="fas fa-check mr-2"></i>
-            </button>
-            <button class="btn btn-warning btn-sm  m-0 px-2 col-2" title="Antrag ablehnen" @onclick="DenyAmendment">
-                <i class="fas fa-ban mr-2"></i>
-            </button>
-                <button type="button" title="Antrag auf Teilnehmenden-Ansicht @(Activated ? "verstecken" : "hervorheben")"
+
+--- Merge Conflict ---
+
+
+
+
+
+
+
+<button type="button" title="Antrag auf Teilnehmenden-Ansicht @(Activated ? "verstecken" : "hervorheben")"
                  class="btn btn-sm m-0 px-2 col btn@(Activated ? "-outline" : "")-primary" data-mdb-ripple-color="dark" @onclick="SwitchActivated">
                 @if (!Activated)
                 {
@@ -64,8 +69,26 @@
                         <span class="text-truncate">Verstecken</span>
                     }
             </button>
-           <button class="btn btn-danger btn-sm col m-0 px-2" title="Antrag löschen" @onclick="DeleteMe"><i class="fas fa-trash mr-2"></i>Löschen</button>
+            @if(Amendment is DeleteAmendment){
+                <button class="btn btn@(DeleteMenuToggle ? "-outline-danger" : "-danger") btn-sm col m-0 px-2" title="Antrag löschen" @onclick="() => DeleteMenuToggle = !DeleteMenuToggle"><i class="fas fa-trash mr-2"></i>Löschen</button>
+            } else {
+                <button class="btn btn-danger btn-sm col m-0 px-2" title="Antrag löschen" @onclick="DeleteMe"><i class="fas fa-trash mr-2"></i>Löschen</button>
+            }
         </div>
+            @if (Amendment is DeleteAmendment && DeleteMenuToggle)
+            {
+                <div class="row col-12 m-0 p-0">
+                    <button class="btn btn-danger btn-sm col m-0 px-2" title="Alle Anträge auf Streichung die diesen Paragraphen betreffen löschen" @onclick="DenyAmendment">
+                    Alle Streichungen löschen
+                    </button>
+                    <button class="btn btn-warning btn-sm col m-0 px-2" title="Nur diesen einen Antrag auf Streichung löschen" @onclick="DeleteMe">
+                    Diese Streichung löschen
+                    </button>
+                </div>
+            }
+
+
+
 </div>
 }
 
@@ -82,6 +105,7 @@
 
     public String Pathname = "Kein Pfad gefunden";
 
+	public Boolean DeleteMenuToggle = false;
 
     private bool _activated;
     public bool Activated
@@ -148,6 +172,6 @@
     }
 
     .truncate {
-        max-width: 170px;
+        max-width: 120px;
     }
 </style>
