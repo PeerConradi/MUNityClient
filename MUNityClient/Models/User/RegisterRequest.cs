@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 
 namespace MUNityClient.Models.User
 {
-
-    [Obsolete("Use the MUNityBase /MUNitySchema Package!")]
     public class RegisterRequest
     {
         [Required]

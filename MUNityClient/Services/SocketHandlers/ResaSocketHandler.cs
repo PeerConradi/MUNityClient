@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-using MUNitySchema.Models.Resolution;
+using MUNityClient.Models.Resolution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,7 +62,7 @@ namespace MUNityClient.Services.SocketHandlers
             if (targetParagraph != null)
             {
                 targetParagraph.Text = newParagraph.Text;
-                targetParagraph.Comments = newParagraph.Comments;
+                targetParagraph.Notices = newParagraph.Notices;
             }
             ResolutionChanged?.Invoke(this._resolution);
         }
@@ -79,7 +79,7 @@ namespace MUNityClient.Services.SocketHandlers
             var paragraph = _resolution.OperativeSection.Paragraphs.FirstOrDefault(n => n.OperativeParagraphId == changedParagraph.OperativeParagraphId);
             if (paragraph == null) return;
             paragraph.Text = changedParagraph.Text;
-            paragraph.Comments = changedParagraph.Comments;
+            paragraph.Notices = changedParagraph.Notices;
             ResolutionChanged?.Invoke(this._resolution);
         }
     }

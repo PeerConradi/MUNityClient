@@ -12,15 +12,5 @@ namespace MUNityClient.Models.Resolution
         public string Title { get; set; }
 
         public DateTime LastChangedDate { get; set; }
-
-        public static explicit operator ResolutionInfo(MUNitySchema.Models.Resolution.Resolution resolution)
-        {
-            return new ResolutionInfo()
-            {
-                LastChangedDate = resolution.Date,
-                ResolutionId = resolution.ResolutionId,
-                Title = resolution.Header.Topic
-            };
-        }
     }
 }

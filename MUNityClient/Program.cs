@@ -18,6 +18,8 @@ namespace MUNityClient
 
         public static async Task Main(string[] args)
         {
+
+
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
             if (Environment.GetEnvironmentVariables().Contains("API_ENDPOINT"))

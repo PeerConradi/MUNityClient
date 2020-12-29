@@ -1,9 +1,9 @@
-﻿using MUNitySchema.Models.Resolution;
+﻿using MUNityClient.Models.Resolution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MUNity.Extensions.ResolutionExtensions;
+using MUNityClient.Extensions.ResolutionExtensions;
 
 namespace MUNityClient.Managing.ResolutionManaging
 {

@@ -1,5 +1,4 @@
-﻿@using MUNitySchema.Models.ListOfSpeakers;
-@using MUNity.Extensions.LoSExtensions;
+﻿@using MUNityClient.Models.ListOfSpeakers;
 @using System.Timers;
 
 @page "/los/edit/{id}"
@@ -328,7 +327,7 @@
             timer.Elapsed += TimerElapsed;
             timer.Start();
 
-            //Speakerlist.ListChanged += StoreOnListChanged;
+            Speakerlist.ListChanged += StoreOnListChanged;
 
             base.OnInitialized();
         }
