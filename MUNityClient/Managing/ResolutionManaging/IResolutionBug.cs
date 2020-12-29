@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MUNityClient.Models.Resolution;
+using MUNitySchema.Models.Resolution;
 
 namespace MUNityClient.Managing.ResolutionManaging
 {
