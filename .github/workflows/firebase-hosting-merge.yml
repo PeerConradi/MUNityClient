@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '3.1.x' # SDK Version to use; x will use the latest version of the 3.1 channel
+          dotnet-version: '5.x' # SDK Version to use; x will use the latest version of the 3.1 channel
       - run: dotnet publish -o dist
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
