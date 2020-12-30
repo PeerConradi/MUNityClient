@@ -5,8 +5,6 @@ using System.Threading.Tasks;
 
 namespace MUNityClient.Models.Simulation
 {
-
-    [Obsolete("Use the MUNityBase /MUNitySchema Package!")]
     public class SimulationListItem
     {
         public int SimulationId { get; set; }

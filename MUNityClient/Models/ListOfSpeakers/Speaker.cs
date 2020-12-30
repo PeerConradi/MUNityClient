@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MUNityClient.Models.Simulation
+namespace MUNityClient.Models.ListOfSpeakers
 {
-    public class SimulationPreset
+    public class Speaker
     {
         public string Id { get; set; }
 
         public string Name { get; set; }
 
-        public List<SimulationRole> Roles { get; set; }
+        public string Iso { get; set; }
     }
 }
