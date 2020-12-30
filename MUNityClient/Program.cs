@@ -14,21 +14,11 @@ namespace MUNityClient
 {
     public class Program
     {
-        public static string API_URL = "https://localhost:44349";
+        public static string API_URL = "https://mun-tools.com:5000";
 
         public static async Task Main(string[] args)
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
-            if (Environment.GetEnvironmentVariables().Contains("API_ENDPOINT"))
-            {
-                Console.WriteLine("Load Entpoint from environment");
-                API_URL = Environment.GetEnvironmentVariable("API_ENDPOINT");
-            }
-            else
-            {
-                Console.WriteLine("Using default endpoint.");
-            }
             
 
             builder.RootComponents.Add<App>("app");

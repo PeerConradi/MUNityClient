@@ -12,8 +12,18 @@
                 Teilnehmende können auf die Resolution zugreifen. Kooperatives Zusammenarbeiten mit dem Sekretariat ist
                 möglich. Sie ist live auf verschiedenen Geräten abrufbar.
             </p>
-            <button @onclick="CreatePublicResolution" class="btn btn-success m-0 col-12">Cloud Resolution
-                erstellen</button>
+            @if (backendReady)
+            {
+                <button @onclick="CreatePublicResolution" class="btn btn-success m-0 col-12">
+                    Cloud Resolution
+                    erstellen
+                </button>
+            }
+            else
+            {
+                <p class="m-0 col-12">Hintergrunddienst wird verbunden oder nicht verfügbar.</p>
+            }
+
         </div>
     </div>
     <div class="card col-11 col-md-5 p-0 my-3">
@@ -74,6 +84,8 @@
 @code {
     private bool loadingLocalsDone = false;
 
+    private bool backendReady = false;
+
     private List<MUNityClient.Models.Resolution.ResolutionInfo> localResolutions;
 
     private async Task CreateLocalResolution()
@@ -98,5 +110,6 @@
     {
         this.localResolutions = await resolutionService.GetStoredResolutions();
         this.loadingLocalsDone = true;
+        this.backendReady = await resolutionService.IsOnline(true);
     }
 }
