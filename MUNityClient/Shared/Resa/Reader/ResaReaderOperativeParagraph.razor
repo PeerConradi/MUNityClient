@@ -1,4 +1,5 @@
-﻿@using MUNitySchema.Models.Resolution;
+﻿@using MUNity.Models.Resolution;
+@using System.Collections.ObjectModel;
 
 @if (Paragraph != null)
 {
@@ -108,34 +109,18 @@ else
 @code {
     private OperativeParagraph _paragraph;
     [Parameter]
-    public OperativeParagraph Paragraph
-    {
-        get => _paragraph;
-        set
-        {
-            if (this._paragraph != null)
-                this._paragraph.TextChanged -= TextChanged;
-            this._paragraph = value;
-            this._paragraph.TextChanged += TextChanged;
-        }
-    }
+    public OperativeParagraph Paragraph { get; set; }
 
     [Parameter]
     public string Pathname { get; set; }
 
     [Parameter]
-    public IEnumerable<DeleteAmendment> DeleteAmendments { get; set; }
+    public System.Collections.Generic.IEnumerable<DeleteAmendment> DeleteAmendments { get; set; }
 
     [Parameter]
-    public IEnumerable<ChangeAmendment> ChangeAmendments { get; set; }
+    public System.Collections.Generic.IEnumerable<ChangeAmendment> ChangeAmendments { get; set; }
 
     [Parameter]
-    public IEnumerable<MoveAmendment> MoveAmendments { get; set; }
+    public System.Collections.Generic.IEnumerable<MoveAmendment> MoveAmendments { get; set; }
 
-
-
-    private void TextChanged(OperativeParagraph sender, string oldText, string newText)
-    {
-        StateHasChanged();
-    }
 }

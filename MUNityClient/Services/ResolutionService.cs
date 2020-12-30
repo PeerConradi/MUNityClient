@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
-using MUNitySchema.Models.Resolution;
+using MUNity.Models.Resolution;
 using Blazored.LocalStorage;
 using Microsoft.JSInterop;
 using MUNityClient.Models.Resolution;

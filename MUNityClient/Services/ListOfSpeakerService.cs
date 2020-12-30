@@ -1,7 +1,7 @@
 ﻿using Blazored.LocalStorage;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
-using MUNitySchema.Models.ListOfSpeakers;
+using MUNity.Models.ListOfSpeakers;
 
 namespace MUNityClient.Services
 {

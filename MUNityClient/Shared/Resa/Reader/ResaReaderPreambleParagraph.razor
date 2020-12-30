@@ -1,4 +1,4 @@
-﻿@using MUNitySchema.Models.Resolution;
+﻿@using MUNity.Models.Resolution;
 
 @if (Paragraph != null)
 {
@@ -27,19 +27,5 @@ else
 
     private PreambleParagraph _paragraph;
     [Parameter]
-    public PreambleParagraph Paragraph
-    {
-        get => _paragraph;
-        set
-        {
-            if (_paragraph != null) _paragraph.TextChanged -= TextChanged;
-            _paragraph = value;
-            _paragraph.TextChanged += TextChanged;
-        }
-    }
-
-    private void TextChanged(PreambleParagraph sender, string oldText, string newText)
-    {
-        StateHasChanged();
-    }
+    public PreambleParagraph Paragraph { get; set; }
 }

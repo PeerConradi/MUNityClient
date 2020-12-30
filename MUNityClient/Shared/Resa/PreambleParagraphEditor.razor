@@ -1,4 +1,4 @@
-﻿@using MUNitySchema.Models.Resolution;
+﻿@using MUNity.Models.Resolution;
 @using MUNity.Extensions.ResolutionExtensions;
 @inject MUNityClient.Services.ResolutionService resolutionService;
 
@@ -113,7 +113,7 @@
         {
             if (!this.Paragraph.Comments.Any())
             {
-                this.Paragraph.Comments.Add(new MUNitySchema.Models.Resolution.Comment());
+                this.Paragraph.Comments.Add(new MUNity.Models.Resolution.Comment());
             }
 
             return this.Paragraph.Comments.First().Text;
@@ -124,10 +124,9 @@
     {
         if (!this.Paragraph.Comments.Any())
         {
-            this.Paragraph.Comments.Add(new MUNitySchema.Models.Resolution.Comment());
+            this.Paragraph.Comments.Add(new MUNity.Models.Resolution.Comment());
         }
         this.Paragraph.Comments.First().Text = (string)args.Value;
-        this.Paragraph.InvokeNoticesChanged();
     }
 
     public Boolean commentsExpanded = false;

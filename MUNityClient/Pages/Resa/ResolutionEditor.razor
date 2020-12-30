@@ -1,16 +1,15 @@
 ﻿<!-- Navigate to id test /resa/edit/test to show a test resolution without anything -->
 @page "/resa/edit/{id}"
-@using MUNitySchema.Models.Resolution; 
+@using MUNity.Models.Resolution; 
 @using MUNity.Extensions.ResolutionExtensions; 
 @using MUNityClient.Extensions;
 @using MUNityClient.Shared.Resa;
-@using MUNity.Extensions.ResolutionExtensions; 
 @inject MUNityClient.Services.ResolutionService resolutionService;
 
 @if (this.Resolution != null)
 {
 
-    var corruptionResult = MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.IsResolutionCorrupted(this.Resolution);
+    var corruptionResult = MUNity.Troubleshooting.Resa.ResolutionTroubleshooting.IsResolutionCorrupted(this.Resolution);
     if (corruptionResult.isCorrupted)
     {
         <div class="row col-12 d-flex justify-content-center my-5 align-items-center">
@@ -307,8 +306,8 @@ else
         _updateTimer.Elapsed += UpdateTimerElapsed;
         if (Resolution != null)
         {
+            AppendTracker(this.Resolution);
             CheckResolutionOnline();
-            AppendEvents();
         }
     }
 
@@ -333,7 +332,6 @@ else
                     this.SyncMode = SyncModes.Updated;
                     this._socketHandler = await this.resolutionService.Subscribe(this.Resolution);
                     this._socketHandler.ResolutionChanged += ResolutionChangedInSocket;
-                    AppendEvents();
                 }
             }
             else
@@ -342,6 +340,17 @@ else
             }
             this.StateHasChanged();
         });
+    }
+
+    private void AppendTracker(Resolution resolution)
+    {
+        var tracker = new MUNity.ServiceWorkers.ResolutionWorker(resolution);
+        tracker.ResolutionChanged += ResolutionHasChanged;
+    }
+
+    private void ResolutionHasChanged(Resolution sender)
+    {
+        SaveResolution();
     }
 
     private void ResolutionChangedInSocket(Resolution resolution)
@@ -427,19 +436,6 @@ else
             this._updateTimer.Start();
     }
 
-    private void AppendEvents()
-    {
-        this.Resolution.Preamble?.Paragraphs?.ForEach(n =>
-        {
-            n.TextChanged += PreambleTextChanged;
-            n.NoticesChanged += PreambleNoticesChanged;
-        });
-        this.Resolution.OperativeSection.Paragraphs?.ForEach(n =>
-        {
-            n.TextChanged += OperativeTextChanged;
-            //n.NoticesChanged += OperativeNoticesChanged;
-        });
-    }
 
     private void PreambleTextChanged(PreambleParagraph sender, string oldText, string newText)
     {
@@ -513,8 +509,6 @@ else
     public void removePreambleParagraph()
     {
         this.Resolution.Date = DateTime.Now;
-        PreambleMarkedForDeletion.TextChanged -= PreambleTextChanged;
-        PreambleMarkedForDeletion.NoticesChanged -= PreambleNoticesChanged;
         this.Resolution?.Preamble?.Paragraphs?.Remove(PreambleMarkedForDeletion);
         SaveResolution();
     }
@@ -522,7 +516,6 @@ else
     public void removeOperativeParagraph()
     {
         this.Resolution.Date = DateTime.Now;
-        OperativeMarkedForDeletion.TextChanged -= OperativeTextChanged;
         //OperativeMarkedForDeletion.NoticesChanged -= OperativeNoticesChanged;
         this.Resolution?.OperativeSection.RemoveOperativeParagraph(OperativeMarkedForDeletion);
         SaveResolution();
@@ -558,8 +551,6 @@ else
     {
         this.Resolution.Date = DateTime.Now;
         var paragraph = this.Resolution.CreatePreambleParagraph();
-        paragraph.TextChanged += PreambleTextChanged;
-        paragraph.NoticesChanged += PreambleNoticesChanged;
         SaveResolution();
     }
 
@@ -567,7 +558,6 @@ else
     {
         this.Resolution.Date = DateTime.Now;
         var paragraph = this.Resolution.OperativeSection.CreateOperativeParagraph();
-        paragraph.TextChanged += OperativeTextChanged;
         //paragraph.NoticesChanged += OperativeNoticesChanged;
         SaveResolution();
     }
@@ -626,7 +616,7 @@ else
 
     private EventCallback RepairResolution()
     {
-        MUNityClient.Managing.ResolutionManaging.ResolutionTroubleshooting.FixResolution(this.Resolution);
+        MUNity.Troubleshooting.Resa.ResolutionTroubleshooting.FixResolution(this.Resolution);
         SaveResolution();
         return EventCallback.Empty;
     }

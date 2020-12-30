@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
-using MUNitySchema.Models.Resolution;
+using MUNity.Models.Resolution;
 using System;
 using System.Collections.Generic;
 using System.Linq;

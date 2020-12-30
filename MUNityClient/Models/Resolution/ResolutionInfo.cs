@@ -13,7 +13,7 @@ namespace MUNityClient.Models.Resolution
 
         public DateTime LastChangedDate { get; set; }
 
-        public static explicit operator ResolutionInfo(MUNitySchema.Models.Resolution.Resolution resolution)
+        public static explicit operator ResolutionInfo(MUNity.Models.Resolution.Resolution resolution)
         {
             return new ResolutionInfo()
             {
