@@ -17,6 +17,7 @@ namespace MUNityClient.Services.SocketHandlers
 
         public event OnResolutionChanged SocketResolutionChanged;
 
+        // lul
         public HubConnection HubConnection { get; set; }
 
         public List<string> IgnoreTransactions { get; set; }
