@@ -80,7 +80,7 @@ else if (this.RegisterState == ERegisterState.PasswordsDontMatch)
     </EditForm>
 
 @code {
-    public MUNityClient.Models.User.RegisterRequest Request { get; set; } = new Models.User.RegisterRequest();
+    public MUNity.Schema.Authentication.RegisterRequest Request { get; set; } = new MUNity.Schema.Authentication.RegisterRequest();
 
     public string RepeatPassword { get; set; }
 
