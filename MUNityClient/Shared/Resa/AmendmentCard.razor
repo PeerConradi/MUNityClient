@@ -49,16 +49,12 @@
         </div>
         
     </div>
-
---- Merge Conflict ---
-
-
-
-
-
-
-
-<button type="button" title="Antrag auf Teilnehmenden-Ansicht @(Activated ? "verstecken" : "hervorheben")"
+    
+        <div class="row p-0 mx-0 mb-0" role="group">
+            <button class="btn btn-success btn-sm m-0 px-2 col" title="Antrag annehmen" @onclick="ApplyAmendment">
+                <i class="fas fa-check mr-2"></i>Annehmen
+            </button>
+                <button type="button" title="Antrag auf Teilnehmenden-Ansicht @(Activated ? "verstecken" : "hervorheben")"
                  class="btn btn-sm m-0 px-2 col btn@(Activated ? "-outline" : "")-primary" data-mdb-ripple-color="dark" @onclick="SwitchActivated">
                 @if (!Activated)
                 {
