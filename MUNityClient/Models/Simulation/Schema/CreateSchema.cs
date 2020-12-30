@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace MUNityClient.Models.Simulation.Schema
 {
+
+    [Obsolete("Use the MUNityBase /MUNitySchema Package!")]
     public class CreateSchema
     {
         [Required]
