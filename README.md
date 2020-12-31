@@ -1,6 +1,11 @@
 # MunityClient
 The MunityClient is a Blazor Frontend for the MUNityCore. It is a new take on the old Angular Version.
 
+The Client is using the MUNityBase for logic:
+[MUNityBase](https://github.com/PeerConradi/munityData) 
+
+The API project can be found [here](https://github.com/PeerConradi/munity)
+
 ## About
 This client should offer an interface for all tools and functions for the munity core.
 > Note that this Software is still under development.
