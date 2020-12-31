@@ -52,4 +52,7 @@ dotnet watch run
 
 This will allow a Hot-Reload function
 
+## Demo
+
+[mun-hosting.web.app](https://mun-hosting.web.app/)
 
