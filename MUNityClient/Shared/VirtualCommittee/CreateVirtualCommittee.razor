@@ -1,6 +1,4 @@
-﻿@using MUNityClient.Models.Simulation.Schema;
-
-@inject MUNityClient.Services.SimulationService simulationService;
+﻿@inject MUNityClient.Services.SimulationService simulationService;
 @inject NavigationManager navigationManager;
 
 <h3>Neues virtuelles Gremium erstellen</h3>
@@ -16,11 +14,6 @@
                 <small>Der Anzeigename dieser Simulation</small>
             </div>
             <div class="form-group">
-                <label>Passwort</label>
-                <InputText @bind-Value="InputModel.Password" class="form-control" type="password" />
-                <small>Passwort das an Teilnehmende rausgegeben werden kann, welche dieser Simulation beitreten dürfen.</small>
-            </div>
-            <div class="form-group">
                 <label>Admin Passwort</label>
                 <InputText @bind-Value="InputModel.AdminPassword" class="form-control" type="password" />
                 <small>Passwort um die Steuerung übernehmen zu können.</small>
@@ -30,7 +23,6 @@
                 <InputText @bind-Value="InputModel.UserDisplayName" class="form-control" />
                 <small>Der Anzeigename des sich einloggenden Accounts.</small>
             </div>
-
             <div class="form-group">
                 <button type="submit" class="btn btn-block btn-primary">Simulation erstellen</button>
             </div>
@@ -47,7 +39,7 @@
 
 @code {
 
-    private CreateSchema InputModel = new CreateSchema();
+    private MUNity.Schema.Simulation.CreateSimulationRequest InputModel = new MUNity.Schema.Simulation.CreateSimulationRequest();
 
     private MUNityClient.Shared.Bootstrap.Modal NewSimulationPinModal { get; set; }
 
@@ -60,7 +52,6 @@
         var simulation = await simulationService.CreateSimulation(InputModel);
         if (simulation != null)
         {
-            this.Pin = simulation.Pin;
             this.NewSimulationPinModal.Open();
             this.CreatedSimulationId = simulation.SimulationId;
         }

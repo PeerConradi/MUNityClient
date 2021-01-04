@@ -8,7 +8,11 @@
     @* Erstellen *@
     <div class="row">
         <div class="col-4">
-            <MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee></MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee>
+            <div class="card">
+                <div class="card-body">
+                    <MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee></MUNityClient.Shared.VirtualCommittee.CreateVirtualCommittee>
+                </div>
+            </div>
         </div>
         <div class="col-8">
             <div class="card">
@@ -27,31 +31,31 @@
                                         <th>Mit Passwort</th>
                                         <th>Status/Phase</th>
                                         <th>Beitreten</th>
+                                        <th>Verwaltung</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach (var simulation in this._simulations)
                                     {
-                                        <tr>
-                                            <td>@simulation.Name</td>
-                                            <td>@simulation.UsingPassword.ToString()</td>
+                                    <tr>
+                                        <td>@simulation.Name</td>
+                                        <td>@simulation.UsingPassword.ToString()</td>
 
-                                            @if (simulation.Phase == Models.Simulation.Simulation.GamePhases.Lobby)
-                                            {
-                                                <td>Vorbereitungsphase</td>
-                                                <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(simulation.SimulationId)">Beitreten</button></td>
-                                            }
-                                            else if (simulation.Phase == Models.Simulation.Simulation.GamePhases.Online)
-                                            {
-                                                <td>Aktiv</td>
-                                                <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(simulation.SimulationId)">Beitreten</button></td>
-                                            }
-                                            else if (simulation.Phase == Models.Simulation.Simulation.GamePhases.Offline)
-                                            {
-                                                <td>Offline</td>
-                                                <td><button class="btn btn-small btn-info">Einleiten</button></td>
-                                            }
-                                        </tr>
+                                        @if (simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Lobby)
+                                        {
+                                            <td>Vorbereitungsphase</td>
+                                        }
+                                        else if (simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online)
+                                        {
+                                            <td>Aktiv</td>
+                                        }
+                                        else if (simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Offline)
+                                        {
+                                            <td>Offline</td>
+                                        }
+                                        <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(simulation.SimulationId)">Beitreten</button><small>Mit einer Id und Passwort</small></td>
+                                        <td><button class="btn btn-small btn-info">Verwaltung</button><small>Beitritt mit dem Admin Passwort</small></td>
+                                    </tr>
                                     }
                                 </tbody>
                             </table>
@@ -131,6 +135,21 @@ else if (_connectionState == ConnectionStates.CantReachServer)
     <small>Diesen Pin am Besten irgendwo notieren. Wir speichern einen Sicherheitsschlüssel in Ihrem Browser zwischen. Geht dieser verloren wird der Pin benötigt, damit Sie sich wieder in diese Simulation einwählen können.</small>
 </MUNityClient.Shared.Bootstrap.Modal>
 
+<MUNityClient.Shared.Bootstrap.Modal Title="Simulation Beitreten" @ref="_pinModal"
+                                     OnSubmitCallback="RootToSimulation">
+    <EditForm Model="@_joinForm">
+        <div class="form-group">
+            <label>Benutzer Kennung</label>
+            <InputText @bind-Value="_joinForm.UserId" class="form-control"/>
+        </div>
+        <div class="form-group">
+            <label>Kennung</label>
+            <InputText @bind-Value="_joinForm.Password" class="form-control" type="password" />
+        </div>
+        <!-- Theoretisch könnte man noch den Display Name als einstellbare Funtion stellen. -->
+    </EditForm>
+</MUNityClient.Shared.Bootstrap.Modal>
+
 @code {
 
     private enum ConnectionStates
@@ -144,13 +163,13 @@ else if (_connectionState == ConnectionStates.CantReachServer)
 
     private ConnectionStates _connectionState { get; set; } = ConnectionStates.Connecting;
 
-    private ICollection<Models.Simulation.SimulationToken> _tokens { get; set; }
+    private ICollection<MUNity.Schema.Simulation.SimulationTokenResponse> _tokens { get; set; }
 
-    private ICollection<Models.Simulation.SimulationListItem> _simulations { get; set; }
+    private ICollection<MUNity.Schema.Simulation.SimulationListItem> _simulations { get; set; }
 
-    private Models.Simulation.SimulationListItem _selectedSimulation;
+    private MUNity.Schema.Simulation.SimulationListItem _selectedSimulation;
 
-    private MUNityClient.Models.Simulation.Schema.JoinAuthenticate _joinForm = new Models.Simulation.Schema.JoinAuthenticate();
+    private MUNity.Schema.Simulation.JoinAuthenticate _joinForm = new MUNity.Schema.Simulation.JoinAuthenticate();
 
     private MUNityClient.Shared.Bootstrap.Modal _pinModal;
 
@@ -166,6 +185,7 @@ else if (_connectionState == ConnectionStates.CantReachServer)
             {
                 // Draw the Modal
                 this.StateHasChanged();
+                _joinForm.SimulationId = id;
                 // Aks for password
                 _passwordModal.Open();
             }
@@ -179,7 +199,7 @@ else if (_connectionState == ConnectionStates.CantReachServer)
 
     private async Task JoinSimulation()
     {
-        var pinToken = await this.simulationService.JoinSimulation(_selectedSimulation.SimulationId, _joinForm);
+        var pinToken = await this.simulationService.JoinSimulation(_joinForm);
         _passwordModal.Close();
         this._pin = pinToken.Pin;
         this._pinModal.Open();

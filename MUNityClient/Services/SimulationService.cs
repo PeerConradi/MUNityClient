@@ -1,5 +1,4 @@
 ﻿using MUNityClient.Models.Simulation;
-using MUNityClient.Models.Simulation.Schema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,42 +36,50 @@ namespace MUNityClient.Services
         /// </summary>
         /// <param name="schema"></param>
         /// <returns></returns>
-        public async Task<SimulationTokenWithPin> CreateSimulation(CreateSchema schema)
+        public async Task<MUNity.Schema.Simulation.CreateSimulationResponse> CreateSimulation(MUNity.Schema.Simulation.CreateSimulationRequest schema)
         {
             var content = JsonContent.Create(schema);
             var result = await this._httpService.HttpClient.PostAsync($"/api/Simulation/CreateSimulation", content);
             if (result.IsSuccessStatusCode)
             {
-                var token = await result.Content.ReadFromJsonAsync<SimulationTokenWithPin>();
-                await StoreToken(token);
-                return token;
+                var sim = await result.Content.ReadFromJsonAsync<MUNity.Schema.Simulation.CreateSimulationResponse>();
+                var token2 = new MUNity.Schema.Simulation.SimulationTokenResponse()
+                {
+                    Name = sim.SimulationName,
+                    SimulationId = sim.SimulationId,
+                    Token = sim.FirstUserToken
+                };
+                await StoreToken(token2);
+                return sim;
             }
             throw new Exception("something went wrong");
         }
 
-        public async Task<ICollection<SimulationToken>> GetStoredTokens()
+        
+
+        public async Task<ICollection<MUNity.Schema.Simulation.SimulationTokenResponse>> GetStoredTokens()
         {
-            return await this._localStorage.GetItemAsync<ICollection<SimulationToken>>("munity_simsims");
+            return await this._localStorage.GetItemAsync<ICollection<MUNity.Schema.Simulation.SimulationTokenResponse>>("munity_simsims");
         }
 
-        public async Task<ICollection<SimulationListItem>> GetSimulationList()
+        public async Task<ICollection<MUNity.Schema.Simulation.SimulationListItem>> GetSimulationList()
         {
-            return await this._httpService.HttpClient.GetFromJsonAsync<ICollection<SimulationListItem>>("/api/Simulation/GetListOfSimulations");
+            return await this._httpService.HttpClient.GetFromJsonAsync<ICollection<MUNity.Schema.Simulation.SimulationListItem>>("/api/Simulation/GetListOfSimulations");
         }
 
-        public async Task<SimulationToken> GetSimulationToken(int id)
+        public async Task<MUNity.Schema.Simulation.SimulationTokenResponse> GetSimulationToken(int id)
         {
             var tokens = await GetStoredTokens();
             return tokens.FirstOrDefault(n => n.SimulationId == id);
         }
 
-        public async Task<SimulationTokenWithPin> JoinSimulation(int simulationId, JoinAuthenticate body)
+        public async Task<MUNity.Schema.Simulation.SimulationTokenResponse> JoinSimulation(MUNity.Schema.Simulation.JoinAuthenticate body)
         {
             var content = JsonContent.Create(body);
-            var result = await this._httpService.HttpClient.PostAsync($"/api/Simulation/JoinSimulation?id={simulationId}", content);
+            var result = await this._httpService.HttpClient.PostAsync($"/api/Simulation/JoinSimulation", content);
             if (result.IsSuccessStatusCode)
             {
-                var token = await result.Content.ReadFromJsonAsync<SimulationTokenWithPin>();
+                var token = await result.Content.ReadFromJsonAsync<MUNity.Schema.Simulation.SimulationTokenResponse>();
                 await StoreToken(token);
                 return token;
             }
@@ -114,18 +121,25 @@ namespace MUNityClient.Services
             return await client.GetAsync($"/api/Simulation/DeleteRequest?simulationId={simulationId}&userId={userId}&request={request}");
         }
 
-        public async Task<Simulation> GetSimulation(int id)
+        public async Task<MUNity.Schema.Simulation.SimulationResponse> GetSimulation(int id)
         {
             var client = await GetSimulationClient(id);
             if (client == null) return null;
-            return await client.GetFromJsonAsync<Simulation>($"/api/Simulation/GetSimulation?id={id}");
+            return await client.GetFromJsonAsync<MUNity.Schema.Simulation.SimulationResponse>($"/api/Simulation/GetSimulation?id={id}");
         }
 
-        public async Task<SimulationAuth> GetMyAuth(int id)
+        public async Task<ICollection<MUNity.Schema.Simulation.SimulationUserSetup>> GetUserSetups(int simulationId)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) return null;
+            return await client.GetFromJsonAsync<ICollection<MUNity.Schema.Simulation.SimulationUserSetup>>($"/api/Simulation/GetUsersAsAdmin?id={simulationId}");
+        }
+
+        public async Task<MUNity.Schema.Simulation.SimulationAuthSchema> GetMyAuth(int id)
         {
             var client = await GetSimulationClient(id);
             if (client == null) return null;
-            return await client.GetFromJsonAsync<SimulationAuth>($"/api/Simulation/GetSimulationAuth?id={id}");
+            return await client.GetFromJsonAsync<MUNity.Schema.Simulation.SimulationAuthSchema>($"/api/Simulation/GetSimulationAuth?id={id}");
         }
 
         public async Task<List<SimulationPreset>> GetPresets()
@@ -134,11 +148,11 @@ namespace MUNityClient.Services
             return await client.GetFromJsonAsync<List<SimulationPreset>>("/api/Simulation/GetPresets");
         }
 
-        public async Task<List<SimulationRole>> GetRoles(int id)
+        public async Task<List<MUNity.Schema.Simulation.SimulationRoleItem>> GetRoles(int id)
         {
             var client = await GetSimulationClient(id);
             if (client == null) return null;
-            return await client.GetFromJsonAsync<List<SimulationRole>>($"/api/Simulation/GetSimulationRoles?id={id}");
+            return await client.GetFromJsonAsync<List<MUNity.Schema.Simulation.SimulationRoleItem>>($"/api/Simulation/GetSimulationRoles?id={id}");
         }
 
         public async Task ApplyPreset(int simulationId, string presetId)
@@ -164,15 +178,17 @@ namespace MUNityClient.Services
             return client;
         }
 
-        public async Task StoreToken(SimulationToken token)
+
+
+        public async Task StoreToken(MUNity.Schema.Simulation.SimulationTokenResponse token)
         {
             if (token == null)
                 throw new ArgumentException("You have to pass a token here!");
-            var tokens = await this._localStorage.GetItemAsync<ICollection<SimulationToken>>("munity_simsims");
+            var tokens = await this._localStorage.GetItemAsync<ICollection<MUNity.Schema.Simulation.SimulationTokenResponse>>("munity_simsims");
             if (tokens == null)
-                tokens = new List<SimulationToken>();
+                tokens = new List<MUNity.Schema.Simulation.SimulationTokenResponse>();
 
-            SimulationToken element = null;  
+            MUNity.Schema.Simulation.SimulationTokenResponse element = null;
             if (tokens.Any())
                 element = tokens.FirstOrDefault(n => n.SimulationId == token.SimulationId);
             if (element != null)
@@ -189,10 +205,19 @@ namespace MUNityClient.Services
 
         public async Task<SocketHandlers.SimulationSocketHandler> Subscribe(int simulationId)
         {
+            var token = await GetSimulationToken(simulationId);
+            if (token == null) return null;
+
             var socket = await SocketHandlers.SimulationSocketHandler.CreateHander();
             var connId = socket.HubConnection.ConnectionId;
-            var client = await GetSimulationClient(simulationId);
-            var result = await client.GetAsync($"/api/Simulation/Subscribe?id={simulationId}&connectionId={connId}");
+            var subscribeBody = new MUNity.Schema.Simulation.SubscribeSimulation()
+            {
+                SimulationId = simulationId,
+                ConnectionId = connId,
+                Token = token.Token
+            };
+            var client = _httpService.HttpClient;
+            var result = await client.PostAsync($"/api/Simulation/Subscribe", JsonContent.Create(subscribeBody));
             if (result.IsSuccessStatusCode)
                 return socket;
             return null;

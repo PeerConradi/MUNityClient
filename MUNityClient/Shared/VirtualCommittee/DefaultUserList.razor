@@ -1,0 +1,51 @@
+﻿@if (Users != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Online</th>
+                <th>Name</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var user in Users)
+            {
+                <tr>
+                    <td>@user.IsOnline</td>
+                    <td>@user.DisplayName</td>
+                    @{ 
+                        if (Roles == null)
+                        {
+                            <td>Rollen nicht geladen.</td>
+                        }
+                        else
+                        {
+                            var role = Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId);
+                            if (role != null)
+                            {
+                                <td>@role.Name</td>
+                            }
+                            else
+                            {
+                                <td>Keine Rolle</td>
+                            }
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Benutzerliste wird geladen...</p>
+}
+
+@code {
+    [Parameter]
+    public IEnumerable<MUNity.Schema.Simulation.SimulationUserItem> Users { get; set; }
+
+    [Parameter]
+    public IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
+}

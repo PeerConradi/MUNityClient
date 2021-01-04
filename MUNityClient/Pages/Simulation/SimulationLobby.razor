@@ -16,9 +16,8 @@ else
     [Parameter]
     public string Id { get; set; }
 
-    public Models.Simulation.SimulationAuth MyAuth { get; set; }
 
-    public Models.Simulation.Simulation Simulation { get; set; }
+    public MUNity.Schema.Simulation.SimulationResponse Simulation { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -26,7 +25,7 @@ else
         if (int.TryParse(Id, out id))
         {
             this.Simulation = await simulationService.GetSimulation(id);
-            if (Simulation.Phase == Models.Simulation.Simulation.GamePhases.Online)
+            if (Simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online)
             {
                 navigationManager.NavigateTo($"/sim/run/{id}");
             }

@@ -15,68 +15,14 @@
                     Gremium/Lobby
                 </div>
                 <div class="card-body">
-                    @* Die Tabelle könnte auch noch eine Spalte für die Flagge bekommen, das hat aber wirklich keine Prio. *@
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Name</th>
-                                <th scope="col">Rolle</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @if (_simulation.Users != null && _auth != null)
-                            {
-                                int index = 0;
-                                @foreach (var user in _simulation.Users)
-                                {
-                                    @if (user.SimulationUserId != _auth.SimulationUserId)
-                                    {
-                                        @* Das ist nicht der verbundene Benutzer also eine Normale Zeile ausgeben. *@
-                                        <tr>
-                                            <th>@index</th>
-                                            <td>@user.DisplayName</td>
-                                            <td>@(_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)?.Name ?? "Keine Rolle")</td>
-                                        </tr>
-                                    }
-                                    else
-                                    {
-                                        @* Das ist der Benutzer der Verbunden ist selbst. Deshalb kann er/sie eine Rolle
-                    auswählen *@
-                                        <tr class="table-primary">
-                                            <th>@index</th>
-                                            <th>@user.DisplayName</th>
-                                            <td>
-                                                @if (_simulation.Roles != null)
-                                                {
-                                                    @if (_auth.CanSelectRole)
-                                                    {
-                                                        <select class="form-control" @bind="SelectedRole">
-                                                            <option value="-2">Keine Rolle</option>
-                                                            @foreach (var role in _simulation.Roles)
-                                                            {
-                                                                <option value="@role.SimulationRoleId">@role.Name</option>
-                                                            }
-                                                        </select>
-                                                    }
-                                                    else
-                                                    {
-                                                        <p>Sie fürfen sich keine Rolle zuweisen.</p>
-                                                    }
-
-                                                }
-                                                else
-                                                {
-                                                    <p>Rollen werden geladen.</p>
-                                                }
-                                            </td>
-                                        </tr>
-                                    }
-                                    index++;
-                                }
-                            }
-                        </tbody>
-                    </table>
+                    @if (_auth.CanCreateRole)
+                    {
+                        <p>TODO Pro List</p>
+                    }
+                    else
+                    {
+                        <DefaultUserList Users="_simulation.Users" Roles="_simulation.Roles"></DefaultUserList>
+                    }
                 </div>
                 @*
                     Rollenerstellung vorerst deaktiviert. Arbeite halt mit den Presets...
@@ -144,9 +90,9 @@ else
     [Parameter]
     public int? Id { get; set; }
 
-    private Models.Simulation.SimulationAuth _auth { get; set; }
+    private MUNity.Schema.Simulation.SimulationAuthSchema _auth { get; set; }
 
-    private Models.Simulation.Simulation _simulation { get; set; }
+    private MUNity.Schema.Simulation.SimulationResponse _simulation { get; set; }
 
     private IEnumerable<Models.Simulation.SimulationPreset> _presets { get; set; }
     private Models.Simulation.SimulationPreset SelectedPreset { get; set; }
@@ -167,7 +113,7 @@ else
 
     private async Task StartPhase()
     {
-        var response = await this.simulationService.SetPhase(this._simulation.SimulationId, (int)Models.Simulation.Simulation.GamePhases.Online);
+        var response = await this.simulationService.SetPhase(this._simulation.SimulationId, (int)MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online);
     }
 
     private async Task ActivatePreset()
@@ -204,7 +150,7 @@ else
 
 
 
-    private void UserDisconnected(int sender, SimulationUser user)
+    private void UserDisconnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user)
     {
         if (this._simulation == null) return;
 
@@ -212,7 +158,7 @@ else
         this.StateHasChanged();
     }
 
-    private void UserConnected(int sender, SimulationUser user)
+    private void UserConnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user)
     {
         if (this._simulation == null) return;
 
@@ -235,9 +181,9 @@ else
         }
     }
 
-    private void PhaseChanged(int sender, Models.Simulation.Simulation.GamePhases phase)
+    private void PhaseChanged(int sender, MUNity.Schema.Simulation.SimulationEnums.GamePhases phase)
     {
-        if (phase == Models.Simulation.Simulation.GamePhases.Online)
+        if (phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online)
         {
             navigationManager.NavigateTo($"/sim/run/{_simulation.SimulationId}");
         }
