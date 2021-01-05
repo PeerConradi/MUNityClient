@@ -53,7 +53,16 @@
                                         {
                                             <td>Offline</td>
                                         }
-                                        <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(simulation.SimulationId)">Beitreten</button><small>Mit einer Id und Passwort</small></td>
+                                        @if (_tokens.Any(n => n.SimulationId == simulation.SimulationId))
+                                        {
+                                            <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(simulation.SimulationId)">Beitreten</button>
+                                                <button class="btn btn-small btn-danger" @onclick="() => DeleteToken(simulation.SimulationId)">Abmelden</button></td>
+                                        }
+                                        else
+                                        {
+                                            <td><button class="btn btn-small btn-secondary" @onclick="() => EnterSimulation(simulation.SimulationId)">Anmelden</button></td>
+                                        }
+
                                         <td><button class="btn btn-small btn-info">Verwaltung</button><small>Beitritt mit dem Admin Passwort</small></td>
                                     </tr>
                                     }
@@ -69,35 +78,6 @@
             </div>
         </div>
     </div>
-
-    @* Simulationen aus den Tokens (ignorieren wird erst einmal denn wir rufen ja alle existierenden Lobbies ab. *@
-    @*@if (_tokens != null)
-        {
-            <h1>Gespeicherte Sessions</h1>
-            <div class="row">
-                <div class="col-12">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Beitreten</th>
-                                <th>Entfernen</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var token in _tokens)
-                            {
-                                <tr>
-                                    <td>@token.Name</td>
-                                    <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(token.SimulationId)">Beitreten</button></td>
-                                    <td><button class="btn btn-small btn-danger">Entfernen</button></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        }*@
 }
 else if (_connectionState == ConnectionStates.Connecting)
 {
@@ -185,10 +165,28 @@ else if (_connectionState == ConnectionStates.CantReachServer)
         }
     }
 
+    private async Task DeleteToken(int id)
+    {
+        await this.simulationService.RemoveToken(id);
+        var token = _tokens.FirstOrDefault(n => n.SimulationId == id);
+        if (token != null) _tokens.Remove(token);
+    }
+
     private async Task JoinSimulation()
     {
-        var pinToken = await this.simulationService.JoinSimulation(_joinForm);
         _passwordModal.Close();
+        var pinToken = await this.simulationService.JoinSimulation(_joinForm);
+        if (pinToken != null)
+        {
+            this._tokens.Add(pinToken);
+            this.StateHasChanged();
+        }
+        else
+        {
+            // TODO: Beitritt verweigert Meldung!
+        }
+        //this.navigation.NavigateTo($"/sim/lobby/{_selectedSimulation.SimulationId}");
+
 
     }
 

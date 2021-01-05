@@ -11,30 +11,38 @@
             </tr>
         </thead>
         <tbody>
-            @foreach(var user in Users)
+            @foreach (var user in Users)
             {
-                <tr>
-                    <td>@user.IsOnline</td>
+            <tr>
+                <td>@user.IsOnline</td>
+                @if (user.DisplayName != null)
+                {
                     <td>@user.DisplayName</td>
-                    @{ 
-                        if (Roles == null)
+                }
+                else
+                {
+                    <td>KEIN NAME</td>
+                }
+
+                @{
+                    if (Roles == null)
+                    {
+                        <td>Rollen nicht geladen.</td>
+                    }
+                    else
+                    {
+                        var role = Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId);
+                        if (role != null)
                         {
-                            <td>Rollen nicht geladen.</td>
+                            <td>@role.Name</td>
                         }
                         else
                         {
-                            var role = Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId);
-                            if (role != null)
-                            {
-                                <td>@role.Name</td>
-                            }
-                            else
-                            {
-                                <td>Keine Rolle</td>
-                            }
+                            <td>Keine Rolle</td>
                         }
                     }
-                </tr>
+                }
+            </tr>
             }
         </tbody>
     </table>
@@ -48,13 +56,49 @@ else
     [Parameter]
     public int SimulationId { get; set; }
 
+    [Parameter]
+    public Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }
+
     public IEnumerable<MUNity.Schema.Simulation.SimulationUserItem> Users { get; set; }
 
     public IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        if (SocketHandler != null)
+        {
+            SocketHandler.UserConnected += OnUserConnected;
+            SocketHandler.UserDisconnected += OnUserDisconnected;
+        }
+
         this.Roles = await _simulationService.GetRoles(this.SimulationId);
         this.Users = await _simulationService.GetUsers(this.SimulationId);
+    }
+
+    private void OnUserConnected(int sender, MUNity.Schema.Simulation.SimulationUserItem usr)
+    {
+        var user = Users.FirstOrDefault(n => n.SimulationUserId == usr.SimulationUserId);
+        if (user != null)
+        {
+
+            user.IsOnline = true;
+
+            if (!string.IsNullOrEmpty(usr.DisplayName) && usr.DisplayName != user.DisplayName)
+                user.DisplayName = usr.DisplayName;
+
+            StateHasChanged();
+        }
+    }
+
+    private void OnUserDisconnected(int sender, MUNity.Schema.Simulation.SimulationUserItem usr)
+    {
+        var user = Users.FirstOrDefault(n => n.SimulationUserId == usr.SimulationUserId);
+        if (user != null)
+        {
+
+            user.IsOnline = false;
+            this.StateHasChanged();
+
+        }
     }
 }

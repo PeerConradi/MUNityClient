@@ -62,6 +62,15 @@ namespace MUNityClient.Services
             return await this._localStorage.GetItemAsync<ICollection<MUNity.Schema.Simulation.SimulationTokenResponse>>("munity_simsims");
         }
 
+        public async Task RemoveToken(int id)
+        {
+            var tokens = await GetStoredTokens();
+            var token = tokens.FirstOrDefault(n => n.SimulationId == id);
+            if (token != null)
+                tokens.Remove(token);
+            await this._localStorage.SetItemAsync("munity_simsims", tokens);
+        }
+
         public async Task<ICollection<MUNity.Schema.Simulation.SimulationListItem>> GetSimulationList()
         {
             return await this._httpService.HttpClient.GetFromJsonAsync<ICollection<MUNity.Schema.Simulation.SimulationListItem>>("/api/Simulation/GetListOfSimulations");
@@ -72,6 +81,8 @@ namespace MUNityClient.Services
             var tokens = await GetStoredTokens();
             return tokens.FirstOrDefault(n => n.SimulationId == id);
         }
+
+       
 
         public async Task<MUNity.Schema.Simulation.SimulationTokenResponse> JoinSimulation(MUNity.Schema.Simulation.JoinAuthenticate body)
         {
@@ -132,7 +143,8 @@ namespace MUNityClient.Services
         {
             var client = await GetSimulationClient(simulationId);
             if (client == null) return null;
-            return await client.GetFromJsonAsync<List<MUNity.Schema.Simulation.SimulationUserSetup>>($"/api/Simulation/GetUsersAsAdmin?id={simulationId}");
+            var subs = await client.GetFromJsonAsync<List<MUNity.Schema.Simulation.SimulationUserSetup>>($"/api/Simulation/GetUsersAsAdmin?id={simulationId}");
+            return subs;
         }
 
         public async Task<ICollection<MUNity.Schema.Simulation.SimulationUserItem>> GetUsers(int simulationId)

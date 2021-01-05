@@ -18,13 +18,25 @@
                 <tbody>
                     @foreach (var user in Users)
                     {
-                        <tr>
+                        if (user != null)
+                        {
+                    <tr>
+                        @if (user.DisplayName != null)
+                        {
                             <td>@user.DisplayName</td>
-                            <td>@user.IsOnline</td>
-                            <td>@user.PublicId</td>
-                            <td>Rollenauswahl (TODO)</td>
-                            <td>@user.Password</td>
-                        </tr>
+                        }
+                        else
+                        {
+                            <td>KEIN NAME</td>
+                        }
+
+                        <td>@user.IsOnline</td>
+                        <td>@user.PublicId</td>
+                        <td>Rollenauswahl (TODO)</td>
+                        <td>@user.Password</td>
+                    </tr>
+                        }
+
                     }
                 </tbody>
             </table>
@@ -55,6 +67,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         SocketHandler.UserConnected += OnUserConnected;
+        SocketHandler.UserDisconnected += OnUserDisconnected;
         this.Users = await _simulationService.GetUserSetups(this.SimulationId);
         this.Roles = await _simulationService.GetRoles(this.SimulationId);
     }
@@ -64,15 +77,25 @@ else
         var user = Users.FirstOrDefault(n => n.SimulationUserId == usr.SimulationUserId);
         if (user != null)
         {
+
             user.IsOnline = true;
+
             if (!string.IsNullOrEmpty(usr.DisplayName) && usr.DisplayName != user.DisplayName)
                 user.DisplayName = usr.DisplayName;
+
+            StateHasChanged();
         }
-        else
+    }
+
+    private void OnUserDisconnected(int sender, MUNity.Schema.Simulation.SimulationUserItem usr)
+    {
+        var user = Users.FirstOrDefault(n => n.SimulationUserId == usr.SimulationUserId);
+        if (user != null)
         {
-            Users.Add(user);
+
+            user.IsOnline = false;
+            this.StateHasChanged();
         }
-        StateHasChanged();
     }
 
     private async Task NewUser()

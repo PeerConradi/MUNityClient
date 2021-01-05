@@ -21,7 +21,7 @@
                     }
                     else
                     {
-                        <DefaultUserList SimulationId="_simulation.SimulationId"></DefaultUserList>
+                        <DefaultUserList SimulationId="_simulation.SimulationId" SocketHandler="_socket"></DefaultUserList>
                     }
                 </div>
                 @*
@@ -144,43 +144,7 @@ else
 
     private void AppendEvents(MUNityClient.Services.SocketHandlers.SimulationSocketHandler handler)
     {
-        handler.UserDisconnected += UserDisconnected;
-        handler.UserConnected += UserConnected;
-        handler.UserRoleChanged += UserRoleChanged;
         handler.PhaseChanged += PhaseChanged;
-    }
-
-
-
-    private void UserDisconnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user)
-    {
-        if (this._simulation == null) return;
-
-        this._simulation.Users.RemoveAll(n => n.SimulationUserId == user.SimulationUserId);
-        this.StateHasChanged();
-    }
-
-    private void UserConnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user)
-    {
-        if (this._simulation == null) return;
-
-        // Nutzer bereits Verbunden, Wohl einen Disconnect verpasst.
-        if (this._simulation.Users.Any(n => n.SimulationUserId == user.SimulationUserId))
-            return;
-
-        this._simulation.Users.Add(user);
-        this.StateHasChanged();
-    }
-
-    private void UserRoleChanged(int sender, int userId, int roleId)
-    {
-        if (_simulation == null) return;
-        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
-        if (user != null)
-        {
-            user.RoleId = roleId;
-            this.StateHasChanged();
-        }
     }
 
     private void PhaseChanged(int sender, MUNity.Schema.Simulation.SimulationEnums.GamePhases phase)
