@@ -53,7 +53,7 @@
                                         {
                                             <td>Offline</td>
                                         }
-                                        @if (_tokens.Any(n => n.SimulationId == simulation.SimulationId))
+                                        @if (_tokens != null && _tokens.Any(n => n.SimulationId == simulation.SimulationId))
                                         {
                                             <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(simulation.SimulationId)">Beitreten</button>
                                                 <button class="btn btn-small btn-danger" @onclick="() => DeleteToken(simulation.SimulationId)">Abmelden</button></td>
