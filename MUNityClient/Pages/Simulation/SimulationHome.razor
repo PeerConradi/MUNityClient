@@ -178,6 +178,8 @@ else if (_connectionState == ConnectionStates.CantReachServer)
         var pinToken = await this.simulationService.JoinSimulation(_joinForm);
         if (pinToken != null)
         {
+            if (this._tokens == null)
+                this._tokens = new List<MUNity.Schema.Simulation.SimulationTokenResponse>();
             this._tokens.Add(pinToken);
             this.StateHasChanged();
         }
