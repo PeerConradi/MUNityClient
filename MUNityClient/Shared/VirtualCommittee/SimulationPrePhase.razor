@@ -17,11 +17,11 @@
                 <div class="card-body">
                     @if (_auth.CanCreateRole)
                     {
-                        <p>TODO Pro List</p>
+                        <AdminUserList SimulationId="_simulation.SimulationId" SocketHandler="_socket"></AdminUserList>
                     }
                     else
                     {
-                        <DefaultUserList Users="_simulation.Users" Roles="_simulation.Roles"></DefaultUserList>
+                        <DefaultUserList SimulationId="_simulation.SimulationId"></DefaultUserList>
                     }
                 </div>
                 @*
@@ -92,6 +92,8 @@ else
 
     private MUNity.Schema.Simulation.SimulationAuthSchema _auth { get; set; }
 
+    private Services.SocketHandlers.SimulationSocketHandler _socket;
+
     private MUNity.Schema.Simulation.SimulationResponse _simulation { get; set; }
 
     private IEnumerable<Models.Simulation.SimulationPreset> _presets { get; set; }
@@ -130,8 +132,8 @@ else
     {
         if (Id != null)
         {
-            var socket = await this.simulationService.Subscribe(Id.Value);
-            AppendEvents(socket);
+            _socket = await this.simulationService.Subscribe(Id.Value);
+            AppendEvents(_socket);
             this._simulation = await this.simulationService.GetSimulation(Id.Value);
             this._auth = await this.simulationService.GetMyAuth(Id.Value);
             this._presets = await this.simulationService.GetPresets();

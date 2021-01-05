@@ -1,4 +1,6 @@
-﻿@if (Users != null)
+﻿@inject Services.SimulationService _simulationService;
+
+@if (Users != null)
 {
     <table class="table">
         <thead>
@@ -44,8 +46,15 @@ else
 
 @code {
     [Parameter]
+    public int SimulationId { get; set; }
+
     public IEnumerable<MUNity.Schema.Simulation.SimulationUserItem> Users { get; set; }
 
-    [Parameter]
     public IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.Roles = await _simulationService.GetRoles(this.SimulationId);
+        this.Users = await _simulationService.GetUsers(this.SimulationId);
+    }
 }

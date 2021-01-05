@@ -128,11 +128,18 @@ namespace MUNityClient.Services
             return await client.GetFromJsonAsync<MUNity.Schema.Simulation.SimulationResponse>($"/api/Simulation/GetSimulation?id={id}");
         }
 
-        public async Task<ICollection<MUNity.Schema.Simulation.SimulationUserSetup>> GetUserSetups(int simulationId)
+        public async Task<List<MUNity.Schema.Simulation.SimulationUserSetup>> GetUserSetups(int simulationId)
         {
             var client = await GetSimulationClient(simulationId);
             if (client == null) return null;
-            return await client.GetFromJsonAsync<ICollection<MUNity.Schema.Simulation.SimulationUserSetup>>($"/api/Simulation/GetUsersAsAdmin?id={simulationId}");
+            return await client.GetFromJsonAsync<List<MUNity.Schema.Simulation.SimulationUserSetup>>($"/api/Simulation/GetUsersAsAdmin?id={simulationId}");
+        }
+
+        public async Task<ICollection<MUNity.Schema.Simulation.SimulationUserItem>> GetUsers(int simulationId)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) return null;
+            return await client.GetFromJsonAsync<ICollection<MUNity.Schema.Simulation.SimulationUserItem>>($"/api/Simulation/GetUsersDefault?id={simulationId}");
         }
 
         public async Task<MUNity.Schema.Simulation.SimulationAuthSchema> GetMyAuth(int id)
@@ -160,6 +167,13 @@ namespace MUNityClient.Services
             var client = await GetSimulationClient(simulationId);
             if (client == null) throw new Exception();
             await client.GetAsync($"/api/Simulation/ApplyPreset?simulationId={simulationId}&presetId={presetId}");
+        }
+
+        public async Task<MUNity.Schema.Simulation.SimulationUserSetup> CreateUser(int simulationId)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) throw new Exception();
+            return await client.GetFromJsonAsync<MUNity.Schema.Simulation.SimulationUserSetup>($"/api/Simulation/CreateUser?id={simulationId}");
         }
 
         private async Task<HttpClient> GetSimulationClient(int id)
@@ -221,6 +235,13 @@ namespace MUNityClient.Services
             if (result.IsSuccessStatusCode)
                 return socket;
             return null;
+        }
+
+        public async Task<bool> IsUserOnline(int simulationId, int userId)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) throw new Exception();
+            return await client.GetFromJsonAsync<bool>($"/api/Simulation/IsUserOnline?simulationId={simulationId}&userId={userId}");
         }
 
         public SimulationService(HttpService httpService, ILocalStorageService localStorage)
