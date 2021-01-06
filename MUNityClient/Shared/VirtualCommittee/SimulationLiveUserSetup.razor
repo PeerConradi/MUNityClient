@@ -1,0 +1,38 @@
+﻿@* Ansicht eines Benutzers in dem virtuellem Gremium aus der Sicht eines Admins *@
+
+@if (User != null)
+{
+    if (User.IsOnline)
+    {
+        <p class="text-success">ONLINE</p>
+    }
+    else
+    {
+        <p class="text-danger">OFFLINE</p>
+    }
+
+    <p>@User.DisplayName</p>
+
+    @if (Role != null)
+    {
+        <p>@Role.Name</p>
+    }
+    else
+    {
+        <p>Rolle nicht gefunden.</p>
+    }
+
+    @* TODO: Buttons zum einsehen der Kennung und des Passworts. ggf. weitere Funktionsbuttons in Zukunft wie Ändern von Rollen/Anzeigenamen etc. *@
+}
+else
+{
+    <p>Benutzer wird geladen</p>
+}
+
+@code {
+    [Parameter]
+    public MUNity.Schema.Simulation.SimulationUserSetup User { get; set; }
+
+    [Parameter]
+    public MUNity.Schema.Simulation.SimulationRoleItem Role { get; set; }
+}

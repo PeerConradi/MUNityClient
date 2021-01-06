@@ -20,23 +20,8 @@
                     {
                         if (user != null)
                         {
-                    <tr>
-                        @if (user.DisplayName != null)
-                        {
-                            <td>@user.DisplayName</td>
+                            <UserListItemAdmin User="user" SimulationId="SimulationId" Roles="Roles"></UserListItemAdmin>
                         }
-                        else
-                        {
-                            <td>KEIN NAME</td>
-                        }
-
-                        <td>@user.IsOnline</td>
-                        <td>@user.PublicId</td>
-                        <td>Rollenauswahl (TODO)</td>
-                        <td>@user.Password</td>
-                    </tr>
-                        }
-
                     }
                 </tbody>
             </table>
@@ -45,8 +30,6 @@
             <button class="btn btn-succes btn-block" @onclick="() => NewUser()">Neuer Benutzer</button>
         </div>
     </div>
-    
-    
 }
 else
 {
@@ -70,6 +53,16 @@ else
         SocketHandler.UserDisconnected += OnUserDisconnected;
         this.Users = await _simulationService.GetUserSetups(this.SimulationId);
         this.Roles = await _simulationService.GetRoles(this.SimulationId);
+        if (SocketHandler != null)
+        {
+            SocketHandler.RolesChanged += OnRolesChanged;
+        }
+    }
+
+    private void OnRolesChanged(int sender, IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> roles)
+    {
+        this.Roles = roles.ToList();
+        this.StateHasChanged();
     }
 
     private void OnUserConnected(int sender, MUNity.Schema.Simulation.SimulationUserItem usr)
@@ -77,7 +70,6 @@ else
         var user = Users.FirstOrDefault(n => n.SimulationUserId == usr.SimulationUserId);
         if (user != null)
         {
-
             user.IsOnline = true;
 
             if (!string.IsNullOrEmpty(usr.DisplayName) && usr.DisplayName != user.DisplayName)

@@ -1,0 +1,44 @@
+﻿@* Ansicht eines Benutzers in der Liste aus der Sicht eines normalen anderen Benutzers *@
+
+@if (User != null)
+{
+    if (User.IsOnline)
+    {
+        <p class="text-success">ONLINE</p>
+    }
+    else
+    {
+        <p class="text-danger">OFFLINE</p>
+    }
+
+    <p>@User.DisplayName</p>
+
+    @if (Role != null)
+    {
+        <p>@Role.Name</p>
+    }
+    else
+    {
+        <p>Rolle nicht gefunden.</p>
+    }
+}
+else
+{
+    <p>Benutzer wird geladen</p>
+}
+
+@code {
+    [Parameter]
+    public MUNity.Schema.Simulation.SimulationUserItem User { get; set; }
+
+    [Parameter]
+    public MUNity.Schema.Simulation.SimulationRoleItem Role { get; set; }
+
+    [Parameter]
+    public MUNityClient.Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+}
