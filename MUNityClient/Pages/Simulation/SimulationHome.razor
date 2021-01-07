@@ -3,10 +3,12 @@
 @inject Services.SimulationService simulationService;
 @inject NavigationManager navigation;
 
+@inject IJSRuntime JSRuntime
+
 @if (_connectionState == ConnectionStates.Connected)
 {
     @* Erstellen *@
-    <div class="row">
+    <div class="row col-12 m-0 py-0 px-4">
         <div class="col-4">
             <div class="card">
                 <div class="card-body">
@@ -81,11 +83,24 @@
 }
 else if (_connectionState == ConnectionStates.Connecting)
 {
-    <p>Verbindung wird hergestellt.</p>
+    <div class="row d-flex w-100 justify-content-center mt-5">
+        <div class="d-flex w-100 justify-content-center">
+            <div class="spinner-border text-primary p-4" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center mt-3">
+            Es wird versucht eine Verbindung zum Server herzustellen...
+        </div>
+    </div>
 }
 else if (_connectionState == ConnectionStates.CantReachServer)
 {
-    <p>Server nicht erreichbar.</p>
+    <div class="row col-12 d-flex justify-content-center my-2 align-items-center">
+        <div class="d-flex align-items-center text-danger">
+            <i class="fas fa-exclamation mr-2"></i> Die Verbindung zum Server konnte nicht hergestellt werden.
+        </div>
+    </div>
 }
 
 
@@ -114,7 +129,10 @@ else if (_connectionState == ConnectionStates.CantReachServer)
 
 <MUNityClient.Shared.Bootstrap.Modal Title="Simulation erstellt" @ref="_pinModal"
                                      OnSubmitCallback="RootToSimulation">
+
     <p>Erstellt</p>
+
+
 </MUNityClient.Shared.Bootstrap.Modal>
 
 @code {
@@ -141,6 +159,11 @@ else if (_connectionState == ConnectionStates.CantReachServer)
     private MUNityClient.Shared.Bootstrap.Modal _pinModal;
 
     private string _pin;
+
+    private async Task CopyTextToClipboard()
+    {
+        await JSRuntime.InvokeVoidAsync("clipboardCopy.copyText", _pin);
+    }
 
     private void EnterSimulation(int id)
     {
