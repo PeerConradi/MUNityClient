@@ -9,22 +9,32 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header">Gremiumansicht</div>
+                        <div class="card-header">
+                        Gremiumansicht @if (this._myRole != null)
+                        {
+                            <span>@this._myRole.Name</span>
+                        }
+                        </div>
                         <div class="body">
-                            @if (_auth.CanCreateRole && _userSetups != null)
-                            {
-                                foreach (var user in _userSetups)
+                            <div class="row">
+                                @if (_auth.CanCreateRole && _userSetups != null)
                                 {
-                                    <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                    foreach (var user in _userSetups)
+                                    {
+                                        <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)" SocketHandler="this._socket"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                    }
                                 }
-                            }
-                            else if (!_auth.CanCreateRole && _userItems != null)
-                            {
-                                foreach (var user in _userItems)
+                                else if (!_auth.CanCreateRole && _userItems != null)
                                 {
-                                    <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                    foreach (var user in _userItems)
+                                    {
+                                        <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user"
+                                                                                                     Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"
+                                                                                                     SocketHandler="this._socket"
+                                                                                                     IsMe="@(_auth.SimulationUserId == user.SimulationUserId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                    }
                                 }
-                            }
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -33,10 +43,36 @@
                     <div class="card">
                         <div class="card-header">Steuerung</div>
                         <div class="card-body">
-                            <div class="btn btn-primary" @onclick='() => MakeRequest("Redebeitrag")'>Antrag auf Redebeitrag</div>
-                            <div class="btn btn-primary" @onclick='() => MakeRequest("Frage")'>Antrag auf Frage/Kurzbemerkung</div>
-                            <div class="btn btn-primary" @onclick='() => MakeRequest("GO")'>Antrag an Geschäftsordnung</div>
-                            <div class="btn btn-primary" @onclick='() => MakeRequest("Persoenlich")'>Persönlicher Antrag</div>
+                            @if (_myRole != null)
+                            {
+                                @* Funktionen für Delegierte und Ngo Vertreter *@
+                                if (_myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate || _myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Ngo)
+                                {
+                                    <div class="btn btn-secondary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.PersRechtAufInformation)'>Recht auf Information</div>
+                                    <div class="btn btn-secondary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.PersRechtAufOrdnung)'>Recht auf Wiederherstellung der Ordnung</div>
+                                    <div class="btn btn-secondary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.PersRechtAufKlaerung)'>Recht auf Klärung eines Missverständnisses</div>
+
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOMuendlicheAbstimmung)'>mündliche Abstimmung</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOInformelleSitzung)'>Informelle Sitzung</div>
+                                }
+
+                                @* Funktionen nur für Delegierte *@
+                                if (_myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate)
+                                {
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GORevision)'>Revision einer Entscheidung des Vorsitzes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GONeuTagesordnungspunkt)'>Aufnahme eines neuen Tagesordnungspunktes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOZurueckResolutionsentwurf)'>Zurückschicken eines Resolutionsentwurfes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOVertagung)'>Vertagung eines Tagesordnungspunktes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GORueckAllgDebatte)'>Rückkehr zur Allgemeinen Debatte</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOEndeDebatte)'>Ende der aktuellen Debatte</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOVorgezogenAbstReso)'>Vorgezogene Abstimmung über den Resolutionsentwurf als Ganzes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOAbschlussRedeliste)'>Abschluss oder Wiedereröffnung der Redeliste</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOAendereRedezeit)'>Änderung der Redezeit</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOGastredner)'>Anhörung eines Gastredners</div>
+                                }
+                            }
+
+                            @* Funktionen nur für Admins *@
                             @if (_auth.CanCreateRole)
                             {
                                 <div class="btn btn-danger" @onclick='() => BackToLobby()'>Zurück in die Lobby</div>
@@ -68,6 +104,8 @@
 
     private Services.SocketHandlers.SimulationSocketHandler _socket;
 
+    private MUNity.Schema.Simulation.SimulationRoleItem _myRole;
+
     protected override async Task OnInitializedAsync()
     {
         int id = 0;
@@ -76,15 +114,20 @@
             this._simulation = await simulationService.GetSimulation(id);
             this._simulation.Roles = await simulationService.GetRoles(id);
             this._auth = await simulationService.GetMyAuth(id);
+
             _socket = await simulationService.Subscribe(id);
             AddHandlers(_socket);
             if (_auth.CanCreateRole)
             {
                 this._userSetups = await simulationService.GetUserSetups(id);
+                int roleId = this._userSetups.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId)?.RoleId ?? -2;
+                this._myRole = this._simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == roleId);
             }
             else
             {
                 this._userItems = (await simulationService.GetUsers(id)).ToList();
+                int roleId = this._userItems.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId)?.RoleId ?? -2;
+                this._myRole = this._simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == roleId);
             }
             this.StateHasChanged();
         }
@@ -97,9 +140,6 @@
 
     private void AddHandlers(Services.SocketHandlers.SimulationSocketHandler socket)
     {
-        socket.UserRequest += UserRequest;
-        socket.UserRequestAccpted += UserRequestAccepted;
-        socket.UserRequestDeleted += UserRequestDeleted;
         socket.UserConnected += OnUserConnected;
         socket.UserDisconnected += OnUserDisconnected;
     }
@@ -176,21 +216,14 @@
         this.StateHasChanged();
     }
 
-    private async Task MakeRequest(string request)
+    private async Task MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes type)
     {
         if (this._simulation == null) return;
-        await this.simulationService.MakeRequest(this._simulation.SimulationId, request);
+        var petition = new MUNity.Schema.Simulation.Petition();
+        petition.SimulationId = this._simulation.SimulationId;
+        petition.Text = "";
+        petition.PetitionType = type;
+        await this.simulationService.MakePetition(petition);
     }
 
-    private async Task AcceptRequest(int userId, string request)
-    {
-        if (this._simulation == null) return;
-        await this.simulationService.AcceptRequest(this._simulation.SimulationId, userId, request);
-    }
-
-    private async Task DeleteRequest(int userId, string request)
-    {
-        if (this._simulation == null) return;
-        await this.simulationService.DeleteRequest(this._simulation.SimulationId, userId, request);
-    }
 }

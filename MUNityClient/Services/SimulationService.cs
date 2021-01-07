@@ -111,25 +111,22 @@ namespace MUNityClient.Services
             return await client.GetAsync($"/api/Simulation/SetPhase?simulationId={simulationId}&phase={phase}");
         }
 
-        public async Task<HttpResponseMessage> MakeRequest(int simulationId, string request)
+        public async Task<HttpResponseMessage> MakePetition(MUNity.Schema.Simulation.Petition petition)
         {
-            var client = await GetSimulationClient(simulationId);
-            if (client == null) throw new Exception();
-            return await client.GetAsync($"/api/Simulation/MakeRequest?simulationId={simulationId}&request={request}");
+            petition.Token = (await GetSimulationToken(petition.SimulationId)).Token;
+            return await _httpService.HttpClient.PutAsync($"/api/Simulation/MakePetition", JsonContent.Create(petition));
         }
 
-        public async Task<HttpResponseMessage> AcceptRequest(int simulationId, int userId, string request)
+        public async Task<HttpResponseMessage> AcceptPetition(MUNity.Schema.Simulation.Petition petition)
         {
-            var client = await GetSimulationClient(simulationId);
-            if (client == null) throw new Exception();
-            return await client.GetAsync($"/api/Simulation/AcceptRequest?simulationId={simulationId}&userId={userId}&request={request}");
+            petition.Token = (await GetSimulationToken(petition.SimulationId)).Token;
+            return await _httpService.HttpClient.PutAsync($"/api/Simulation/AcceptPetition", JsonContent.Create(petition));
         }
 
-        public async Task<HttpResponseMessage> DeleteRequest(int simulationId, int userId, string request)
+        public async Task<HttpResponseMessage> DeletePetition(MUNity.Schema.Simulation.Petition petition)
         {
-            var client = await GetSimulationClient(simulationId);
-            if (client == null) throw new Exception();
-            return await client.GetAsync($"/api/Simulation/DeleteRequest?simulationId={simulationId}&userId={userId}&request={request}");
+            petition.Token = (await GetSimulationToken(petition.SimulationId)).Token;
+            return await _httpService.HttpClient.PutAsync($"/api/Simulation/DeletePetition", JsonContent.Create(petition));
         }
 
         public async Task<MUNity.Schema.Simulation.SimulationResponse> GetSimulation(int id)
@@ -159,6 +156,13 @@ namespace MUNityClient.Services
             var client = await GetSimulationClient(id);
             if (client == null) return null;
             return await client.GetFromJsonAsync<MUNity.Schema.Simulation.SimulationAuthSchema>($"/api/Simulation/GetSimulationAuth?id={id}");
+        }
+
+        public async Task SetUserRole(int simulationId, int userId, int roleId)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) return;
+            await client.GetAsync($"/api/Simulation/SetUserRole?simulationId={simulationId}&userId={userId}&roleId={roleId}");
         }
 
         public async Task<List<SimulationPreset>> GetPresets()

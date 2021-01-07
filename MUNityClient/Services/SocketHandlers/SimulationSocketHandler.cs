@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MUNityClient.Models.Simulation;
+using MUNity.Hubs;
+using MUNity.Schema.Simulation;
 
 namespace MUNityClient.Services.SocketHandlers
 {
@@ -33,14 +35,14 @@ namespace MUNityClient.Services.SocketHandlers
         public delegate void OnChatMessageRecieved(int simId, int userId, string msg);
         public event OnChatMessageRecieved ChatMessageRevieved;
 
-        public delegate void OnUserRequest(int sender, int userId, string request);
-        public event OnUserRequest UserRequest;
+        public delegate void OnUserPetition(Petition petition);
+        public event OnUserPetition UserPetition;
 
-        public delegate void OnUserRequestAccepted(int sender, int userId, string request);
-        public event OnUserRequestAccepted UserRequestAccpted;
+        public delegate void OnUserPetitionAccepted(Petition petition);
+        public event OnUserPetitionAccepted UserPetitionAccpted;
 
-        public delegate void OnUserRequestDeleted(int sender, int userId, string request);
-        public event OnUserRequestDeleted UserRequestDeleted;
+        public delegate void OnUserPetitionDeleted(Petition petition);
+        public event OnUserPetitionDeleted UserPetitionDeleted;
 
         public HubConnection HubConnection { get; set; }
 
@@ -57,9 +59,9 @@ namespace MUNityClient.Services.SocketHandlers
             HubConnection.On<int, string>("StatusChanged", (id, status) => StatusChanged?.Invoke(id, status));
             HubConnection.On<int, MUNity.Schema.Simulation.SimulationEnums.LobbyModes>("LobbyModeChanged", (id, mode) => LobbyModeChanged?.Invoke(id, mode));
             HubConnection.On<int, int, string>("ChatMessageRecieved", (simId, usrId, msg) => ChatMessageRevieved?.Invoke(simId, usrId, msg));
-            HubConnection.On<int, int, string>("UserRequest", (simId, usrId, request) => UserRequest?.Invoke(simId, usrId, request));
-            HubConnection.On<int, int, string>("UserRequestAccepted", (simId, usrId, request) => UserRequestAccpted?.Invoke(simId, usrId, request));
-            HubConnection.On<int, int, string>("UserRequestDeleted", (simId, usrId, request) => UserRequestDeleted?.Invoke(simId, usrId, request));
+            HubConnection.On<Petition>("UserPetition", (Petition petition) => UserPetition?.Invoke(petition));
+            HubConnection.On<Petition>("UserPetitionAccepted", (Petition petition) => UserPetitionAccpted?.Invoke(petition));
+            HubConnection.On<Petition>("UserPetitionDeleted", (Petition petition) => UserPetitionDeleted?.Invoke(petition));
         }
 
         public static async Task<SimulationSocketHandler> CreateHander()
@@ -68,7 +70,6 @@ namespace MUNityClient.Services.SocketHandlers
             await socket.HubConnection.StartAsync();
             return socket;
         }
-
-
+       
     }
 }

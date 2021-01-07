@@ -45,17 +45,34 @@ else
 
     public List<MUNity.Schema.Simulation.SimulationUserSetup> Users { get; set; }
 
+    [Parameter]
     public List<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        SocketHandler.UserConnected += OnUserConnected;
-        SocketHandler.UserDisconnected += OnUserDisconnected;
+
         this.Users = await _simulationService.GetUserSetups(this.SimulationId);
-        this.Roles = await _simulationService.GetRoles(this.SimulationId);
+        if (Roles == null)
+        {
+            this.Roles = await _simulationService.GetRoles(this.SimulationId);
+        }
         if (SocketHandler != null)
         {
             SocketHandler.RolesChanged += OnRolesChanged;
+            SocketHandler.UserConnected += OnUserConnected;
+            SocketHandler.UserDisconnected += OnUserDisconnected;
+            SocketHandler.UserRoleChanged += OnUserRoleChanged;
+        }
+    }
+
+    private void OnUserRoleChanged(int sender, int userId, int roleId)
+    {
+        if (this.Users == null) return;
+        var user = Users.FirstOrDefault(n => n.SimulationUserId == userId);
+        if (user != null)
+        {
+            user.RoleId = roleId;
+            this.StateHasChanged();
         }
     }
 
