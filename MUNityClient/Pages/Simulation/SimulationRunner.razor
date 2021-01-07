@@ -11,37 +11,20 @@
                     <div class="card">
                         <div class="card-header">Gremiumansicht</div>
                         <div class="body">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <td>Name</td>
-                                        <td>Rolle</td>
-                                        <td>Antrag</td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var user in _simulation.Users)
-                                    {
-                                    <tr class='@((user.SimulationUserId == _auth.SimulationUserId) ? "table-primary" : "" )'>
-                                        <td>@user.DisplayName</td>
-                                        <td>@user.RoleId</td>
-                                        <td>
-                                        @if (!string.IsNullOrEmpty(user.CurrentRequest))
-                                        {
-                                            <div class="alert alert-primary">
-                                                @user.CurrentRequest
-                                                @if (_auth.CanCreateRole)
-                                                {
-                                                    <button class="btn btn-success" @onclick="() => AcceptRequest(user.SimulationUserId, user.CurrentRequest)">Bestätigen</button>
-                                                }
-                                                <button class="btn btn-danger" @onclick="() => DeleteRequest(user.SimulationUserId, user.CurrentRequest)">Löschen</button>
-                                            </div>
-                                        }
-                                        </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                            @if (_auth.CanCreateRole && _userSetups != null)
+                            {
+                                foreach (var user in _userSetups)
+                                {
+                                    <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                }
+                            }
+                            else if (!_auth.CanCreateRole && _userItems != null)
+                            {
+                                foreach (var user in _userItems)
+                                {
+                                    <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                }
+                            }
                         </div>
                     </div>
                 </div>
@@ -54,6 +37,10 @@
                             <div class="btn btn-primary" @onclick='() => MakeRequest("Frage")'>Antrag auf Frage/Kurzbemerkung</div>
                             <div class="btn btn-primary" @onclick='() => MakeRequest("GO")'>Antrag an Geschäftsordnung</div>
                             <div class="btn btn-primary" @onclick='() => MakeRequest("Persoenlich")'>Persönlicher Antrag</div>
+                            @if (_auth.CanCreateRole)
+                            {
+                                <div class="btn btn-danger" @onclick='() => BackToLobby()'>Zurück in die Lobby</div>
+                            }
                         </div>
                     </div>
                 </div>
@@ -71,9 +58,15 @@
     [Parameter]
     public string Id { get; set; }
 
-    private Models.Simulation.Simulation _simulation;
+    private MUNity.Schema.Simulation.SimulationResponse _simulation;
 
-    private Models.Simulation.SimulationAuth _auth;
+    private MUNity.Schema.Simulation.SimulationAuthSchema _auth;
+
+    private List<MUNity.Schema.Simulation.SimulationUserItem> _userItems;
+
+    private List<MUNity.Schema.Simulation.SimulationUserSetup> _userSetups;
+
+    private Services.SocketHandlers.SimulationSocketHandler _socket;
 
     protected override async Task OnInitializedAsync()
     {
@@ -81,11 +74,25 @@
         if (int.TryParse(Id, out id))
         {
             this._simulation = await simulationService.GetSimulation(id);
+            this._simulation.Roles = await simulationService.GetRoles(id);
             this._auth = await simulationService.GetMyAuth(id);
-            var socket = await simulationService.Subscribe(id);
-            AddHandlers(socket);
+            _socket = await simulationService.Subscribe(id);
+            AddHandlers(_socket);
+            if (_auth.CanCreateRole)
+            {
+                this._userSetups = await simulationService.GetUserSetups(id);
+            }
+            else
+            {
+                this._userItems = (await simulationService.GetUsers(id)).ToList();
+            }
             this.StateHasChanged();
         }
+    }
+
+    private async Task BackToLobby()
+    {
+        var response = await this.simulationService.SetPhase(this._simulation.SimulationId, (int)MUNity.Schema.Simulation.SimulationEnums.GamePhases.Lobby);
     }
 
     private void AddHandlers(Services.SocketHandlers.SimulationSocketHandler socket)
@@ -93,6 +100,56 @@
         socket.UserRequest += UserRequest;
         socket.UserRequestAccpted += UserRequestAccepted;
         socket.UserRequestDeleted += UserRequestDeleted;
+        socket.UserConnected += OnUserConnected;
+        socket.UserDisconnected += OnUserDisconnected;
+    }
+
+    private void OnUserConnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user)
+    {
+        if (_userItems != null)
+        {
+            var tmpUser = _userItems.FirstOrDefault(n => n.SimulationUserId == user.SimulationUserId);
+            if (tmpUser != null)
+            {
+                tmpUser.IsOnline = true;
+                tmpUser.DisplayName = user.DisplayName;
+                this.StateHasChanged();
+            }
+        }
+
+        if (_userSetups != null)
+        {
+            var tmpUser = _userSetups.FirstOrDefault(n => n.SimulationUserId == user.SimulationUserId);
+            if (tmpUser != null)
+            {
+                tmpUser.IsOnline = true;
+                tmpUser.DisplayName = user.DisplayName;
+                this.StateHasChanged();
+            }
+        }
+    }
+
+    private void OnUserDisconnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user)
+    {
+        if (_userItems != null)
+        {
+            var tmpUser = _userItems.FirstOrDefault(n => n.SimulationUserId == user.SimulationUserId);
+            if (tmpUser != null)
+            {
+                tmpUser.IsOnline = false;
+                this.StateHasChanged();
+            }
+        }
+
+        if (_userSetups != null)
+        {
+            var tmpUser = _userSetups.FirstOrDefault(n => n.SimulationUserId == user.SimulationUserId);
+            if (tmpUser != null)
+            {
+                tmpUser.IsOnline = false;
+                this.StateHasChanged();
+            }
+        }
     }
 
     private void UserRequest(int sender, int userId, string request)
@@ -100,7 +157,6 @@
         if (this._simulation == null) return;
         var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
         if (user == null) return;
-        user.CurrentRequest = request;
         this.StateHasChanged();
     }
 
@@ -109,7 +165,6 @@
         if (this._simulation == null) return;
         var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
         if (user == null) return;
-        user.CurrentRequest = null;
         this.StateHasChanged();
     }
 
@@ -118,7 +173,6 @@
         if (this._simulation == null) return;
         var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
         if (user == null) return;
-        user.CurrentRequest = null;
         this.StateHasChanged();
     }
 

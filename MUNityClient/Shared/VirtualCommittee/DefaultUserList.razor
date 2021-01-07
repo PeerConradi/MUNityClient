@@ -1,0 +1,104 @@
+﻿@inject Services.SimulationService _simulationService;
+
+@if (Users != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Online</th>
+                <th>Name</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Users)
+            {
+            <tr>
+                <td>@user.IsOnline</td>
+                @if (user.DisplayName != null)
+                {
+                    <td>@user.DisplayName</td>
+                }
+                else
+                {
+                    <td>KEIN NAME</td>
+                }
+
+                @{
+                    if (Roles == null)
+                    {
+                        <td>Rollen nicht geladen.</td>
+                    }
+                    else
+                    {
+                        var role = Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId);
+                        if (role != null)
+                        {
+                            <td>@role.Name</td>
+                        }
+                        else
+                        {
+                            <td>Keine Rolle</td>
+                        }
+                    }
+                }
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>Benutzerliste wird geladen...</p>
+}
+
+@code {
+    [Parameter]
+    public int SimulationId { get; set; }
+
+    [Parameter]
+    public Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }
+
+    public IEnumerable<MUNity.Schema.Simulation.SimulationUserItem> Users { get; set; }
+
+    public IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SocketHandler != null)
+        {
+            SocketHandler.UserConnected += OnUserConnected;
+            SocketHandler.UserDisconnected += OnUserDisconnected;
+        }
+
+        this.Roles = await _simulationService.GetRoles(this.SimulationId);
+        this.Users = await _simulationService.GetUsers(this.SimulationId);
+    }
+
+    private void OnUserConnected(int sender, MUNity.Schema.Simulation.SimulationUserItem usr)
+    {
+        var user = Users.FirstOrDefault(n => n.SimulationUserId == usr.SimulationUserId);
+        if (user != null)
+        {
+
+            user.IsOnline = true;
+
+            if (!string.IsNullOrEmpty(usr.DisplayName) && usr.DisplayName != user.DisplayName)
+                user.DisplayName = usr.DisplayName;
+
+            StateHasChanged();
+        }
+    }
+
+    private void OnUserDisconnected(int sender, MUNity.Schema.Simulation.SimulationUserItem usr)
+    {
+        var user = Users.FirstOrDefault(n => n.SimulationUserId == usr.SimulationUserId);
+        if (user != null)
+        {
+
+            user.IsOnline = false;
+            this.StateHasChanged();
+
+        }
+    }
+}

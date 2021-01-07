@@ -13,6 +13,6 @@ namespace MUNityClient.Models.Simulation
 
         public string Name { get; set; }
 
-        public List<SimulationRole> Roles { get; set; }
+        public List<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
     }
 }

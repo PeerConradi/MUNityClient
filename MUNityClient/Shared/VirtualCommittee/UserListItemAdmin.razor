@@ -1,0 +1,51 @@
+﻿@inject Services.SimulationService simulationService;
+
+<tr>
+    @if (User.DisplayName != null)
+    {
+        <td>@User.DisplayName</td>
+    }
+    else
+    {
+        <td>KEIN NAME</td>
+    }
+
+    <td>@User.IsOnline</td>
+    <td>@User.PublicId</td>
+    @if (Roles != null)
+    {
+        <td>
+            <select class="form-control">
+                <option value="-2">Keine Rolle</option>
+                @foreach (var role in Roles)
+                {
+                    <option value="@role.SimulationRoleId">@role.Name</option>
+                }
+            </select>
+        </td>
+    }
+    else
+    {
+        <td>Rollen werden geladen/Keine Rollen gefunden</td>
+    }
+    <td>@User.Password</td>
+</tr>
+@code {
+    [Parameter]
+    public MUNity.Schema.Simulation.SimulationUserSetup User { get; set; }
+
+    [Parameter]
+    public int SimulationId { get; set; }
+
+    [Parameter]
+    public List<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Roles == null)
+        {
+            this.Roles = await this.simulationService.GetRoles(SimulationId);
+        }
+
+    }
+}

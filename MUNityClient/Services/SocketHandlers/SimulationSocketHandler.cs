@@ -9,25 +9,25 @@ namespace MUNityClient.Services.SocketHandlers
 {
     public class SimulationSocketHandler
     {
-        public delegate void OnRolesChanged(int sender, IEnumerable<SimulationRole> roles);
+        public delegate void OnRolesChanged(int sender, IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> roles);
         public event OnRolesChanged RolesChanged;
 
         public delegate void OnUserRoleChanged(int sender, int userId, int roleId);
         public event OnUserRoleChanged UserRoleChanged;
 
-        public delegate void OnUserConnected(int sender, SimulationUser user);
+        public delegate void OnUserConnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user);
         public event OnUserConnected UserConnected;
 
-        public delegate void OnUserDisconnected(int sender, SimulationUser user);
+        public delegate void OnUserDisconnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user);
         public event OnUserDisconnected UserDisconnected;
 
-        public delegate void OnPhaseChanged(int sender, Simulation.GamePhases phase);
+        public delegate void OnPhaseChanged(int sender, MUNity.Schema.Simulation.SimulationEnums.GamePhases phase);
         public event OnPhaseChanged PhaseChanged;
 
         public delegate void OnStatusChanged(int sender, string newStatus);
         public event OnStatusChanged StatusChanged;
 
-        public delegate void OnLobbyModeChanged(int sender, Simulation.LobbyModes mode);
+        public delegate void OnLobbyModeChanged(int sender, MUNity.Schema.Simulation.SimulationEnums.LobbyModes mode);
         public event OnLobbyModeChanged LobbyModeChanged;
 
         public delegate void OnChatMessageRecieved(int simId, int userId, string msg);
@@ -49,13 +49,13 @@ namespace MUNityClient.Services.SocketHandlers
         private SimulationSocketHandler()
         {
             HubConnection = new HubConnectionBuilder().WithUrl($"{Program.API_URL}/simsocket").Build();
-            HubConnection.On<int, IEnumerable<SimulationRole>>("RolesChanged", (id, roles) => RolesChanged?.Invoke(id, roles));
+            HubConnection.On<int, IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem>>("RolesChanged", (id, roles) => RolesChanged?.Invoke(id, roles));
             HubConnection.On<int, int, int>("UserRoleChanged", (simId, userId, roleId) => UserRoleChanged?.Invoke(simId, userId, roleId));
-            HubConnection.On<int, SimulationUser>("UserConnected", (id, user) => UserConnected?.Invoke(id, user));
-            HubConnection.On<int, SimulationUser>("UserDisconnected", (id, user) => UserDisconnected?.Invoke(id, user));
-            HubConnection.On<int, Simulation.GamePhases>("PhaseChanged", (id, phase) => PhaseChanged?.Invoke(id, phase));
+            HubConnection.On<int, MUNity.Schema.Simulation.SimulationUserItem>("UserConnected", (id, user) => UserConnected?.Invoke(id, user));
+            HubConnection.On<int, MUNity.Schema.Simulation.SimulationUserItem>("UserDisconnected", (id, user) => UserDisconnected?.Invoke(id, user));
+            HubConnection.On<int, MUNity.Schema.Simulation.SimulationEnums.GamePhases>("PhaseChanged", (id, phase) => PhaseChanged?.Invoke(id, phase));
             HubConnection.On<int, string>("StatusChanged", (id, status) => StatusChanged?.Invoke(id, status));
-            HubConnection.On<int, Simulation.LobbyModes>("LobbyModeChanged", (id, mode) => LobbyModeChanged?.Invoke(id, mode));
+            HubConnection.On<int, MUNity.Schema.Simulation.SimulationEnums.LobbyModes>("LobbyModeChanged", (id, mode) => LobbyModeChanged?.Invoke(id, mode));
             HubConnection.On<int, int, string>("ChatMessageRecieved", (simId, usrId, msg) => ChatMessageRevieved?.Invoke(simId, usrId, msg));
             HubConnection.On<int, int, string>("UserRequest", (simId, usrId, request) => UserRequest?.Invoke(simId, usrId, request));
             HubConnection.On<int, int, string>("UserRequestAccepted", (simId, usrId, request) => UserRequestAccpted?.Invoke(simId, usrId, request));

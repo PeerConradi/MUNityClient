@@ -89,5 +89,25 @@ namespace MUNityClient.Services.SocketHandlers
             }
             return false;
         }
+
+        public Task ResolutionChanged(Resolution resolution, string tan)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task AmendmentActivatedChanged(string resolutionId, string amendmentId, bool value, string tan)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task PreambleParagraphTextChanged(string resolutionId, string paragraphId, string text, string tan)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task OperativeParagraphTextChanged(string resolutionId, string paragraphId, string text, string tan)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
