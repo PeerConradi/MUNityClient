@@ -84,7 +84,29 @@
         </div>
 
         <div class="col-4">
-            <h1>Platzhalter für die Redeliste</h1>
+            @if (_listOfSpeakerId == "_loading_")
+            {
+                <p>Redeliste wird abgerufen...</p>
+            }
+            else if (string.IsNullOrEmpty(_listOfSpeakerId))
+            {
+                if (_auth.CanCreateRole || _myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+                {
+                    <button class="btn btn-success" @onclick="() => InitListOfSpeakers()">Redeliste anlegen</button>
+                }
+                else
+                {
+                    <p>Keine Redeliste vorhanden.</p>
+                }
+            }
+            else
+            {
+                if (_auth.CanCreateRole || _myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+                {
+                    <span>@_listOfSpeakerId</span>
+                }
+                <MUNityClient.Shared.Los.LoSReaderComponent ListOfSpeakersId="@_listOfSpeakerId" IsOnline="true"></MUNityClient.Shared.Los.LoSReaderComponent>
+            }
         </div>
     </div>
 }
@@ -105,6 +127,8 @@
     private Services.SocketHandlers.SimulationSocketHandler _socket;
 
     private MUNity.Schema.Simulation.SimulationRoleItem _myRole;
+
+    private string _listOfSpeakerId = "_loading_";
 
     protected override async Task OnInitializedAsync()
     {
@@ -129,6 +153,9 @@
                 int roleId = this._userItems.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId)?.RoleId ?? -2;
                 this._myRole = this._simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == roleId);
             }
+
+            this._listOfSpeakerId = await this.simulationService.GetListOfSpeakerId(id);
+
             this.StateHasChanged();
         }
     }
@@ -192,28 +219,17 @@
         }
     }
 
-    private void UserRequest(int sender, int userId, string request)
+    private async void InitListOfSpeakers()
     {
-        if (this._simulation == null) return;
-        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
-        if (user == null) return;
-        this.StateHasChanged();
-    }
-
-    private void UserRequestAccepted(int sender, int userId, string request)
-    {
-        if (this._simulation == null) return;
-        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
-        if (user == null) return;
-        this.StateHasChanged();
-    }
-
-    private void UserRequestDeleted(int sender, int userId, string request)
-    {
-        if (this._simulation == null) return;
-        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
-        if (user == null) return;
-        this.StateHasChanged();
+        if (this._simulation != null)
+        {
+            var list = await this.simulationService.InitListOfSpeakers(this._simulation.SimulationId);
+            if (list != null)
+            {
+                this._listOfSpeakerId = list.ListOfSpeakersId;
+                this.StateHasChanged();
+            }
+        }
     }
 
     private async Task MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes type)

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using MUNity.Models.ListOfSpeakers;
+using System.Net.Http.Json;
 
 namespace MUNityClient.Services
 {
@@ -34,6 +35,36 @@ namespace MUNityClient.Services
         }
 
         private string ListOfSpeakerIdInStorage(string id) => "mtlos_" + id;
+
+        public async Task<ListOfSpeakers> GetFromApi(string id)
+        {
+            var list =  await this._httpService.HttpClient.GetFromJsonAsync<ListOfSpeakers>($"/api/Speakerlist/GetSpeakerlist?id={id}");
+            await StoreListOfSpeakers(list);
+            return list;
+        }
+
+        /// <summary>
+        /// Checks if a List of speakers exists online.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<bool> IsListOfSpeakersOnline(string id)
+        {
+            return await this._httpService.HttpClient.GetFromJsonAsync<bool>($"/api/Speakerlist/IsSpeakerlistOnline?id={id}");
+        }
+
+        public async void SyncSpeakerlist(ListOfSpeakers list)
+        {
+            await this._httpService.HttpClient.PutAsync($"/api/Speakerlist/SyncSpeakerlist", JsonContent.Create(list));
+        }
+
+        public async Task<SocketHandlers.ListOfSpeakerSocketHandler> Subscribe(ListOfSpeakers list)
+        {
+            var handler = await SocketHandlers.ListOfSpeakerSocketHandler.CreateHandler(list);
+            var connId = handler.HubConnection.ConnectionId;
+            await this._httpService.HttpClient.GetAsync($"/api/Speakerlist/SubscribeToList?listId={list.ListOfSpeakersId}&connectionid={connId}");
+            return handler;
+        }
 
         [JSInvokable]
         public Task StorageHasChanged()

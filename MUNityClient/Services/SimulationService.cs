@@ -165,6 +165,27 @@ namespace MUNityClient.Services
             await client.GetAsync($"/api/Simulation/SetUserRole?simulationId={simulationId}&userId={userId}&roleId={roleId}");
         }
 
+        public async Task<string> GetListOfSpeakerId(int simulationId)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) return null;
+            return await client.GetStringAsync($"/api/Simulation/GetListOfSpeakersId?simulationId={simulationId}");
+        }
+
+        public async Task<string> GetResolutionId(int simulationId)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) return null;
+            return await client.GetStringAsync($"/api/Simulation/GetResolutionId?simulationId={simulationId}");
+        }
+
+        public async Task<MUNity.Models.ListOfSpeakers.ListOfSpeakers> InitListOfSpeakers(int simulationId)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) return null;
+            return await client.GetFromJsonAsync<MUNity.Models.ListOfSpeakers.ListOfSpeakers>($"/api/Simulation/InitListOfSpeakers?simulationId={simulationId}");
+        }
+
         public async Task<List<SimulationPreset>> GetPresets()
         {
             var client = this._httpService.HttpClient;
