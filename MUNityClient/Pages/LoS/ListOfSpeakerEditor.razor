@@ -224,6 +224,8 @@
 
     public ListOfSpeakers Speakerlist { get; set; }
 
+    public bool IsOnline { get; set; }
+
     private MUNityClient.Shared.Bootstrap.Modal SpeakingTimeConfigModal { get; set; }
 
     private class SpeakerToAdd
@@ -294,24 +296,33 @@
     private EventCallback AddToSpeakers()
     {
         if(NewSpeaker.Name != null && NewSpeaker.Name.Length > 2){
-        this.Speakerlist.AddSpeaker(NewSpeaker.Name);
-        NewSpeaker.Name = "";
+            this.Speakerlist.AddSpeaker(NewSpeaker.Name);
+            NewSpeaker.Name = "";
         }
         return EventCallback.Empty;
     }
 
     private EventCallback AddToQuestions()
     {
-        if(NewCommentator.Name != null &&NewCommentator.Name.Length > 2){
-        this.Speakerlist.AddQuestion(NewCommentator.Name);
-        NewCommentator.Name = "";
+        if(NewCommentator.Name != null && NewCommentator.Name.Length > 2){
+            this.Speakerlist.AddQuestion(NewCommentator.Name);
+            NewCommentator.Name = "";
         }
         return EventCallback.Empty;
     }
 
     protected override async Task OnInitializedAsync()
     {
-        this.Speakerlist = await this.listOfSpeakerService.GetListOfSpeakers(this.Id);
+        this.IsOnline = await this.listOfSpeakerService.IsListOfSpeakersOnline(this.Id);
+        if (IsOnline)
+        {
+            this.Speakerlist = await this.listOfSpeakerService.GetFromApi(this.Id);
+        }
+        else
+        {
+            this.Speakerlist = await this.listOfSpeakerService.GetListOfSpeakers(this.Id);
+        }
+
         if (this.Speakerlist != null)
         {
             this.Settings = new SpeakerlistSettings(this.Speakerlist);
@@ -328,15 +339,30 @@
             timer.Elapsed += TimerElapsed;
             timer.Start();
 
-            //Speakerlist.ListChanged += StoreOnListChanged;
+            Speakerlist.PropertyChanged += StoreOnListChanged;
+            Speakerlist.Speakers.CollectionChanged += StoreOnCollectionChagned;
+            Speakerlist.Questions.CollectionChanged += StoreOnCollectionChagned;
 
             base.OnInitialized();
         }
     }
 
-    private async void StoreOnListChanged()
+    private async void StoreOnListChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         await this.listOfSpeakerService.StoreListOfSpeakers(this.Speakerlist);
+        if (IsOnline)
+        {
+            this.listOfSpeakerService.SyncSpeakerlist(this.Speakerlist);
+        }
+    }
+
+    private async void StoreOnCollectionChagned(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs args)
+    {
+        await this.listOfSpeakerService.StoreListOfSpeakers(this.Speakerlist);
+        if (IsOnline)
+        {
+            this.listOfSpeakerService.SyncSpeakerlist(this.Speakerlist);
+        }
     }
 
     private async Task OpenReaderSpectatorView()

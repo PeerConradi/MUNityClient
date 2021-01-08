@@ -17,7 +17,7 @@
     @if (Roles != null)
     {
         <td>
-            <select class="form-control">
+            <select class="form-control" @bind="@this.RoleId">
                 <option value="-2">Keine Rolle</option>
                 @foreach (var role in Roles)
                 {
@@ -52,8 +52,23 @@
     [Parameter]
     public Boolean PasswordShown { get; set; }
 
+    private int _roleId;
+    public int RoleId
+    {
+        get => _roleId;
+        set
+        {
+            if (_roleId != value)
+            {
+                this.simulationService.SetUserRole(this.SimulationId, this.User.SimulationUserId, value);
+                _roleId = value;
+            }
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
+        this._roleId = User.RoleId;
         if (Roles == null)
         {
             this.Roles = await this.simulationService.GetRoles(SimulationId);

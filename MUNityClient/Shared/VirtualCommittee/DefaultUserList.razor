@@ -61,6 +61,7 @@ else
 
     public IEnumerable<MUNity.Schema.Simulation.SimulationUserItem> Users { get; set; }
 
+    [Parameter]
     public IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -69,10 +70,26 @@ else
         {
             SocketHandler.UserConnected += OnUserConnected;
             SocketHandler.UserDisconnected += OnUserDisconnected;
+            SocketHandler.UserRoleChanged += OnUserRoleChanged;
         }
 
-        this.Roles = await _simulationService.GetRoles(this.SimulationId);
+        if (Roles == null)
+        {
+            this.Roles = await _simulationService.GetRoles(this.SimulationId);
+        }
+
         this.Users = await _simulationService.GetUsers(this.SimulationId);
+    }
+
+    private void OnUserRoleChanged(int sender, int userId, int roleId)
+    {
+        if (this.Users == null) return;
+        var user = Users.FirstOrDefault(n => n.SimulationUserId == userId);
+        if (user != null)
+        {
+            user.RoleId = roleId;
+            this.StateHasChanged();
+        }
     }
 
     private void OnUserConnected(int sender, MUNity.Schema.Simulation.SimulationUserItem usr)

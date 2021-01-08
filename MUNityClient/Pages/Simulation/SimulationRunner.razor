@@ -38,6 +38,10 @@ Ngo = 4 *@
                                     <i type="button" title="Gremium zurück in die Lobbyphase setzen" class="fas fa-lg fa-arrow-left text-danger mr-2" @onclick="() => BackToLobby()"></i>
                                 }
                                 Gremium
+                                @if (this._myRole != null)
+                                {
+                                  <span>@this._myRole.Name</span>
+                                }
                             </div>
                             <div type="button" class="header-item border py-3 px-2 col @(currentTab == 1 ? "selected-tab" : "border")" @onclick="() => currentTab = 1">
                                 Editor
@@ -61,7 +65,7 @@ Ngo = 4 *@
                                     foreach (var user in _userSetups.Where(usr => usr.RoleId == 1))
                                     {
                                         <div class="col p-0 m-2">
-                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)" SocketHandler="this._socket"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
                                         </div>
                                     }
                                 }
@@ -70,7 +74,10 @@ Ngo = 4 *@
                                     foreach (var user in _userItems)
                                     {
                                         <div class="col p-0 m-2">
-                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user"
+                                                                                                     Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"
+                                                                                                     SocketHandler="this._socket"
+                                                                                                     IsMe="@(_auth.SimulationUserId == user.SimulationUserId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
                                         </div>
                                     }
                                 }
@@ -90,7 +97,7 @@ Ngo = 4 *@
                                     foreach (var user in _userSetups)
                                     {
                                         <div class="col p-0 m-2">
-                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)" SocketHandler="this._socket"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
                                         </div>
                                     }
                                 }
@@ -99,7 +106,10 @@ Ngo = 4 *@
                                     foreach (var user in _userItems)
                                     {
                                         <div class="col p-0 m-2">
-                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user"
+                                                                                                     Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"
+                                                                                                     SocketHandler="this._socket"
+                                                                                                     IsMe="@(_auth.SimulationUserId == user.SimulationUserId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
                                         </div>
                                     }
                                 }
@@ -119,7 +129,7 @@ Ngo = 4 *@
                                     foreach (var user in _userSetups)
                                     {
                                         <div class="col p-0 m-2">
-                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)" SocketHandler="this._socket"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
                                         </div>
                                     }
                                 }
@@ -128,7 +138,10 @@ Ngo = 4 *@
                                     foreach (var user in _userItems)
                                     {
                                         <div class="col p-0 m-2">
-                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user"
+                                                                                                     Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"
+                                                                                                     SocketHandler="this._socket"
+                                                                                                     IsMe="@(_auth.SimulationUserId == user.SimulationUserId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
                                         </div>
                                     }
                                 }
@@ -149,7 +162,7 @@ Ngo = 4 *@
                                     foreach (var user in _userSetups)
                                     {
                                         <div class="col p-0 m-2">
-                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)" SocketHandler="this._socket"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
                                         </div>
                                     }
                                 }
@@ -158,7 +171,10 @@ Ngo = 4 *@
                                     foreach (var user in _userItems)
                                     {
                                         <div class="col p-0 m-2">
-                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user"
+                                                                                                     Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"
+                                                                                                     SocketHandler="this._socket"
+                                                                                                     IsMe="@(_auth.SimulationUserId == user.SimulationUserId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
                                         </div>
                                     }
                                 }
@@ -182,10 +198,34 @@ Ngo = 4 *@
                     <div class="card">
                         <div class="card-header">Steuerung</div>
                         <div class="card-body">
-                                <div class="btn btn-primary" @onclick='() => MakeRequest("Redebeitrag")'>Antrag auf Redebeitrag</div>
-                                <div class="btn btn-primary" @onclick='() => MakeRequest("Frage")'>Antrag auf Frage/Kurzbemerkung</div>
-                                <div class="btn btn-primary" @onclick='() => MakeRequest("GO")'>Antrag an Geschäftsordnung</div>
-                                <div class="btn btn-primary" @onclick='() => MakeRequest("Persoenlich")'>Persönlicher Antrag</div>
+                            @if (_myRole != null)
+                            {
+                                @* Funktionen für Delegierte und Ngo Vertreter *@
+                                if (_myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate || _myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Ngo)
+                                {
+                                    <div class="btn btn-secondary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.PersRechtAufInformation)'>Recht auf Information</div>
+                                    <div class="btn btn-secondary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.PersRechtAufOrdnung)'>Recht auf Wiederherstellung der Ordnung</div>
+                                    <div class="btn btn-secondary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.PersRechtAufKlaerung)'>Recht auf Klärung eines Missverständnisses</div>
+
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOMuendlicheAbstimmung)'>mündliche Abstimmung</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOInformelleSitzung)'>Informelle Sitzung</div>
+                                }
+
+                                @* Funktionen nur für Delegierte *@
+                                if (_myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate)
+                                {
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GORevision)'>Revision einer Entscheidung des Vorsitzes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GONeuTagesordnungspunkt)'>Aufnahme eines neuen Tagesordnungspunktes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOZurueckResolutionsentwurf)'>Zurückschicken eines Resolutionsentwurfes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOVertagung)'>Vertagung eines Tagesordnungspunktes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GORueckAllgDebatte)'>Rückkehr zur Allgemeinen Debatte</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOEndeDebatte)'>Ende der aktuellen Debatte</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOVorgezogenAbstReso)'>Vorgezogene Abstimmung über den Resolutionsentwurf als Ganzes</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOAbschlussRedeliste)'>Abschluss oder Wiedereröffnung der Redeliste</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOAendereRedezeit)'>Änderung der Redezeit</div>
+                                    <div class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOGastredner)'>Anhörung eines Gastredners</div>
+                                }
+                            }
                         </div>
                     </div>
                 </div>
@@ -194,7 +234,29 @@ Ngo = 4 *@
         </div>
 
         <div class="col-4">
-            <h1>Platzhalter für die Redeliste</h1>
+            @if (_listOfSpeakerId == "_loading_")
+            {
+                <p>Redeliste wird abgerufen...</p>
+            }
+            else if (string.IsNullOrEmpty(_listOfSpeakerId))
+            {
+                if (_auth.CanCreateRole || _myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+                {
+                    <button class="btn btn-success" @onclick="() => InitListOfSpeakers()">Redeliste anlegen</button>
+                }
+                else
+                {
+                    <p>Keine Redeliste vorhanden.</p>
+                }
+            }
+            else
+            {
+                if (_auth.CanCreateRole || _myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+                {
+                    <span>@_listOfSpeakerId</span>
+                }
+                <MUNityClient.Shared.Los.LoSReaderComponent ListOfSpeakersId="@_listOfSpeakerId" IsOnline="true"></MUNityClient.Shared.Los.LoSReaderComponent>
+            }
         </div>
     </div>
 }
@@ -215,6 +277,10 @@ Ngo = 4 *@
     private Services.SocketHandlers.SimulationSocketHandler _socket;
     private int currentTab = 0;
 
+    private MUNity.Schema.Simulation.SimulationRoleItem _myRole;
+
+    private string _listOfSpeakerId = "_loading_";
+
     protected override async Task OnInitializedAsync()
     {
         int id = 0;
@@ -223,16 +289,24 @@ Ngo = 4 *@
             this._simulation = await simulationService.GetSimulation(id);
             this._simulation.Roles = await simulationService.GetRoles(id);
             this._auth = await simulationService.GetMyAuth(id);
+
             _socket = await simulationService.Subscribe(id);
             AddHandlers(_socket);
             if (_auth.CanCreateRole)
             {
                 this._userSetups = await simulationService.GetUserSetups(id);
+                int roleId = this._userSetups.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId)?.RoleId ?? -2;
+                this._myRole = this._simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == roleId);
             }
             else
             {
                 this._userItems = (await simulationService.GetUsers(id)).ToList();
+                int roleId = this._userItems.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId)?.RoleId ?? -2;
+                this._myRole = this._simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == roleId);
             }
+
+            this._listOfSpeakerId = await this.simulationService.GetListOfSpeakerId(id);
+
             this.StateHasChanged();
         }
     }
@@ -244,9 +318,6 @@ Ngo = 4 *@
 
     private void AddHandlers(Services.SocketHandlers.SimulationSocketHandler socket)
     {
-        socket.UserRequest += UserRequest;
-        socket.UserRequestAccpted += UserRequestAccepted;
-        socket.UserRequestDeleted += UserRequestDeleted;
         socket.UserConnected += OnUserConnected;
         socket.UserDisconnected += OnUserDisconnected;
     }
@@ -299,47 +370,29 @@ Ngo = 4 *@
         }
     }
 
-    private void UserRequest(int sender, int userId, string request)
+    private async void InitListOfSpeakers()
     {
-        if (this._simulation == null) return;
-        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
-        if (user == null) return;
-        this.StateHasChanged();
+        if (this._simulation != null)
+        {
+            var list = await this.simulationService.InitListOfSpeakers(this._simulation.SimulationId);
+            if (list != null)
+            {
+                this._listOfSpeakerId = list.ListOfSpeakersId;
+                this.StateHasChanged();
+            }
+        }
     }
 
-    private void UserRequestAccepted(int sender, int userId, string request)
+    private async Task MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes type)
     {
         if (this._simulation == null) return;
-        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
-        if (user == null) return;
-        this.StateHasChanged();
+        var petition = new MUNity.Schema.Simulation.Petition();
+        petition.SimulationId = this._simulation.SimulationId;
+        petition.Text = "";
+        petition.PetitionType = type;
+        await this.simulationService.MakePetition(petition);
     }
 
-    private void UserRequestDeleted(int sender, int userId, string request)
-    {
-        if (this._simulation == null) return;
-        var user = this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == userId);
-        if (user == null) return;
-        this.StateHasChanged();
-    }
-
-    private async Task MakeRequest(string request)
-    {
-        if (this._simulation == null) return;
-        await this.simulationService.MakeRequest(this._simulation.SimulationId, request);
-    }
-
-    private async Task AcceptRequest(int userId, string request)
-    {
-        if (this._simulation == null) return;
-        await this.simulationService.AcceptRequest(this._simulation.SimulationId, userId, request);
-    }
-
-    private async Task DeleteRequest(int userId, string request)
-    {
-        if (this._simulation == null) return;
-        await this.simulationService.DeleteRequest(this._simulation.SimulationId, userId, request);
-    }
 }
 
 <style>

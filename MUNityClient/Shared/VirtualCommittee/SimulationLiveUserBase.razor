@@ -1,5 +1,7 @@
 ﻿@* Ansicht eines Benutzers in der Liste aus der Sicht eines normalen anderen Benutzers *@
 
+@inject MUNityClient.Services.SimulationService simulationService;
+
 <div class="border rounded p-2">
     @if (User != null)
     {
@@ -19,6 +21,19 @@
         @if (Role != null)
         {
             <p>@Role.Name</p>
+        }
+  
+        @if (_currentPetition != null)
+        {
+        <div class="card-footer">
+            <p>@_currentPetition.PetitionType</p>
+            <p>@_currentPetition.PetitionDate.ToString()</p>
+            <p>@_currentPetition.Text</p>
+            @if (this.IsMe)
+            {
+                <button class="btn btn-danger" @onclick="() => DeleteCurrentPetition()">Löschen</button>
+            }
+        </div>
         }
     }
     else
@@ -44,8 +59,56 @@
     [Parameter]
     public MUNityClient.Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }
 
+    [Parameter]
+    public bool IsMe { get; set; } = false;
+
+    private MUNity.Schema.Simulation.Petition _currentPetition;
+
     protected override Task OnInitializedAsync()
     {
+        if (SocketHandler != null)
+        {
+            SocketHandler.UserPetition += OnUserPetition;
+            SocketHandler.UserPetitionAccpted += OnUserPetitionAccepted;
+            SocketHandler.UserPetitionDeleted += OnUserPetitionDeleted;
+        }
         return base.OnInitializedAsync();
+    }
+
+    private void OnUserPetition(MUNity.Schema.Simulation.Petition petition)
+    {
+        if (petition.PetitionUserId == this.User.SimulationUserId)
+        {
+            this._currentPetition = petition;
+            this.StateHasChanged();
+        }
+    }
+
+    private void OnUserPetitionAccepted(MUNity.Schema.Simulation.Petition petition)
+    {
+        if (_currentPetition == null) return;
+        if (_currentPetition.PetitionId == petition.PetitionId)
+        {
+            _currentPetition = null;
+            this.StateHasChanged();
+        }
+
+    }
+
+    private void OnUserPetitionDeleted(MUNity.Schema.Simulation.Petition petition)
+    {
+        if (_currentPetition == null) return;
+        if (_currentPetition.PetitionId == petition.PetitionId)
+        {
+            _currentPetition = null;
+            this.StateHasChanged();
+        }
+
+    }
+
+    private async Task DeleteCurrentPetition()
+    {
+        if (this._currentPetition == null) return;
+        await simulationService.DeletePetition(this._currentPetition);
     }
 }
