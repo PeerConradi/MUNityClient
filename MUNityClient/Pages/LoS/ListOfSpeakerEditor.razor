@@ -147,7 +147,7 @@
                         </div>
                         @* Controls *@
                         <div class="col-12 p-0 my-3">
-                            @if (Speakerlist.Status == ListOfSpeakers.EStatus.Question)
+                        @if (Speakerlist.Status == ListOfSpeakers.EStatus.Question)
                         {
                             <i title="Rede pausieren" type="button" class="fas mx-2 fa-lg fa-pause"
                             @onclick="() => Speakerlist.PauseQuestion()"></i>
