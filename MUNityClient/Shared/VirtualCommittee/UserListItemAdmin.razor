@@ -1,17 +1,19 @@
 ﻿@inject Services.SimulationService simulationService;
+@inject IJSRuntime JS;
 
-<tr>
+<tr class="table-row align-items-center">
     @if (User.DisplayName != null)
     {
         <td>@User.DisplayName</td>
     }
     else
     {
+        @* funktioniert aktuell nicht, die Anzeige ist einfach leer *@
         <td>KEIN NAME</td>
     }
 
     <td>@User.IsOnline</td>
-    <td>@User.PublicId</td>
+    <td class="pointer" @onclick="CopyUserIDToClippboard" title="Klicken zum kopieren">@User.PublicId</td>
     @if (Roles != null)
     {
         <td>
@@ -28,7 +30,14 @@
     {
         <td>Rollen werden geladen/Keine Rollen gefunden</td>
     }
-    <td>@User.Password</td>
+    <td class="pointer" @onclick="CopyPasswordToClippboard" title="Klicken zum kopieren">
+        @if (PasswordShown)
+        {
+            @User.Password
+        } else {
+            <span>********</span>
+        }
+    </td>
 </tr>
 @code {
     [Parameter]
@@ -39,6 +48,9 @@
 
     [Parameter]
     public List<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
+    
+    [Parameter]
+    public Boolean PasswordShown { get; set; }
 
     private int _roleId;
     public int RoleId
@@ -63,4 +75,17 @@
         }
 
     }
+
+    private void CopyPasswordToClippboard(){
+        JS.InvokeAsync<string>("navigator.clipboard.writeText", @User.Password);
+    }
+    private void CopyUserIDToClippboard(){
+        JS.InvokeAsync<string>("navigator.clipboard.writeText", @User.PublicId);
+    }
 }
+
+<style>
+    .pointer {
+        cursor: pointer;
+    }
+</style>

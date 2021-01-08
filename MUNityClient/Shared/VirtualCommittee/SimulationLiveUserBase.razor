@@ -2,23 +2,27 @@
 
 @inject MUNityClient.Services.SimulationService simulationService;
 
-@if (User != null)
-{
-    <div class="card @((User.IsOnline) ? "border-success" : "border-danger")" style="width: 18rem">
-        <div class="card-header text-white @((User.IsOnline) ? "bg-success" : "bg-danger")">
-            @if (Role != null)
-            {
-                <p>@Role.Name</p>
-            }
-            else
-            {
-                <p>Rolle nicht gefunden.</p>
-            }
+<div class="border rounded p-2">
+    @if (User != null)
+    {
+        if (User.IsOnline)
+        {
+            <i class="fas fa-circle text-success mr-2" title="Nutzer is online"></i>
+        }
+        else
+        {
+            <i class="far fa-circle text-danger mr-2" title="Nutzer ist offline"></i>
+        }
+        @if (@User.DisplayName != null && @User.DisplayName.Length > 0)
+        {
+            <span>@User.DisplayName, </span>
+        }
 
-        </div>
-        <div class="card-body">
-            <p class="card-title">@User.DisplayName</p>
-        </div>
+        @if (Role != null)
+        {
+            <p>@Role.Name</p>
+        }
+  
         @if (_currentPetition != null)
         {
         <div class="card-footer">
@@ -31,12 +35,19 @@
             }
         </div>
         }
-    </div>
-}
-else
-{
-    <p>Benutzer wird geladen</p>
-}
+    }
+    else
+    {
+        <div class="d-flex w-100 justify-content-center">
+            <div class="spinner-border text-primary p-2" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center mt-3">
+            Benutzer wird geladen...
+        </div>
+    }
+</div>
 
 @code {
     [Parameter]
