@@ -1,31 +1,38 @@
 ﻿@* Ansicht eines Benutzers in der Liste aus der Sicht eines normalen anderen Benutzers *@
 
-@if (User != null)
-{
-    if (User.IsOnline)
+<div class="border rounded p-2">
+    @if (User != null)
     {
-        <p class="text-success">ONLINE</p>
+        if (User.IsOnline)
+        {
+            <i class="fas fa-circle text-success mr-2" title="Nutzer is online"></i>
+        }
+        else
+        {
+            <i class="far fa-circle text-danger mr-2" title="Nutzer ist offline"></i>
+        }
+        @if (@User.DisplayName != null && @User.DisplayName.Length > 0)
+        {
+            <span>@User.DisplayName, </span>
+        }
+
+        @if (Role != null)
+        {
+            <p>@Role.Name</p>
+        }
     }
     else
     {
-        <p class="text-danger">OFFLINE</p>
+        <div class="d-flex w-100 justify-content-center">
+            <div class="spinner-border text-primary p-2" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center mt-3">
+            Benutzer wird geladen...
+        </div>
     }
-
-    <p>@User.DisplayName</p>
-
-    @if (Role != null)
-    {
-        <p>@Role.Name</p>
-    }
-    else
-    {
-        <p>Rolle nicht gefunden.</p>
-    }
-}
-else
-{
-    <p>Benutzer wird geladen</p>
-}
+</div>
 
 @code {
     [Parameter]

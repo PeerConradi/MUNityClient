@@ -2,48 +2,194 @@
 
 @inject Services.SimulationService simulationService;
 
+@* A spectator role that cannot interact with the simulation but will be displayed
+as spectator. For example press, spectators another committee that is visiting
+this committee etc.
+Spectator = 0
+
+The chairman role that can edit the list of speakers and resolution and can interact
+with requests of other roles.
+Chairman = 1
+
+a delegate role that is part of the committee.
+Delegate = 2
+
+A moderator role that can interact with all other users in this simulation by
+having higher powers than any other role and is allowed to kick users.
+Moderator = 3
+
+A non government organization that has some ability to interact with the simulation
+but not as much as a delegate (cant vote etc.)
+Ngo = 4 *@
+
+
 @if (_simulation != null && _auth != null)
 {
-    <div class="row">
+    <div class="row col-12 m-0 p-0">
         <div class="col-8">
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header">Gremiumansicht</div>
+                        @* TODO: offline ausblenden *@
+                        <div class="card-header p-0 row m-0 p-0">
+                            <div type="button" class="header-item py-3 px-2 col @(currentTab == 0 ? "selected-tab" : "border")" @onclick="() => currentTab = 0">
+                                @if (_auth.CanCreateRole && currentTab == 0)
+                                {
+                                    <i type="button" title="Gremium zurück in die Lobbyphase setzen" class="fas fa-lg fa-arrow-left text-danger mr-2" @onclick="() => BackToLobby()"></i>
+                                }
+                                Gremium
+                            </div>
+                            <div type="button" class="header-item border py-3 px-2 col @(currentTab == 1 ? "selected-tab" : "border")" @onclick="() => currentTab = 1">
+                                Editor
+                            </div>
+                            <div type="button" class="header-item border py-3 px-2 col @(currentTab == 2 ? "selected-tab" : "border")" @onclick="() => currentTab = 2">
+                                Reader
+                            </div>
+                        </div>
                         <div class="body">
-                            @if (_auth.CanCreateRole && _userSetups != null)
+                        @if (currentTab == 0)
+                        {
+                            @if (_userSetups.Where(usr => usr.RoleId == 1).Any())
                             {
-                                foreach (var user in _userSetups)
+                            <div class="row m-0 p-0 d-flex justify-content-center">
+                                <div class="row m-0 p-0 col-12 d.flex justify-content-center">
+                                    Vorsitz
+                                </div>
+                                <div class="row m-0 p-0 col-12">
+                                @if (_auth.CanCreateRole && _userSetups != null)
                                 {
-                                    <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                    foreach (var user in _userSetups.Where(usr => usr.RoleId == 1))
+                                    {
+                                        <div class="col p-0 m-2">
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                        </div>
+                                    }
                                 }
+                                else if (!_auth.CanCreateRole && _userItems != null)
+                                {
+                                    foreach (var user in _userItems)
+                                    {
+                                        <div class="col p-0 m-2">
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                        </div>
+                                    }
+                                }
+                                </div>
+                            </div>
                             }
-                            else if (!_auth.CanCreateRole && _userItems != null)
+                            @if (_userSetups.Where(usr => usr.RoleId == 2).Any())
                             {
-                                foreach (var user in _userItems)
+                            <div class="row m-0 p-0 d-flex justify-content-center">
+                                <div class="row m-0 p-0 col-12 d.flex justify-content-center">
+                                    Delegierte
+                                </div>
+                                <div class="row m-0 p-0 col-12">
+                                @if (_auth.CanCreateRole && _userSetups != null)
                                 {
-                                    <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                    @* .Where(usr => usr.RoleId == 2) *@
+                                    foreach (var user in _userSetups)
+                                    {
+                                        <div class="col p-0 m-2">
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                        </div>
+                                    }
                                 }
+                                else if (!_auth.CanCreateRole && _userItems != null)
+                                {
+                                    foreach (var user in _userItems)
+                                    {
+                                        <div class="col p-0 m-2">
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                        </div>
+                                    }
+                                }
+                                </div>
+                            </div>
                             }
+                            @if (_userSetups.Where(usr => usr.RoleId == 4).Any())
+                            {
+                            <div class="row m-0 p-0 d-flex justify-content-center">
+                                <div class="row m-0 p-0 col-12 d.flex justify-content-center">
+                                    Nichtstaatliche Akteure
+                                </div>
+                                <div class="row m-0 p-0 col-12">
+                                @if (_auth.CanCreateRole && _userSetups != null)
+                                {
+                                    @* .Where(usr => usr.RoleId == 4) *@
+                                    foreach (var user in _userSetups)
+                                    {
+                                        <div class="col p-0 m-2">
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                        </div>
+                                    }
+                                }
+                                else if (!_auth.CanCreateRole && _userItems != null)
+                                {
+                                    foreach (var user in _userItems)
+                                    {
+                                        <div class="col p-0 m-2">
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                        </div>
+                                    }
+                                }
+                                </div>
+                            </div>
+                            }
+                            @if (_userSetups.Where(usr => usr.RoleId == 3 || usr.RoleId == 0).Any())
+                            {
+                            <div class="row m-0 p-0 d-flex justify-content-center">
+                                <div class="row m-0 p-0 col-12 d.flex justify-content-center">
+                                    Sonstige
+                                </div>
+                                <div class="row m-0 p-0 col-12">
+                                @if (_auth.CanCreateRole && _userSetups != null)
+                                {
+                                    @* Überhaupt anzeigen? *@
+                                    @* .Where(usr => usr.RoleId == 3 || usr.RoleId == 0) *@
+                                    foreach (var user in _userSetups)
+                                    {
+                                        <div class="col p-0 m-2">
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
+                                        </div>
+                                    }
+                                }
+                                else if (!_auth.CanCreateRole && _userItems != null)
+                                {
+                                    foreach (var user in _userItems)
+                                    {
+                                        <div class="col p-0 m-2">
+                                            <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                                        </div>
+                                    }
+                                }
+                                </div>
+                            </div>
+                            }   
+                        } else if (currentTab == 1)
+                        {
+                            <MUNityClient.Pages.Resa.ResolutionHome></MUNityClient.Pages.Resa.ResolutionHome>
+                        } else if (currentTab == 2)
+                        {
+                            <MUNityClient.Pages.Resa.ResolutionPresentation></MUNityClient.Pages.Resa.ResolutionPresentation>
+                        }
                         </div>
                     </div>
                 </div>
 
+                @if (!_auth.CanCreateRole)
+                {
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">Steuerung</div>
                         <div class="card-body">
-                            <div class="btn btn-primary" @onclick='() => MakeRequest("Redebeitrag")'>Antrag auf Redebeitrag</div>
-                            <div class="btn btn-primary" @onclick='() => MakeRequest("Frage")'>Antrag auf Frage/Kurzbemerkung</div>
-                            <div class="btn btn-primary" @onclick='() => MakeRequest("GO")'>Antrag an Geschäftsordnung</div>
-                            <div class="btn btn-primary" @onclick='() => MakeRequest("Persoenlich")'>Persönlicher Antrag</div>
-                            @if (_auth.CanCreateRole)
-                            {
-                                <div class="btn btn-danger" @onclick='() => BackToLobby()'>Zurück in die Lobby</div>
-                            }
+                                <div class="btn btn-primary" @onclick='() => MakeRequest("Redebeitrag")'>Antrag auf Redebeitrag</div>
+                                <div class="btn btn-primary" @onclick='() => MakeRequest("Frage")'>Antrag auf Frage/Kurzbemerkung</div>
+                                <div class="btn btn-primary" @onclick='() => MakeRequest("GO")'>Antrag an Geschäftsordnung</div>
+                                <div class="btn btn-primary" @onclick='() => MakeRequest("Persoenlich")'>Persönlicher Antrag</div>
                         </div>
                     </div>
                 </div>
+                }
             </div>
         </div>
 
@@ -67,6 +213,7 @@
     private List<MUNity.Schema.Simulation.SimulationUserSetup> _userSetups;
 
     private Services.SocketHandlers.SimulationSocketHandler _socket;
+    private int currentTab = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -194,3 +341,18 @@
         await this.simulationService.DeleteRequest(this._simulation.SimulationId, userId, request);
     }
 }
+
+<style>
+    .header-item {
+        transition: .3s;
+    }
+
+    .header-item:not(.selected-tab):hover {
+        background-color: #dedede;
+    }
+
+    .selected-tab {
+        background-color: #1266F1;
+        color: white;
+    }
+</style>
