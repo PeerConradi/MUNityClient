@@ -93,8 +93,7 @@ Ngo = 4 *@
                                 <div class="row m-0 p-0 col-12">
                                 @if (_auth.CanCreateRole && _userSetups != null)
                                 {
-                                    @* .Where(usr => usr.RoleId == 2) *@
-                                    foreach (var user in _userSetups)
+                                    foreach (var user in _userSetups.Where(usr => usr.RoleId == 2))
                                     {
                                         <div class="col p-0 m-2">
                                             <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)" SocketHandler="this._socket"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
@@ -125,8 +124,7 @@ Ngo = 4 *@
                                 <div class="row m-0 p-0 col-12">
                                 @if (_auth.CanCreateRole && _userSetups != null)
                                 {
-                                    @* .Where(usr => usr.RoleId == 4) *@
-                                    foreach (var user in _userSetups)
+                                    foreach (var user in _userSetups.Where(usr => usr.RoleId == 4))
                                     {
                                         <div class="col p-0 m-2">
                                             <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)" SocketHandler="this._socket"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
@@ -158,8 +156,7 @@ Ngo = 4 *@
                                 @if (_auth.CanCreateRole && _userSetups != null)
                                 {
                                     @* Überhaupt anzeigen? *@
-                                    @* .Where(usr => usr.RoleId == 3 || usr.RoleId == 0) *@
-                                    foreach (var user in _userSetups)
+                                    foreach (var user in _userSetups.Where(usr => usr.RoleId == 3 || usr.RoleId == 0))
                                     {
                                         <div class="col p-0 m-2">
                                             <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup User="user" Role="_simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)" SocketHandler="this._socket"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserSetup>
