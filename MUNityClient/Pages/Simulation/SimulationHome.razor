@@ -30,10 +30,10 @@
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Mit Passwort</th>
-                                        <th>Status/Phase</th>
-                                        <th>Beitreten</th>
-                                        <th>Verwaltung</th>
+                                        <th class="text-center">Passwort</th>
+                                        <th>Status</th>
+                                        <th class="text-center">Beitreten</th>
+                                        <th></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -41,15 +41,22 @@
                                     {
                                     <tr>
                                         <td>@simulation.Name</td>
-                                        <td>@simulation.UsingPassword.ToString()</td>
+                                        <td class="text-center">
+                                            @if(simulation.UsingPassword)
+                                            {
+                                            <i class="fas fa-check text-success"></i>
+                                            } else {
+                                            <i class="fas fa-times text-danger"></i>
+                                            }
+                                        </td>
 
                                         @if (simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Lobby)
                                         {
-                                            <td>Vorbereitungsphase</td>
+                                            <td>Vorbereitung</td>
                                         }
                                         else if (simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online)
                                         {
-                                            <td>Aktiv</td>
+                                            <td class="text-success">Aktiv</td>
                                         }
                                         else if (simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Offline)
                                         {
@@ -57,15 +64,17 @@
                                         }
                                         @if (_tokens != null && _tokens.Any(n => n.SimulationId == simulation.SimulationId))
                                         {
-                                            <td><button class="btn btn-small btn-success" @onclick="() => EnterSimulation(simulation.SimulationId)">Beitreten</button>
-                                                <button class="btn btn-small btn-danger" @onclick="() => DeleteToken(simulation.SimulationId)">Abmelden</button></td>
+                                            <td class="text-center">
+                                            <i type="button" class="fas fa-2x mr-3 fa-sign-in-alt text-success" title="Simulation beitreten" @onclick="() => EnterSimulation(simulation.SimulationId)"></i>
+                                            <i type="button" class="fas fa-2x fa-sign-out-alt text-danger" title="Zugangsdaten löschen und Simulation verlassen" @onclick="() => DeleteToken(simulation.SimulationId)"></i>
+                                            </td>
                                         }
                                         else
                                         {
-                                            <td><button class="btn btn-small btn-secondary" @onclick="() => EnterSimulation(simulation.SimulationId)">Anmelden</button></td>
+                                            <td class="text-center"><i type="button" class="fas fa-2x mr-3 fa-sign-in-alt text-success" title="Simulation beitreten" @onclick="() => EnterSimulation(simulation.SimulationId)"></i></td>
                                         }
 
-                                        <td><button class="btn btn-small btn-info">Verwaltung</button><small>Beitritt mit dem Admin Passwort</small></td>
+                                        <td class="text-right"><i type="button" class="fas fa-lg fa-tools" title="Beitritt mit dem Admin Passwort"></i></td>
                                     </tr>
                                     }
                                 </tbody>

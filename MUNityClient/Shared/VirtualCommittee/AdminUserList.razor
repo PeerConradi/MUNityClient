@@ -2,38 +2,55 @@
 
 @if (Users != null)
 {
-    <div class="card">
-        <div class="card-header">Benutzer</div>
-        <div class="card-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Online</th>
-                        <th>PublicId</th>
-                        <th>Rolle</th>
-                        <th>Passwort</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Users)
+    <div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nutzername</th>
+                    <th>Online</th>
+                    <th>PublicId</th>
+                    <th>Rolle</th>
+                    <th>
+                        <div type="button" @onclick="() => showPasswords = !showPasswords">
+                            @if (showPasswords)
+                            {
+                                <i class="fas fa-eye mr-2"></i>
+                            }
+                            else
+                            {
+                                <i class="fas fa-eye-slash mr-2"></i>
+                            }
+                            Passwort
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Users)
+                {
+                    if (user != null)
                     {
-                        if (user != null)
-                        {
-                            <UserListItemAdmin User="user" SimulationId="SimulationId" Roles="Roles"></UserListItemAdmin>
-                        }
+                        <UserListItemAdmin User="user" SimulationId="SimulationId" Roles="Roles" PasswordShown="@showPasswords"></UserListItemAdmin>
                     }
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer">
-            <button class="btn btn-succes btn-block" @onclick="() => NewUser()">Neuer Benutzer</button>
-        </div>
+                }
+            </tbody>
+        </table>
+        <button class="btn btn-dark-green btn-block" @onclick="() => NewUser()"><i class="fas fa-plus mr-2"></i>Neuer
+            Benutzer</button>
     </div>
 }
 else
 {
-    <p>Benutzer werden geladen</p>
+    <div class="row d-flex w-100 justify-content-center my-5">
+        <div class="d-flex w-100 justify-content-center">
+            <div class="spinner-border text-primary p-4" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center mt-3">
+            Benutzer werden geladen...
+        </div>
+    </div>
 }
 
 @code {
@@ -42,6 +59,8 @@ else
 
     [Parameter]
     public Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }
+
+    private Boolean showPasswords = false;
 
     public List<MUNity.Schema.Simulation.SimulationUserSetup> Users { get; set; }
 

@@ -1,24 +1,34 @@
 ﻿@* Ansicht eines Benutzers in dem virtuellem Gremium aus der Sicht eines Admins *@
 @inject MUNityClient.Services.SimulationService simulationService;
 
+<div class="border rounded p-2 user-parent">
+    @if (User != null)
+    {
+    <div class="row m-0 p-0 col-12 d-flex align-items-center">
+        @if (User.IsOnline)
+        {
+            <i class="fas fa-circle text-success mr-2" title="Nutzer is online"></i>
+        }
+        else
+        {
+            <i class="far fa-circle text-danger mr-2" title="Nutzer ist offline"></i>
+        }
+        @if (@User.DisplayName != null && @User.DisplayName.Length > 0)
+        {
+            <span class="mr-1">@User.DisplayName,</span>
+        } else {
+            <span class="text-danger">NUTZERNAME FEHLT, </span>
+        }
 
-@if (User != null)
-{
-    <div class="card @((User.IsOnline) ? "border-success" : "border-danger")" style="width: 18rem">
-        <div class="card-header text-white @((User.IsOnline) ? "bg-success" : "bg-danger")">
-            @if (Role != null)
-            {
-                <p>@Role.Name</p>
-            }
-            else
-            {
-                <p>Rolle nicht gefunden. (@User.RoleId)</p>
-            }
-            
-        </div>
-        <div class="card-body">
-            <p class="card-title">@User.DisplayName</p>
-        </div>
+        @if (Role != null)
+        {
+            <span>@Role.Name</span>
+        }
+        else
+        {
+            <span class="text-danger">ROLLE FEHLT</span>
+        }
+      
         @if (_currentPetition != null)
         {
             <div class="card-footer">
@@ -32,13 +42,23 @@
             </div>
         }
     </div>
-
-    @* TODO: Buttons zum einsehen der Kennung und des Passworts. ggf. weitere Funktionsbuttons in Zukunft wie Ändern von Rollen/Anzeigenamen etc. *@
-}
-else
-{
-    <p>Benutzer wird geladen</p>
-}
+    <div class="row m-0 p-0 col-12 d-flex justify-content-end">
+        <i type="button" class="settings fas fa-cog mx-2" title="Nutzer Einstellungen"></i>
+        @* TODO: Buttons zum einsehen der Kennung und des Passworts. ggf. weitere Funktionsbuttons in Zukunft wie Ändern von Rollen/Anzeigenamen etc. *@
+    </div>
+    }
+    else
+    {
+        <div class="d-flex w-100 justify-content-center">
+            <div class="spinner-border text-primary p-2" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center mt-3">
+            Benutzer wird geladen...
+        </div>
+    }
+</div>
 
 @code {
     [Parameter]
@@ -105,3 +125,14 @@ else
         await simulationService.AcceptPetition(this._currentPetition);
     }
 }
+
+<style>
+    .settings {
+        opacity: 0%;
+        transition: .3s;
+    }
+
+    .user-parent:hover .settings {
+        opacity: 100%;
+    }
+</style>
