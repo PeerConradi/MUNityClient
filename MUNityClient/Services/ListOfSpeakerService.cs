@@ -55,7 +55,25 @@ namespace MUNityClient.Services
 
         public async void SyncSpeakerlist(ListOfSpeakers list)
         {
-            await this._httpService.HttpClient.PutAsync($"/api/Speakerlist/SyncSpeakerlist", JsonContent.Create(list));
+            var content = JsonContent.Create(list);
+            var contentString = content.ToString();
+            await this._httpService.HttpClient.PutAsync($"/api/Speakerlist/SyncSpeakerlist", content);
+        }
+
+        public async void AddSpeakerToList(string listOfSpeakersId, string name, string iso)
+        {
+            var mdl = new Speaker();
+            mdl.Iso = iso;
+            mdl.Name = name;
+            await this._httpService.HttpClient.PostAsync($"/api/Speakerlist/AddSpeakerModelToList?listid={listOfSpeakersId}", JsonContent.Create(mdl));
+        }
+
+        public async void AddQuestionToList(string listOfSpeakersId, string name, string iso)
+        {
+            var mdl = new Speaker();
+            mdl.Iso = iso;
+            mdl.Name = name;
+            await this._httpService.HttpClient.PostAsync($"/api/Speakerlist/AddQuestionModelToList?listid={listOfSpeakersId}", JsonContent.Create(mdl));
         }
 
         public async Task<SocketHandlers.ListOfSpeakerSocketHandler> Subscribe(ListOfSpeakers list)

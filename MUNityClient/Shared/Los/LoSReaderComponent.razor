@@ -50,6 +50,55 @@
             </div>
         </div>
     </div>
+
+    @* Fragen und Kurzbemerkungen *@
+    <div class="row col-12 m-0 p-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    @if (Speakerlist.CurrentQuestion != null)
+                    {
+                        <h5>Es spricht:</h5>
+                        <h5>@Speakerlist.CurrentQuestion.Name</h5>
+
+                        @if (Speakerlist.RemainingQuestionTime.TotalSeconds <= 0)
+                        {
+                            <h6 class="text-danger">Bitte zum Ende kommen</h6>
+                        }
+                        else if (Speakerlist.RemainingQuestionTime.TotalSeconds <= 10)
+                        {
+                            <h6 class="text-danger">Verbleibende Zeit: @Speakerlist.RemainingQuestionTime.ToString(@"mm\:ss")</h6>
+                        }
+                        else
+                        {
+                            <h6>Verbleibende Zeit: @Speakerlist.RemainingQuestionTime.ToString(@"mm\:ss")</h6>
+                        }
+                    }
+                    else
+                    {
+                        <h5>Aktuell keine Frage oder Kurzbemerkung</h5>
+                        <h5>Redezeit: @Speakerlist.QuestionTime.ToString(@"mm\:ss")</h5>
+                    }
+                </div>
+                <div class="card-body">
+                    <h4>Warteliste Fragen und Kurzbemerkungen</h4>
+                    @if (Speakerlist.Questions.Any())
+                    {
+                        <ul class="list-group">
+                            @foreach (var speaker in Speakerlist.Questions)
+                            {
+                                <li class="list-group-item">@speaker.Name</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>Niemand auf der Warteliste</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 }
 
 @code {
@@ -108,11 +157,16 @@
     // gezählt werden muss.
     private async void TimerElapsed(object sender, System.Timers.ElapsedEventArgs args)
     {
-        var list = await this.listOfSpeakerService.GetListOfSpeakers(ListOfSpeakersId);
-        if (list != null)
+        if (!IsOnline)
         {
-            this.Speakerlist = list;
-            this.StateHasChanged();
+            var list = await this.listOfSpeakerService.GetListOfSpeakers(ListOfSpeakersId);
+            if (list != null)
+            {
+                this.Speakerlist = list;
+                this.StateHasChanged();
+            }
         }
+        this.StateHasChanged();
+
     }
 }
