@@ -13,9 +13,13 @@
         {
             <i class="far fa-circle text-danger mr-2" title="Nutzer ist offline"></i>
         }
-        @if (@User.DisplayName != null && @User.DisplayName.Length > 0)
+        @if (!string.IsNullOrEmpty(User.DisplayName))
         {
-            <span>@User.DisplayName, </span>
+            <span>@User.DisplayName</span>
+        }
+        else
+        {
+            <span>Kein Anzeigename?</span>
         }
 
         @if (Role != null)
@@ -25,15 +29,21 @@
   
         @if (_currentPetition != null)
         {
-        <div class="card-footer">
-            <p>@_currentPetition.PetitionType</p>
-            <p>@_currentPetition.PetitionDate.ToString()</p>
-            <p>@_currentPetition.Text</p>
-            @if (this.IsMe)
-            {
-                <button class="btn btn-danger" @onclick="() => DeleteCurrentPetition()">Löschen</button>
-            }
-        </div>
+<div class="card-footer">
+    <p>@_currentPetition.PetitionType</p>
+    <p>@_currentPetition.PetitionDate.ToString()</p>
+    <p>@_currentPetition.Text</p>
+    @if (User is MUNity.Schema.Simulation.SimulationUserSetup)
+    {
+        <button class="btn btn-success" @onclick="() => AcceptCurrentPetition()">Annehmen</button>
+    }
+
+    else if (this.IsMe || User is MUNity.Schema.Simulation.SimulationUserSetup)
+    {
+
+        <button class="btn btn-danger" @onclick="() => DenyCurrentPetition()">Löschen</button>
+    }
+</div>
         }
     }
     else
@@ -51,7 +61,7 @@
 
 @code {
     [Parameter]
-    public MUNity.Schema.Simulation.SimulationUserItem User { get; set; }
+    public MUNity.Schema.Simulation.IUserItem User { get; set; }
 
     [Parameter]
     public MUNity.Schema.Simulation.SimulationRoleItem Role { get; set; }
@@ -110,5 +120,17 @@
     {
         if (this._currentPetition == null) return;
         await simulationService.DeletePetition(this._currentPetition);
+    }
+
+    private async Task DenyCurrentPetition()
+    {
+        if (this._currentPetition == null) return;
+        await simulationService.DeletePetition(this._currentPetition);
+    }
+
+    private async Task AcceptCurrentPetition()
+    {
+        if (this._currentPetition == null) return;
+        await simulationService.AcceptPetition(this._currentPetition);
     }
 }

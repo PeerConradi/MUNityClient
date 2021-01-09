@@ -57,13 +57,21 @@
                             </div>
                             <div class="col-7 row m-0 p-0 d-flex justify-content-end">
                                 <span type="button" class="py-1 px-3 text-danger hover-enabled"
-                                    @onclick="() => this.Speakerlist.AddSpeakerSeconds(-10)">-10</span>
-                                <h3
-                                    class="m-0 text-center @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 11 ? "text-danger" : "")">
-                                    @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 0 ? "-" : "")
-                                    @Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")</h3>
+                                      @onclick="() => this.Speakerlist.AddSpeakerSeconds(-10)">-10</span>
+                                @if (this.Speakerlist.CurrentSpeaker != null)
+                                {
+                                    <h3 class="m-0 text-center @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 11 ? "text-danger" : "")">
+                                        @(Speakerlist.RemainingSpeakerTime.TotalSeconds < 0 ? "-" : "")
+                                        @Speakerlist.RemainingSpeakerTime.ToString(@"mm\:ss")
+                                    </h3>
+                                }
+                                else
+                                {
+                                    <h3>@Speakerlist.SpeakerTime.ToString(@"mm\:ss")</h3>
+                                }
+
                                 <span type="button" class="py-1 px-3 text-success hover-enabled"
-                                    @onclick="() => this.Speakerlist.AddSpeakerSeconds(10)">+10</span>
+                                      @onclick="() => this.Speakerlist.AddSpeakerSeconds(10)">+10</span>
                             </div>
                         </div>
                         @* Controls *@
@@ -163,7 +171,7 @@
                                 @onclick="() => Speakerlist.StartQuestion()"></i>
                         </div>
                         <div class="col-12 mx-0 px-0">
-                            <h5>Kommentarliste</h5>
+                            <h5>Fragen und Kurzbemerkungen</h5>
                             @foreach (var question in Speakerlist.Questions)
                         {
                                     <div class="card border p-2">@question.Name</div>
@@ -224,9 +232,12 @@
 
     public ListOfSpeakers Speakerlist { get; set; }
 
+    [Parameter]
     public bool IsOnline { get; set; }
 
     private MUNityClient.Shared.Bootstrap.Modal SpeakingTimeConfigModal { get; set; }
+
+    private Services.SocketHandlers.ListOfSpeakerSocketHandler _socket;
 
     private class SpeakerToAdd
     {
@@ -317,60 +328,94 @@
         if (IsOnline)
         {
             this.Speakerlist = await this.listOfSpeakerService.GetFromApi(this.Id);
-        }
-        else
+            @* Wir registrieren die Redelisten beim WebSocket um über Änderungen informeirt zu werden. *@
+        _socket = await listOfSpeakerService.Subscribe(Speakerlist);
+        if (_socket != null)
         {
-            this.Speakerlist = await this.listOfSpeakerService.GetListOfSpeakers(this.Id);
-        }
+            _socket.ListOfSpeakersChanged += OnSpeakerlistChanged;
 
-        if (this.Speakerlist != null)
-        {
-            this.Settings = new SpeakerlistSettings(this.Speakerlist);
-
-            // Wir bauen jetzt für den ersten Entwurf einen Timer, welcher
-            // jede Sekunde neu Zeichnet. Der Grund dafür ist, dass die
-            // Redeliste nicht selber mit einem Timer arbeitet sondern
-            // Startzeiten mit der aktuellen Uhrzeit Synct und hierdurch
-            // die Redezeiten berechnet.
-            // Es ist theoretisch möglich sich von der Redeliste ein StateChanged Event geben zu lassen
-            // dann kann der Timer pausiert werden, wenn ohnehin gerade niemand spricht, aber ich halte
-            // eine aktualisierung der Ansicht (kein Serverping) nicht für zu viel. ~Peer
-            var timer = new Timer(1000);
-            timer.Elapsed += TimerElapsed;
-            timer.Start();
-
-            Speakerlist.PropertyChanged += StoreOnListChanged;
-            Speakerlist.Speakers.CollectionChanged += StoreOnCollectionChagned;
-            Speakerlist.Questions.CollectionChanged += StoreOnCollectionChagned;
-
-            base.OnInitialized();
         }
     }
-
-    private async void StoreOnListChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    else
     {
-        await this.listOfSpeakerService.StoreListOfSpeakers(this.Speakerlist);
-        if (IsOnline)
+        this.Speakerlist = await this.listOfSpeakerService.GetListOfSpeakers(this.Id);
+    }
+
+    if (this.Speakerlist != null)
+    {
+        this.Settings = new SpeakerlistSettings(this.Speakerlist);
+
+        // Wir bauen jetzt für den ersten Entwurf einen Timer, welcher
+        // jede Sekunde neu Zeichnet. Der Grund dafür ist, dass die
+        // Redeliste nicht selber mit einem Timer arbeitet sondern
+        // Startzeiten mit der aktuellen Uhrzeit Synct und hierdurch
+        // die Redezeiten berechnet.
+        // Es ist theoretisch möglich sich von der Redeliste ein StateChanged Event geben zu lassen
+        // dann kann der Timer pausiert werden, wenn ohnehin gerade niemand spricht, aber ich halte
+        // eine aktualisierung der Ansicht (kein Serverping) nicht für zu viel. ~Peer
+        var timer = new Timer(1000);
+        timer.Elapsed += TimerElapsed;
+        timer.Start();
+
+        Speakerlist.PropertyChanged += StoreOnListChanged;
+        Speakerlist.AllSpeakers.CollectionChanged += StoreOnCollectionChanged;
+        base.OnInitialized();
+    }
+}
+
+private void OnSpeakerlistChanged(ListOfSpeakers newList)
+{
+
+    if (this.Speakerlist.CompareTo(newList) != 0)
+    {
+        this.Speakerlist = newList;
+        Speakerlist.PropertyChanged += StoreOnListChanged;
+        Speakerlist.AllSpeakers.CollectionChanged += StoreOnCollectionChanged;
+        StateHasChanged();
+    }
+}
+
+private async void StoreOnListChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+{
+
+    if (IsOnline)
+    {
+        // The syncing when a speaker has been added will happen in StoreOnCollectionChanged
+        if (e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.SpeakerTime) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.QuestionTime) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.CurrentSpeaker) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.CurrentQuestion) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.Status))
         {
             this.listOfSpeakerService.SyncSpeakerlist(this.Speakerlist);
         }
-    }
 
-    private async void StoreOnCollectionChagned(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs args)
+    }
+    else
     {
         await this.listOfSpeakerService.StoreListOfSpeakers(this.Speakerlist);
-        if (IsOnline)
-        {
-            this.listOfSpeakerService.SyncSpeakerlist(this.Speakerlist);
-        }
     }
+}
 
-    private async Task OpenReaderSpectatorView()
+private async void StoreOnCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs args)
+{
+
+    if (IsOnline)
     {
-        // Das her ist auch mal ein beispiel, wie man eine JavaScript Methode schnell aufrufen kann :)
-        string url = "/los/read/" + this.Speakerlist.ListOfSpeakersId;
-        await jsRuntime.InvokeAsync<object>("open", url, "_blank");
+        this.listOfSpeakerService.SyncSpeakerlist(this.Speakerlist);
     }
+    else
+    {
+        await this.listOfSpeakerService.StoreListOfSpeakers(this.Speakerlist);
+    }
+}
+
+private async Task OpenReaderSpectatorView()
+{
+    // Das her ist auch mal ein beispiel, wie man eine JavaScript Methode schnell aufrufen kann :)
+    string url = "/los/read/" + this.Speakerlist.ListOfSpeakersId;
+    await jsRuntime.InvokeAsync<object>("open", url, "_blank");
+}
 }
 
 

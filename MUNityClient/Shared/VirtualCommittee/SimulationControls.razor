@@ -1,0 +1,101 @@
+﻿@inject Services.SimulationService simulationService;
+@inject Services.ListOfSpeakerService listOfSpeakerService; 
+
+@* Diese Interaktionen benötigen eine Rolle! *@
+@if (Role != null)
+{
+    @* Funktionen für Delegierte und Ngo Vertreter *@
+    if (Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate || Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Ngo)
+    {
+        <button class="btn btn-secondary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.PersRechtAufInformation)'>Recht auf Information</button>
+        <button class="btn btn-secondary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.PersRechtAufOrdnung)'>Recht auf Wiederherstellung der Ordnung</button>
+        <button class="btn btn-secondary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.PersRechtAufKlaerung)'>Recht auf Klärung eines Missverständnisses</button>
+
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOMuendlicheAbstimmung)'>mündliche Abstimmung</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOInformelleSitzung)'>Informelle Sitzung</button>
+    }
+
+    @* Funktionen nur für Delegierte *@
+    if (Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate)
+    {
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GORevision)'>Revision einer Entscheidung des Vorsitzes</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GONeuTagesordnungspunkt)'>Aufnahme eines neuen Tagesordnungspunktes</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOZurueckResolutionsentwurf)'>Zurückschicken eines Resolutionsentwurfes</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOVertagung)'>Vertagung eines Tagesordnungspunktes</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GORueckAllgDebatte)'>Rückkehr zur Allgemeinen Debatte</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOEndeDebatte)'>Ende der aktuellen Debatte</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOVorgezogenAbstReso)'>Vorgezogene Abstimmung über den Resolutionsentwurf als Ganzes</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOAbschlussRedeliste)'>Abschluss oder Wiedereröffnung der Redeliste</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOAendereRedezeit)'>Änderung der Redezeit</button>
+        <button class="btn btn-primary" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOGastredner)'>Anhörung eines Gastredners</button>
+    }
+}
+
+@* Auf die Redeliste kann sich erst einmal jeder Setzen lassen. *@
+@if (!string.IsNullOrEmpty(SpeakerlistId) && SpeakerlistId != "_loading_")
+{
+    <button class="btn btn-info" @onclick="AddMeToListOfSpeakers">Auf die Redeliste</button>
+    <button class="btn btn-info" @onclick="AddMeToListOfQuestions">Auf Fragen und Kurzbemerkungen</button>
+
+    @* Eine eigene kleine Steuerung für die Redeliste *@
+    if (Role != null && Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+    {
+        <MUNityClient.Pages.LoS.ListOfSpeakerEditor Id="@SpeakerlistId" IsOnline="@true"></MUNityClient.Pages.LoS.ListOfSpeakerEditor>
+    }
+}
+
+@code {
+    [Parameter]
+    public MUNity.Schema.Simulation.SimulationRoleItem Role { get; set; }
+
+    [Parameter]
+    public string SpeakerlistId { get; set; }
+
+    [Parameter]
+    public int SimulationId { get; set; }
+
+    [Parameter]
+    public MUNity.Schema.Simulation.IUserItem Me { get; set; }
+
+    private async Task MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes type)
+    {
+        if (SimulationId == 0) return;
+        var petition = new MUNity.Schema.Simulation.Petition();
+        petition.SimulationId = SimulationId;
+        petition.Text = "";
+        petition.PetitionType = type;
+        await this.simulationService.MakePetition(petition);
+    }
+
+    private void AddMeToListOfSpeakers()
+    {
+        if (Role != null)
+        {
+            listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Role.Name, Role.Iso);
+            return;
+        }
+        else
+        {
+            if (Me != null)
+            {
+                listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Me.DisplayName, "");
+            }
+        }
+    }
+
+    private void AddMeToListOfQuestions()
+    {
+        if (Role != null)
+        {
+            listOfSpeakerService.AddQuestionToList(SpeakerlistId, Role.Name, Role.Iso);
+            return;
+        }
+        else
+        {
+            if (Me != null)
+            {
+                listOfSpeakerService.AddQuestionToList(SpeakerlistId, Me.DisplayName, "");
+            }
+        }
+    }
+}
