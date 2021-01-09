@@ -33,7 +33,7 @@
     <p>@_currentPetition.PetitionType</p>
     <p>@_currentPetition.PetitionDate.ToString()</p>
     <p>@_currentPetition.Text</p>
-    @if (User is MUNity.Schema.Simulation.SimulationUserSetup)
+    @if (User is MUNity.Schema.Simulation.SimulationUserSetup || IAmChair)
     {
         <button class="btn btn-success" @onclick="() => AcceptCurrentPetition()">Annehmen</button>
     }
@@ -65,6 +65,9 @@
 
     [Parameter]
     public MUNity.Schema.Simulation.SimulationRoleItem Role { get; set; }
+
+    [Parameter]
+    public bool IAmChair { get; set; }
 
     [Parameter]
     public MUNityClient.Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }

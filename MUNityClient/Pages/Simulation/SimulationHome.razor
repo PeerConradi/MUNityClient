@@ -1,4 +1,10 @@
-﻿@page "/sim/home"
+﻿@*  
+    SimulationHome beschreibt die Ansicht in welcher existierende Räume gelistet werden und
+    der Benutzer diesen Beitreten kann.
+
+*@
+
+@page "/sim/home"
 
 @inject Services.SimulationService simulationService;
 @inject NavigationManager navigation;
@@ -30,7 +36,6 @@
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th class="text-center">Passwort</th>
                                         <th>Status</th>
                                         <th class="text-center">Beitreten</th>
                                         <th></th>
@@ -41,14 +46,6 @@
                                     {
                                     <tr>
                                         <td>@simulation.Name</td>
-                                        <td class="text-center">
-                                            @if(simulation.UsingPassword)
-                                            {
-                                            <i class="fas fa-check text-success"></i>
-                                            } else {
-                                            <i class="fas fa-times text-danger"></i>
-                                            }
-                                        </td>
 
                                         @if (simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Lobby)
                                         {
