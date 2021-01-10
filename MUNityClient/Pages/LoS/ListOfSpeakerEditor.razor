@@ -108,16 +108,18 @@
                         <h5>Warteliste</h5>
                         @foreach (var speaker in Speakerlist.Speakers)
                         {
-                                <div class="card border p-2">@speaker.Name</div>
+                                <div class="card border p-2">@speaker.Name <i class="fas fa-times mr-2 text-danger" @onclick="() => RemoveSpeaker(speaker)"></i></div>
                         }
+
+
                         @if (Speakerlist.ListClosed)
                         {
-                                <button @onclick="() => Speakerlist.ListClosed = true" class="btn btn-outline-success">Redeliste
+                                <button @onclick="() => Speakerlist.ListClosed = !Speakerlist.ListClosed" class="btn btn-outline-success">Redeliste
                                     öffnen</button>
                         }
                         else
                         {
-                                <div type="button" @onclick="() => Speakerlist.ListClosed = false" class="border mx-0 mt-2 p-2"><i
+                                <div type="button" @onclick="() => Speakerlist.ListClosed = !Speakerlist.ListClosed" class="border mx-0 mt-2 p-2"><i
                                         class="fas fa-ban mr-2 text-danger"></i>Redeliste
                                     schließen</div>
                         }
@@ -311,6 +313,8 @@
         }
     }
 
+
+
     private void TimerElapsed(object sender, ElapsedEventArgs args)
     {
         this.StateHasChanged();
@@ -323,6 +327,11 @@
             NewSpeaker.Name = "";
         }
         return EventCallback.Empty;
+    }
+
+    private void RemoveSpeaker(Speaker speaker)
+    {
+        this.Speakerlist.AllSpeakers.Remove(speaker);
     }
 
     private EventCallback AddToQuestions()
@@ -399,7 +408,9 @@ private async void StoreOnListChanged(object sender, System.ComponentModel.Prope
             e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.CurrentQuestion) ||
             e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.Status) ||
             e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.StartQuestionTime) ||
-            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.StartSpeakerTime))
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.StartSpeakerTime) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.ListClosed) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.QuestionsClosed))
         {
             this.listOfSpeakerService.SyncSpeakerlist(this.Speakerlist);
         }

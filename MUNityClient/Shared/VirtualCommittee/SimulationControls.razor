@@ -17,6 +17,8 @@
     Ist abhängig vom Context der Redeliste.
 *@
 
+@inject Services.SimulationService simulationService;
+
 <!-- Grey with black text -->
 <nav class="navbar navbar-expand-sm bg-primary navbar-dark nav-bottom w-100" style="opacity: 0.75;">
     <ul class="navbar-nav">
@@ -91,11 +93,34 @@
 {
     <div class="card floating-card shadow-2">
         <div class="list-group">
+            @* Anträge können aktuell bearbeitet werden. Das wird darüber eingeleitet, dass diese angenommen werden
+        Nachdem der Antrag in dieser Angenommen liste gelandet ist, wird er (wenn bearbeitet) einfach gelöscht. *@
+            @foreach (var activePetition in _currentPetitions)
+            {
+                <a class="list-group-item list-group-item-action" @onclick="() => AcceptPetition(activePetition)">
+                    <div class="d-flex w-100 justify-content-between">
+
+                        <h5 class="mb-1">@GetPetitionDisplayName(activePetition)</h5>
+                        <small class="text-muted">@activePetition.PetitionDate.ToShortTimeString()</small>
+                    </div>
+                    <p class="mb-1">
+                        @if (activePetition.PetitionType == MUNity.Schema.Simulation.Petition.PetitionTypes.GOAbschlussRedeliste)
+                        {
+                            <span>GO: Abschluss oder Wiedereröffnung der Redeliste</span>
+                        }
+                        else
+                        {
+                            <span>@activePetition.PetitionType.ToString()</span>
+                        }
+                    </p>
+                </a>
+            }
+
             @foreach (var petition in _petitions)
             {
-                <a class="list-group-item list-group-item-action">
+                <a class="list-group-item list-group-item-action" @onclick="() => AcceptPetition(petition)">
                     <div class="d-flex w-100 justify-content-between">
-                        
+
                         <h5 class="mb-1">@GetPetitionDisplayName(petition)</h5>
                         <small class="text-muted">@petition.PetitionDate.ToShortTimeString()</small>
                     </div>
@@ -163,18 +188,29 @@
         return "Unbekannt";
     }
 
+
     // Fürs erste halten wir die Liste der Anträge in diesem Menü, es ist vielleicht sinnvoll
     // diese im Runner selbst zu halten und an die anderen zu erben ~Peer
     private List<MUNity.Schema.Simulation.Petition> _petitions { get; set; }
 
+    private List<MUNity.Schema.Simulation.Petition> _currentPetitions { get; set; }
+
     protected override void OnInitialized()
     {
         _petitions = new List<MUNity.Schema.Simulation.Petition>();
+        _currentPetitions = new List<MUNity.Schema.Simulation.Petition>();
         if (Socket != null)
         {
             Socket.UserPetition += OnUserPetition;
+            Socket.UserPetitionAccpted += OnUserPetitionAccepted;
+            Socket.UserPetitionDeleted += OnUserPetitionDeleted;
         }
         base.OnInitialized();
+    }
+
+    private async void AcceptPetition(MUNity.Schema.Simulation.Petition petition)
+    {
+        await simulationService.AcceptPetition(petition);
     }
 
     private void OnUserPetition(MUNity.Schema.Simulation.Petition petition)
@@ -184,6 +220,19 @@
         this.StateHasChanged();
     }
 
+    private void OnUserPetitionAccepted(MUNity.Schema.Simulation.Petition petition)
+    {
+        _petitions.RemoveAll(n => n.PetitionId == petition.PetitionId);
+        _currentPetitions.Add(petition);
+        this.StateHasChanged();
+    }
+
+    private void OnUserPetitionDeleted(MUNity.Schema.Simulation.Petition petition)
+    {
+        _petitions.RemoveAll(n => n.PetitionId == petition.PetitionId);
+        _currentPetitions.RemoveAll(n => n.PetitionId == petition.PetitionId);
+        this.StateHasChanged();
+    }
 }
 
 <style>
