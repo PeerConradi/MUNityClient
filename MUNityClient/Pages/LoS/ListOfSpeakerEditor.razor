@@ -1,4 +1,16 @@
-﻿@using MUNity.Models.ListOfSpeakers;
+﻿@* Die Steuerungskomponente für eine Redeliste. Die Redeliste wird über den Verweis Id geladen.
+    Es wird eine Prüfung auf IsOnline vorgenommen, bevor die Redeliste aus dem Speicher des Browsers geladen wird.
+    Ist die Redeliste Online verfügbar, wird keine Speicherung innerhalb des Browser Speichers veranlasst, sondern die Liste wird
+    über den WebSocket (ListOfSpeakersSocketHandler) abgearbeitet.
+    
+    IsOnline ist ein Parameter und kann auch an die Komponente übergeben werden. 
+    
+    Derzeit wird ein EventListener an das PropertyChanged Event der Redeliste angehangen. Sollte die Redeliste online sein,
+    wird dann ein sync an den Server durchgeführt, wobei die gesamte Redeliste als Json an den Server übertragen wird und dieser
+    sendet dann die neue Version der Redeliste an alle Clients.
+    Ebenso hört die Komponente auf diesen Socket, falls durch andere Stelle eine Änderung vorgenommen wurde. *@
+
+@using MUNity.Models.ListOfSpeakers;
 @using MUNity.Extensions.LoSExtensions;
 @using System.Timers;
 
@@ -96,16 +108,18 @@
                         <h5>Warteliste</h5>
                         @foreach (var speaker in Speakerlist.Speakers)
                         {
-                                <div class="card border p-2">@speaker.Name</div>
+                                <div class="card border p-2">@speaker.Name <i class="fas fa-times mr-2 text-danger" @onclick="() => RemoveSpeaker(speaker)"></i></div>
                         }
+
+
                         @if (Speakerlist.ListClosed)
                         {
-                                <button @onclick="() => Speakerlist.ListClosed = true" class="btn btn-outline-success">Redeliste
+                                <button @onclick="() => Speakerlist.ListClosed = !Speakerlist.ListClosed" class="btn btn-outline-success">Redeliste
                                     öffnen</button>
                         }
                         else
                         {
-                                <div type="button" @onclick="() => Speakerlist.ListClosed = false" class="border mx-0 mt-2 p-2"><i
+                                <div type="button" @onclick="() => Speakerlist.ListClosed = !Speakerlist.ListClosed" class="border mx-0 mt-2 p-2"><i
                                         class="fas fa-ban mr-2 text-danger"></i>Redeliste
                                     schließen</div>
                         }
@@ -299,6 +313,8 @@
         }
     }
 
+
+
     private void TimerElapsed(object sender, ElapsedEventArgs args)
     {
         this.StateHasChanged();
@@ -311,6 +327,11 @@
             NewSpeaker.Name = "";
         }
         return EventCallback.Empty;
+    }
+
+    private void RemoveSpeaker(Speaker speaker)
+    {
+        this.Speakerlist.AllSpeakers.Remove(speaker);
     }
 
     private EventCallback AddToQuestions()
@@ -385,7 +406,11 @@ private async void StoreOnListChanged(object sender, System.ComponentModel.Prope
             e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.QuestionTime) ||
             e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.CurrentSpeaker) ||
             e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.CurrentQuestion) ||
-            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.Status))
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.Status) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.StartQuestionTime) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.StartSpeakerTime) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.ListClosed) ||
+            e.PropertyName == nameof(MUNity.Models.ListOfSpeakers.ListOfSpeakers.QuestionsClosed))
         {
             this.listOfSpeakerService.SyncSpeakerlist(this.Speakerlist);
         }

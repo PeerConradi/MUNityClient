@@ -1,0 +1,111 @@
+﻿@* 
+    Diese Komponente dient dazu, einen Überblick über das Vertretene Gremium zu bekommen.
+    
+    Es werden sowohl alle Benutzer gezeichnet welche Online wie auch Offline sind um leere Sitzplätze zu erkennen.
+
+    Unterteilt werden die Benutzer in die Rollen:
+    - Vorsitz (Chairman)
+    - Delegierter (Delegate)
+    - Nichtstaatliche Akteure (NGO)
+    
+    Weitere mögliche Optionen sind:
+    - Keine Rolle
+    - Zuschauer
+
+    Diese sollen aber nicht weiter mit dem Gremium agieren können und brauchen daher in der großen Ansicht nicht eingeblendet zu werden.
+    Es wäre aber hilfreich ggf. eine Liste der Zuschauer und Rollenlosen Accounts einsehen zu können.
+    Keine Rolle könnte z.B. Ein Gastredner bedeuten, oder aber Generalsekretär
+*@
+
+@if (HasChairs && Auth != null && Simulation != null)
+{
+    <div class="row m-0 p-0 d-flex justify-content-center">
+        <div class="row m-0 p-0 col-12 d.flex justify-content-center">
+            Vorsitz
+        </div>
+        <div class="row m-0 p-0 col-12">
+            @foreach (var user in Chairs)
+            {
+                <div class="col p-0 m-2">
+                    <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user"
+                                                                                 Role="Simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"
+                                                                                 SocketHandler="Socket"
+                                                                                 IsMe="@(Auth.SimulationUserId == user.SimulationUserId)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                </div>
+            }
+        </div>
+    </div>
+}
+@if (HasDelegates && Auth != null && Simulation != null)
+{
+    <div class="row m-0 p-0 d-flex justify-content-center">
+        <div class="row m-0 p-0 col-12 d.flex justify-content-center">
+            Delegierte
+        </div>
+        <div class="row m-0 p-0 col-12">
+            <div class="card-group">
+                @foreach (var user in Delegates)
+                {
+                    <MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase User="user"
+                                                                                 Role="Simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"
+                                                                                 SocketHandler="Socket"
+                                                                                 IsMe="@(Auth.SimulationUserId == user.SimulationUserId)"
+                                                                                 IAmChair="@(MyRole != null && MyRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)"></MUNityClient.Shared.VirtualCommittee.SimulationLiveUserBase>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@* TODO: Ansicht für NAs (NGOs) und für Gäste. Hier ggf. eine andere Darstellung gerade Gäste brauchen ggf nur als Stringliste oder so eingeblendet werden. *@
+
+@code {
+    [Parameter]
+    public IEnumerable<MUNity.Schema.Simulation.IUserItem> Users { get; set; }
+
+    [Parameter]
+    public MUNity.Schema.Simulation.SimulationResponse Simulation { get; set; }
+
+    [Parameter]
+    public Services.SocketHandlers.SimulationSocketHandler Socket { get; set; }
+
+    [Parameter]
+    public MUNity.Schema.Simulation.SimulationAuthSchema Auth { get; set; }
+
+    [Parameter]
+    public MUNity.Schema.Simulation.SimulationRoleItem MyRole { get; set; }
+
+    public bool HasChairs
+    {
+        get
+        {
+            if (this.Users == null) return false;
+            return this.Users.Any(n => this.Simulation.Roles.Any(a => a.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman && a.SimulationRoleId == n.RoleId));
+        }
+    }
+
+    public bool HasDelegates
+    {
+        get
+        {
+            if (this.Users == null) return false;
+            return this.Users.Any(n => this.Simulation.Roles.Any(a => a.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate && a.SimulationRoleId == n.RoleId));
+        }
+    }
+
+    public IEnumerable<MUNity.Schema.Simulation.IUserItem> Chairs
+    {
+        get
+        {
+            return this.Users.Where(n => this.Simulation.Roles.Any(a => a.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman && a.SimulationRoleId == n.RoleId));
+        }
+    }
+
+    public IEnumerable<MUNity.Schema.Simulation.IUserItem> Delegates
+    {
+        get
+        {
+            return this.Users.Where(n => this.Simulation.Roles.Any(a => a.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate && a.SimulationRoleId == n.RoleId));
+        }
+    }
+}
