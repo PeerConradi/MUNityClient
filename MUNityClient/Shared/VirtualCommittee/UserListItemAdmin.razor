@@ -8,7 +8,6 @@
     }
     else
     {
-        @* funktioniert aktuell nicht, die Anzeige ist einfach leer *@
         <td>KEIN NAME</td>
     }
 
@@ -34,9 +33,17 @@
         @if (PasswordShown)
         {
             @User.Password
-        } else {
+        }
+        else
+        {
             <span>********</span>
         }
+
+    
+    </td>
+
+    <td>
+        <i class="fas fa-trash" @onclick="() => UserRemoveClicked.InvokeAsync(User.SimulationUserId)"></i>
     </td>
 </tr>
 @code {
@@ -48,9 +55,12 @@
 
     [Parameter]
     public List<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
-    
+
     [Parameter]
     public Boolean PasswordShown { get; set; }
+
+    [Parameter]
+    public EventCallback<int> UserRemoveClicked { get; set; }
 
     private int _roleId;
     public int RoleId
