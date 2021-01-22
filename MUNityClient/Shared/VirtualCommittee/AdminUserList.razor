@@ -1,4 +1,7 @@
-﻿@inject Services.SimulationService _simulationService;
+﻿@* Diese Komponente ist eine Tabelle für die Lobbyphase der Simulation. Hierbei werden die Benutzer in der Simulation
+    für einen Administrator/ Jemanden der den Raum verwalten kann aufgelistet. *@
+
+@inject Services.SimulationService _simulationService;
 
 @if (Users != null)
 {
@@ -23,6 +26,7 @@
                             Passwort
                         </div>
                     </th>
+                    <th>Löschen</th>
                 </tr>
             </thead>
             <tbody>
@@ -30,7 +34,7 @@
                 {
                     if (user != null)
                     {
-                        <UserListItemAdmin User="user" SimulationId="SimulationId" Roles="Roles" PasswordShown="@showPasswords"></UserListItemAdmin>
+                        <UserListItemAdmin User="user" SimulationId="SimulationId" UserRemoveClicked="@OnUserRemoved" Roles="Roles" PasswordShown="@showPasswords"></UserListItemAdmin>
                     }
                 }
             </tbody>
@@ -93,6 +97,13 @@ else
             user.RoleId = roleId;
             this.StateHasChanged();
         }
+    }
+
+    private async Task<EventCallback> OnUserRemoved(int userId)
+    {
+        await this._simulationService.RemoveUser(this.SimulationId, userId);
+        this.Users.RemoveAll(n => n.SimulationUserId == userId);
+        return EventCallback.Empty;
     }
 
     private void OnRolesChanged(int sender, IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> roles)

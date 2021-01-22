@@ -206,11 +206,20 @@ namespace MUNityClient.Services
             await client.GetAsync($"/api/Simulation/ApplyPreset?simulationId={simulationId}&presetId={presetId}");
         }
 
+
+
         public async Task<MUNity.Schema.Simulation.SimulationUserSetup> CreateUser(int simulationId)
         {
             var client = await GetSimulationClient(simulationId);
             if (client == null) throw new Exception();
             return await client.GetFromJsonAsync<MUNity.Schema.Simulation.SimulationUserSetup>($"/api/Simulation/CreateUser?id={simulationId}");
+        }
+
+        public async Task<HttpResponseMessage> RemoveUser(int simulationId, int userId)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) throw new Exception();
+            return await client.GetAsync($"/api/Simulation/RemoveSimulationUser?simulationId={simulationId}&userId={userId}");
         }
 
         private async Task<HttpClient> GetSimulationClient(int id)
