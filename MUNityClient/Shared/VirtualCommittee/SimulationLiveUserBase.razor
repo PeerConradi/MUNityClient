@@ -26,24 +26,40 @@
         {
             <p>@Role.Name</p>
         }
-  
+
+        @if (_lastVoteArgs != null)
+        {
+            if (_lastVoteArgs.Choice == 0)
+            {
+                <div class="badge badge-success">Dafür</div>
+            }
+            else if (_lastVoteArgs.Choice == 1)
+            {
+                <div class="badge badge-danger">Dagegen</div>
+            }
+            else if (_lastVoteArgs.Choice == 2)
+            {
+                <div class="badge badge-primary">Enthaltung</div>
+            }
+        }
+
         @if (_currentPetition != null)
         {
-<div class="card-footer">
-    <p>@_currentPetition.PetitionType</p>
-    <p>@_currentPetition.PetitionDate.ToString()</p>
-    <p>@_currentPetition.Text</p>
-    @if (User is MUNity.Schema.Simulation.SimulationUserSetup || IAmChair)
-    {
-        <button class="btn btn-success" @onclick="() => AcceptCurrentPetition()">Annehmen</button>
-    }
+            <div class="card-footer">
+                <p>@_currentPetition.PetitionType</p>
+                <p>@_currentPetition.PetitionDate.ToString()</p>
+                <p>@_currentPetition.Text</p>
+                @if (User is MUNity.Schema.Simulation.SimulationUserSetup || IAmChair)
+                {
+                    <button class="btn btn-success" @onclick="() => AcceptCurrentPetition()">Annehmen</button>
+                }
 
-    else if (this.IsMe || User is MUNity.Schema.Simulation.SimulationUserSetup)
-    {
+                else if (this.IsMe || User is MUNity.Schema.Simulation.SimulationUserSetup)
+                {
 
-        <button class="btn btn-danger" @onclick="() => DenyCurrentPetition()">Löschen</button>
-    }
-</div>
+                    <button class="btn btn-danger" @onclick="() => DenyCurrentPetition()">Löschen</button>
+                }
+            </div>
         }
     }
     else
@@ -75,6 +91,8 @@
     [Parameter]
     public bool IsMe { get; set; } = false;
 
+    private MUNity.Schema.Simulation.VotedEventArgs _lastVoteArgs { get; set; } = null;
+
     private MUNity.Schema.Simulation.Petition _currentPetition;
 
     protected override Task OnInitializedAsync()
@@ -84,8 +102,24 @@
             SocketHandler.UserPetition += OnUserPetition;
             SocketHandler.UserPetitionAccpted += OnUserPetitionAccepted;
             SocketHandler.UserPetitionDeleted += OnUserPetitionDeleted;
+            SocketHandler.UserVoted += UserVoted;
+            SocketHandler.VoteCreated += VoteCreated;
         }
         return base.OnInitializedAsync();
+    }
+
+    private void UserVoted(object sender, MUNity.Schema.Simulation.VotedEventArgs args)
+    {
+        if (args.UserId == this.User.SimulationUserId)
+        {
+            this._lastVoteArgs = args;
+            this.StateHasChanged();
+        }
+    }
+
+    private void VoteCreated(object sender, MUNity.Schema.Simulation.CreatedVoteModel args)
+    {
+        this._lastVoteArgs = null;
     }
 
     private void OnUserPetition(MUNity.Schema.Simulation.Petition petition)

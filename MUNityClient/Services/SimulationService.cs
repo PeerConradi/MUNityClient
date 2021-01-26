@@ -222,6 +222,23 @@ namespace MUNityClient.Services
             return await client.GetAsync($"/api/Simulation/RemoveSimulationUser?simulationId={simulationId}&userId={userId}");
         }
 
+        public async Task<HttpResponseMessage> CreateVote(MUNity.Schema.Simulation.CreateSimulationVoting model)
+        {
+            var client = _httpService.HttpClient;
+            model.Token = (await GetSimulationToken(model.SimulationId))?.Token ?? "";
+            Console.WriteLine(model.Token);
+            Console.WriteLine(model);
+            Console.WriteLine(model.SimulationId);
+            return await client.PostAsJsonAsync<MUNity.Schema.Simulation.CreateSimulationVoting>($"/api/Simulation/CreateVoting", model);
+        }
+
+        public async Task<HttpResponseMessage> Vote(int simulationId, string voteId, int choice)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) return null;
+            return await client.GetAsync($"/api/Simulation/Vote?simulationId={simulationId}&voteId={voteId}&choice={choice}");
+        }
+
         private async Task<HttpClient> GetSimulationClient(int id)
         {
             var token = await GetSimulationToken(id);

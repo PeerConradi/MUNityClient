@@ -44,6 +44,10 @@ namespace MUNityClient.Services.SocketHandlers
         public delegate void OnUserPetitionDeleted(Petition petition);
         public event OnUserPetitionDeleted UserPetitionDeleted;
 
+        public EventHandler<MUNity.Schema.Simulation.VotedEventArgs> UserVoted;
+
+        public EventHandler<MUNity.Schema.Simulation.CreatedVoteModel> VoteCreated;
+
         public HubConnection HubConnection { get; set; }
 
         private readonly int _simulationId;
@@ -62,6 +66,8 @@ namespace MUNityClient.Services.SocketHandlers
             HubConnection.On<Petition>("UserPetition", (Petition petition) => UserPetition?.Invoke(petition));
             HubConnection.On<Petition>("UserPetitionAccepted", (Petition petition) => UserPetitionAccpted?.Invoke(petition));
             HubConnection.On<Petition>("UserPetitionDeleted", (Petition petition) => UserPetitionDeleted?.Invoke(petition));
+            HubConnection.On<MUNity.Schema.Simulation.VotedEventArgs>("Voted", (args) => UserVoted?.Invoke(this, args));
+            HubConnection.On<MUNity.Schema.Simulation.CreatedVoteModel>("VoteCreated", (args) => VoteCreated?.Invoke(this, args));
         }
 
         public static async Task<SimulationSocketHandler> CreateHander()

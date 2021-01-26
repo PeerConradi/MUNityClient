@@ -28,10 +28,14 @@
         <li class="nav-item">
             <a class="nav-link" @onclick="() => _selectedTab = (_selectedTab == TabPages.ListOfSpeakers) ? TabPages.None : TabPages.ListOfSpeakers">Redeliste</a>
         </li>
-        <!-- TODO
     <li class="nav-item">
-        <a class="nav-link">Abstimmung</a>
+        <a class="nav-link" @onclick="() => { _selectedTab = (_selectedTab == TabPages.Voting) ? TabPages.None : TabPages.Voting; _hasNewVotes = false; }">Abstimmung</a>
+        @if (_hasNewVotes)
+        {
+            <span class="badge badge-danger">Neu</span> 
+        }
     </li>
+        <!--
     <li class="nav-item">
         <a class="nav-link">Anwesenheit</a>
     </li>
@@ -140,6 +144,39 @@
     </div>
 }
 
+@if (_selectedTab == TabPages.Voting)
+{
+
+    @if (_lastCreatedVote == null && Role != null && Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+    {
+        <div class="card floating-card shadow-2">
+            <CreateVoteComponent SimulationId="@SimulationId"></CreateVoteComponent>
+        </div>
+    }
+    else if (_lastCreatedVote != null)
+    {
+        <div class="card floating-card shadow-2">
+            <div class="row">
+                <div class="col-12">
+                    <p>@_lastCreatedVote.Text</p>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-success btn-block" @onclick="VotePro">Dafür</button>
+                </div>
+                <div class="col-12">
+                    <button class="btn btn-danger btn-block" @onclick="VoteCon">Dagegen</button>
+                </div>
+                @if (_lastCreatedVote.AllowAbstention)
+                {
+                    <div class="col-12">
+                        <button class="btn btn-primary btn-block" @onclick="VoteAbstention">Enthaltung</button>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+
 
 @code {
     private enum TabPages
@@ -177,6 +214,10 @@
 
     private bool _hasNewPetition { get; set; } = false;
 
+    private bool _hasNewVotes { get; set; } = false;
+
+    private MUNity.Schema.Simulation.CreatedVoteModel _lastCreatedVote { get; set; } = null;
+
     private string GetPetitionDisplayName(MUNity.Schema.Simulation.Petition petition)
     {
         if (Users == null) return "Unbekannt";
@@ -204,6 +245,7 @@
             Socket.UserPetition += OnUserPetition;
             Socket.UserPetitionAccpted += OnUserPetitionAccepted;
             Socket.UserPetitionDeleted += OnUserPetitionDeleted;
+            Socket.VoteCreated += VoteCreated;
         }
         base.OnInitialized();
     }
@@ -232,6 +274,49 @@
         _petitions.RemoveAll(n => n.PetitionId == petition.PetitionId);
         _currentPetitions.RemoveAll(n => n.PetitionId == petition.PetitionId);
         this.StateHasChanged();
+    }
+
+    private void VoteCreated(object sender, MUNity.Schema.Simulation.CreatedVoteModel args)
+    {
+        _hasNewVotes = true;
+        _lastCreatedVote = args;
+        StateHasChanged();
+    }
+
+    private async Task VotePro()
+    {
+        if (_lastCreatedVote != null)
+        {
+            await this.simulationService.Vote(SimulationId, _lastCreatedVote.CreatedVoteModelId, 0);
+            _lastCreatedVote = null;
+            _hasNewVotes = false;
+            _selectedTab = TabPages.None;
+        }
+
+    }
+
+    private async Task VoteCon()
+    {
+        if (_lastCreatedVote != null)
+        {
+            await this.simulationService.Vote(SimulationId, _lastCreatedVote.CreatedVoteModelId, 1);
+            _lastCreatedVote = null;
+            _hasNewVotes = false;
+            _selectedTab = TabPages.None;
+        }
+
+    }
+
+    private async Task VoteAbstention()
+    {
+        if (_lastCreatedVote != null)
+        {
+            await this.simulationService.Vote(SimulationId, _lastCreatedVote.CreatedVoteModelId, 2);
+            _lastCreatedVote = null;
+            _hasNewVotes = false;
+            _selectedTab = TabPages.None;
+        }
+
     }
 }
 
