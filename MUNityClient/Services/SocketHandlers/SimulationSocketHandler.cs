@@ -44,9 +44,9 @@ namespace MUNityClient.Services.SocketHandlers
         public delegate void OnUserPetitionDeleted(Petition petition);
         public event OnUserPetitionDeleted UserPetitionDeleted;
 
-        public EventHandler<MUNity.Schema.Simulation.VotedEventArgs> UserVoted;
+        public event EventHandler<MUNity.Schema.Simulation.VotedEventArgs> UserVoted;
 
-        public EventHandler<MUNity.Schema.Simulation.CreatedVoteModel> VoteCreated;
+        public event EventHandler<MUNity.Schema.Simulation.CreatedVoteModel> VoteCreated;
 
         public HubConnection HubConnection { get; set; }
 

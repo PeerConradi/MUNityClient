@@ -29,11 +29,13 @@
             <a class="nav-link" @onclick="() => _selectedTab = (_selectedTab == TabPages.ListOfSpeakers) ? TabPages.None : TabPages.ListOfSpeakers">Redeliste</a>
         </li>
     <li class="nav-item">
-        <a class="nav-link" @onclick="() => { _selectedTab = (_selectedTab == TabPages.Voting) ? TabPages.None : TabPages.Voting; _hasNewVotes = false; }">Abstimmung</a>
-        @if (_hasNewVotes)
-        {
-            <span class="badge badge-danger">Neu</span> 
-        }
+        <a class="nav-link" @onclick="() => { _selectedTab = (_selectedTab == TabPages.Voting) ? TabPages.None : TabPages.Voting; _hasNewVotes = false; }">
+            Abstimmung @if (_hasNewVotes)
+            {
+                <span class="badge badge-danger">Neu</span>
+            }
+        </a>
+        
     </li>
         <!--
     <li class="nav-item">
@@ -43,11 +45,13 @@
         @if (Role != null && Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
         {
             <li class="nav-item">
-                <a class="nav-link" @onclick="() => _selectedTab = (_selectedTab == TabPages.Petitions) ? TabPages.None : TabPages.Petitions">Anträge </a>
-                @if (_petitions != null && _petitions.Any())
-                {
-                    <span class="badge bg-danger">@_petitions.Count</span>
-                }
+                <a class="nav-link" @onclick="() => _selectedTab = (_selectedTab == TabPages.Petitions) ? TabPages.None : TabPages.Petitions">
+                    Anträge @if (_petitions != null && _petitions.Any())
+                    {
+                        <span class="badge bg-danger">@_petitions.Count</span>
+                    }
+                </a>
+                
             </li>
         }
 
@@ -153,7 +157,7 @@
             <CreateVoteComponent SimulationId="@SimulationId"></CreateVoteComponent>
         </div>
     }
-    else if (_lastCreatedVote != null)
+    else if (_lastCreatedVote != null && _lastCreatedVote.AllowedUsers.Contains(Me.SimulationUserId))
     {
         <div class="card floating-card shadow-2">
             <div class="row">

@@ -353,7 +353,7 @@
         _socket = await listOfSpeakerService.Subscribe(Speakerlist);
         if (_socket != null)
         {
-            _socket.ListOfSpeakersChanged += OnSpeakerlistChanged;
+            _socket.SpeakerListChanged += OnSpeakerlistChanged;
 
         }
     }
@@ -384,7 +384,7 @@
     }
 }
 
-private void OnSpeakerlistChanged(ListOfSpeakers newList)
+private void OnSpeakerlistChanged(object sender, ListOfSpeakers newList)
 {
 
     if (this.Speakerlist.CompareTo(newList) != 0)

@@ -32,13 +32,24 @@
                     }
                 </div>
                 <div class="card-body">
-                    <h4>Warteliste</h4>
+                    <h4>Redeliste</h4>
                     @if (Speakerlist.Speakers.Any())
                     {
                         <ul class="list-group">
                             @foreach (var speaker in Speakerlist.Speakers)
                             {
-                                <li class="list-group-item">@speaker.Name</li>
+                                
+                            <li class="list-group-item">
+                                @if (!string.IsNullOrEmpty(speaker.Iso))
+                                {
+                                    <img src="/img/flags/small/@(speaker.Iso).png" />
+                                }
+                                else
+                                {
+                                    <img src="/img/flags/small/un.png" />
+                                }
+                                @speaker.Name
+                            </li>
                             }
                         </ul>
                     }
@@ -132,7 +143,7 @@
             _socket = await this.listOfSpeakerService.Subscribe(this.Speakerlist);
             if (_socket != null)
             {
-                _socket.ListOfSpeakersChanged += OnSpeakerlistChanged;
+                _socket.SpeakerListChanged += OnSpeakerlistChanged;
             }
         }
         if (Speakerlist != null)
@@ -143,7 +154,7 @@
         }
     }
 
-    private async void OnSpeakerlistChanged(ListOfSpeakers newList)
+    private async void OnSpeakerlistChanged(object sender, ListOfSpeakers newList)
     {
         if (this.Speakerlist != null && this.Speakerlist.ListOfSpeakersId == newList.ListOfSpeakersId)
         {

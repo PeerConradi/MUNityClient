@@ -52,8 +52,14 @@
                     }
                 </ul>
             }
+
         </div>
     </div>
+
+    if (Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+    {
+        <button class="btn btn-primary" @onclick="() => BackToLobby()">Zurück in die Lobby</button>
+    }
 }
 
 @* Kann ggf. in einen eigenen Reiter für die Redelistensteuerung ausgelagert werden! *@
@@ -123,5 +129,10 @@
                 listOfSpeakerService.AddQuestionToList(SpeakerlistId, Me.DisplayName, "");
             }
         }
+    }
+
+    private async Task BackToLobby()
+    {
+        var response = await this.simulationService.SetPhase(this.SimulationId, (int)MUNity.Schema.Simulation.SimulationEnums.GamePhases.Lobby);
     }
 }

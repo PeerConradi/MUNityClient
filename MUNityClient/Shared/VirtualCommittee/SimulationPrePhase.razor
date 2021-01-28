@@ -10,7 +10,7 @@
         <div class="col">
             <div class="card">
                 <div class="card-header">
-                    @_simulation.Name
+                    <a href="/sim/home" class="btn btn-danger btn-sm">Raum verlassen</a> @_simulation.Name
                 </div>
                 <div class="card-body p-0">
                     @if (_auth.CanCreateRole)
@@ -83,16 +83,7 @@
 }
 else
 {
-    <div class="row d-flex w-100 justify-content-center mt-5">
-        <div class="d-flex w-100 justify-content-center">
-            <div class="spinner-border text-primary p-4" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
-        <div class="d-flex justify-content-center mt-3">
-            Lobby wird geladen...
-        </div>
-    </div>
+    <MUNityClient.Shared.Bootstrap.Spinner DisplayText="Lobby wird geladen" />
 }
 
 
