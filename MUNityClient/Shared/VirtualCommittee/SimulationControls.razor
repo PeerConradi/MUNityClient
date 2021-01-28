@@ -17,6 +17,9 @@
     Ist abhängig vom Context der Redeliste.
 *@
 
+@* MUNitySchema.Extenstions.SimulationExtension will move to MUNity.Extensions.SimulationExtensions in the next package version! *@
+@using MUNitySchema.Extensions.SimulationExtensions;
+
 @inject Services.SimulationService simulationService;
 
 <!-- Grey with black text -->
@@ -132,16 +135,31 @@
                         <h5 class="mb-1">@GetPetitionDisplayName(petition)</h5>
                         <small class="text-muted">@petition.PetitionDate.ToShortTimeString()</small>
                     </div>
-                    <p class="mb-1">
-                        @if (petition.PetitionType == MUNity.Schema.Simulation.Petition.PetitionTypes.GOAbschlussRedeliste)
+                    <div class="mb-1">
+                        <p>@petition.PetitionType.DisplayText()</p>
+                        <p>@petition.PetitionType.Explanation()</p>
+                        <p>Entscheidung: </p>
+                        @if (petition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.Chairs)
                         {
-                            <span>GO: Abschluss oder Wiedereröffnung der Redeliste</span>
+                            <span>Vorsitz</span>
+                        }
+                        else if (petition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.simpleMajority)
+                        {
+                            <span>Einfache Mehrheit</span>
+                        }
+                        else if (petition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.TwoThirds)
+                        {
+                            <span>Zwei-Dritte-Mehrheit</span>
+                        }
+                        else if (petition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.TwoThirdsPlusPermanentMembers)
+                        {
+                            <span>Zwei-Drittel-Mehrheit und alle ständigen Mitglieder.</span>
                         }
                         else
                         {
-                            <span>@petition.PetitionType.ToString()</span>
+                            <span>Keine Ahnung</span>
                         }
-                    </p>
+                    </div>
                 </a>
             }
         </div>
