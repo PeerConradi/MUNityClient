@@ -21,7 +21,7 @@
 @using MUNitySchema.Extensions.SimulationExtensions;
 
 @inject Services.SimulationService simulationService;
-
+@inject Services.ListOfSpeakerService listOfSpeakerService;
 <!-- Grey with black text -->
 <nav class="navbar navbar-expand-sm bg-primary navbar-dark nav-bottom w-100" style="opacity: 0.75;">
     <ul class="navbar-nav">
@@ -31,20 +31,20 @@
         <li class="nav-item">
             <a class="nav-link" @onclick="() => _selectedTab = (_selectedTab == TabPages.ListOfSpeakers) ? TabPages.None : TabPages.ListOfSpeakers">Redeliste</a>
         </li>
-    <li class="nav-item">
-        <a class="nav-link" @onclick="() => { _selectedTab = (_selectedTab == TabPages.Voting) ? TabPages.None : TabPages.Voting; _hasNewVotes = false; }">
-            Abstimmung @if (_hasNewVotes)
-            {
-                <span class="badge badge-danger">Neu</span>
-            }
-        </a>
-        
-    </li>
+        <li class="nav-item">
+            <a class="nav-link" @onclick="() => { _selectedTab = (_selectedTab == TabPages.Voting) ? TabPages.None : TabPages.Voting; _hasNewVotes = false; }">
+                Abstimmung @if (_hasNewVotes && _lastCreatedVote.AllowedUsers.Contains(Me.SimulationUserId))
+                {
+                    <span class="badge badge-danger">Neu</span>
+                }
+            </a>
+
+        </li>
         <!--
-    <li class="nav-item">
-        <a class="nav-link">Anwesenheit</a>
-    </li>
-    -->
+        <li class="nav-item">
+            <a class="nav-link">Anwesenheit</a>
+        </li>
+        -->
         @if (Role != null && Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
         {
             <li class="nav-item">
@@ -54,7 +54,7 @@
                         <span class="badge bg-danger">@_petitions.Count</span>
                     }
                 </a>
-                
+
             </li>
         }
 
@@ -87,6 +87,8 @@
             else
             {
                 @* TODO: Buttons um auf die Redeliste oder FuK zu kommen an diese Stelle verschieben *@
+                <button class="btn btn-info" @onclick="AddMeToListOfSpeakers">Auf die Redeliste</button>
+                <button class="btn btn-info" @onclick="AddMeToListOfQuestions">Auf Fragen und Kurzbemerkungen</button>
             }
         }
         else if (SpeakerlistId == "_loading_")
@@ -105,26 +107,41 @@
     <div class="card floating-card shadow-2">
         <div class="list-group">
             @* Anträge können aktuell bearbeitet werden. Das wird darüber eingeleitet, dass diese angenommen werden
-        Nachdem der Antrag in dieser Angenommen liste gelandet ist, wird er (wenn bearbeitet) einfach gelöscht. *@
+                Nachdem der Antrag in dieser Angenommen liste gelandet ist, wird er (wenn bearbeitet) einfach gelöscht. *@
             @foreach (var activePetition in _currentPetitions)
             {
-                <a class="list-group-item list-group-item-action" @onclick="() => AcceptPetition(activePetition)">
-                    <div class="d-flex w-100 justify-content-between">
+            <a class="list-group-item list-group-item-action list-group-item-success" @onclick="() => DeletePetition(activePetition)">
+                <div class="d-flex w-100 justify-content-between ">
 
-                        <h5 class="mb-1">@GetPetitionDisplayName(activePetition)</h5>
-                        <small class="text-muted">@activePetition.PetitionDate.ToShortTimeString()</small>
-                    </div>
-                    <p class="mb-1">
-                        @if (activePetition.PetitionType == MUNity.Schema.Simulation.Petition.PetitionTypes.GOAbschlussRedeliste)
-                        {
-                            <span>GO: Abschluss oder Wiedereröffnung der Redeliste</span>
-                        }
-                        else
-                        {
-                            <span>@activePetition.PetitionType.ToString()</span>
-                        }
-                    </p>
-                </a>
+                    <h5 class="mb-1">@GetPetitionDisplayName(activePetition)</h5>
+                    <small class="text-muted">@activePetition.PetitionDate.ToShortTimeString()</small>
+                </div>
+                <p class="mb-1">
+                <p>@activePetition.PetitionType.DisplayText()</p>
+                <p>@activePetition.PetitionType.Explanation()</p>
+                <p>Entscheidung: </p>
+                @if (activePetition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.Chairs)
+                {
+                    <span>Vorsitz</span>
+                }
+                else if (activePetition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.simpleMajority)
+                {
+                    <span>Einfache Mehrheit</span>
+                }
+                else if (activePetition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.TwoThirds)
+                {
+                    <span>Zwei-Dritte-Mehrheit</span>
+                }
+                else if (activePetition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.TwoThirdsPlusPermanentMembers)
+                {
+                    <span>Zwei-Drittel-Mehrheit und alle ständigen Mitglieder.</span>
+                }
+                else
+                {
+                    <span>Keine Ahnung</span>
+                }
+                </p>
+            </a>
             }
 
             @foreach (var petition in _petitions)
@@ -137,28 +154,6 @@
                     </div>
                     <div class="mb-1">
                         <p>@petition.PetitionType.DisplayText()</p>
-                        <p>@petition.PetitionType.Explanation()</p>
-                        <p>Entscheidung: </p>
-                        @if (petition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.Chairs)
-                        {
-                            <span>Vorsitz</span>
-                        }
-                        else if (petition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.simpleMajority)
-                        {
-                            <span>Einfache Mehrheit</span>
-                        }
-                        else if (petition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.TwoThirds)
-                        {
-                            <span>Zwei-Dritte-Mehrheit</span>
-                        }
-                        else if (petition.PetitionType.Ruling() == MUNity.Schema.Simulation.Petition.PetitionRulings.TwoThirdsPlusPermanentMembers)
-                        {
-                            <span>Zwei-Drittel-Mehrheit und alle ständigen Mitglieder.</span>
-                        }
-                        else
-                        {
-                            <span>Keine Ahnung</span>
-                        }
                     </div>
                 </a>
             }
@@ -169,7 +164,7 @@
 @if (_selectedTab == TabPages.Voting)
 {
 
-    @if (_lastCreatedVote == null && Role != null && Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+    @if ((_lastCreatedVote == null || _lastCreatedVote != null && !_lastCreatedVote.AllowedUsers.Contains(Me.SimulationUserId)) && Role != null && Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
     {
         <div class="card floating-card shadow-2">
             <CreateVoteComponent SimulationId="@SimulationId"></CreateVoteComponent>
@@ -277,6 +272,11 @@
         await simulationService.AcceptPetition(petition);
     }
 
+    private async void DeletePetition(MUNity.Schema.Simulation.Petition petition)
+    {
+        await simulationService.DeletePetition(petition);
+    }
+
     private void OnUserPetition(MUNity.Schema.Simulation.Petition petition)
     {
         _petitions.RemoveAll(n => n.PetitionUserId == petition.PetitionUserId);
@@ -339,6 +339,38 @@
             _selectedTab = TabPages.None;
         }
 
+    }
+
+    private void AddMeToListOfSpeakers()
+    {
+        if (Role != null)
+        {
+            listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Role.Name, Role.Iso);
+            return;
+        }
+        else
+        {
+            if (Me != null)
+            {
+                listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Me.DisplayName, "");
+            }
+        }
+    }
+
+    private void AddMeToListOfQuestions()
+    {
+        if (Role != null)
+        {
+            listOfSpeakerService.AddQuestionToList(SpeakerlistId, Role.Name, Role.Iso);
+            return;
+        }
+        else
+        {
+            if (Me != null)
+            {
+                listOfSpeakerService.AddQuestionToList(SpeakerlistId, Me.DisplayName, "");
+            }
+        }
     }
 }
 

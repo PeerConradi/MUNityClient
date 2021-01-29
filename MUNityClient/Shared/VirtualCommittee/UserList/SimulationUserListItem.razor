@@ -25,7 +25,7 @@
     <div class="widget-list-action">
         @if (_currentPetition != null)
         {
-            <span class="badge badge-pill badge-warning" @onclick="() => DeleteCurrentPetition()">@_currentPetition.PetitionType.DisplayText()</span>
+            <span class="badge badge-pill @(_currentPetitionIsActive ? "badge-success" : "badge-warning")" @onclick="() => DeleteCurrentPetition()">@_currentPetition.PetitionType.DisplayText()</span>
         }
         @if (_lastVoteArgs != null)
         {
@@ -138,6 +138,8 @@
 
     private MUNity.Schema.Simulation.Petition _currentPetition;
 
+    private bool _currentPetitionIsActive = false;
+
     protected override void OnInitialized()
     {
         if (SocketHandler != null)
@@ -170,6 +172,7 @@
         if (petition.PetitionUserId == this.User.SimulationUserId)
         {
             this._currentPetition = petition;
+            this._currentPetitionIsActive = false;
             this.StateHasChanged();
         }
     }
@@ -179,7 +182,7 @@
         if (_currentPetition == null) return;
         if (_currentPetition.PetitionId == petition.PetitionId)
         {
-            _currentPetition = null;
+            _currentPetitionIsActive = true;
             this.StateHasChanged();
         }
 

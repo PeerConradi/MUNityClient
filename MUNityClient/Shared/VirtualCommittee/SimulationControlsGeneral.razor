@@ -62,13 +62,6 @@
     }
 }
 
-@* Kann ggf. in einen eigenen Reiter für die Redelistensteuerung ausgelagert werden! *@
-@if (!string.IsNullOrEmpty(SpeakerlistId) && SpeakerlistId != "_loading_")
-{
-    <button class="btn btn-info" @onclick="AddMeToListOfSpeakers">Auf die Redeliste</button>
-    <button class="btn btn-info" @onclick="AddMeToListOfQuestions">Auf Fragen und Kurzbemerkungen</button>
-
-}
 
 @code {
     private bool showPers { get; set; } = false;
@@ -97,38 +90,6 @@
         await this.simulationService.MakePetition(petition);
         showPers = false;
         showGO = false;
-    }
-
-    private void AddMeToListOfSpeakers()
-    {
-        if (Role != null)
-        {
-            listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Role.Name, Role.Iso);
-            return;
-        }
-        else
-        {
-            if (Me != null)
-            {
-                listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Me.DisplayName, "");
-            }
-        }
-    }
-
-    private void AddMeToListOfQuestions()
-    {
-        if (Role != null)
-        {
-            listOfSpeakerService.AddQuestionToList(SpeakerlistId, Role.Name, Role.Iso);
-            return;
-        }
-        else
-        {
-            if (Me != null)
-            {
-                listOfSpeakerService.AddQuestionToList(SpeakerlistId, Me.DisplayName, "");
-            }
-        }
     }
 
     private async Task BackToLobby()

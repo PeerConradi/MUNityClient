@@ -2,6 +2,7 @@
     für einen Administrator/ Jemanden der den Raum verwalten kann aufgelistet. *@
 
 @inject Services.SimulationService _simulationService;
+@inject IJSRuntime JS;
 
 @if (Users != null)
 {
@@ -39,8 +40,14 @@
                 }
             </tbody>
         </table>
-        <button class="btn btn-dark-green btn-block" @onclick="() => NewUser()"><i class="fas fa-plus mr-2"></i>Neuer
-            Benutzer</button>
+        <button class="btn btn-dark-green btn-block" @onclick="() => NewUser()">
+            <i class="fas fa-plus mr-2"></i>Neuer
+            Benutzer
+        </button>
+        <div class="btn-group w-100" role="group" aria-label="Basic example">
+            <button type="button" class="btn btn-secondary" @onclick="CopyListToClipboard">Liste in Zwischenablage kopieren</button>
+            <button type="button" class="btn btn-secondary" disabled>Zufällige Rollen</button>
+        </div>
     </div>
 }
 else
@@ -135,5 +142,13 @@ else
         {
             Users.Add(user);
         }
+    }
+
+    private void CopyListToClipboard()
+    {
+        var zeilen = Users.Select(n => $"{n.DisplayName ?? "Freier Slot"}\t{n.PublicId}\t{n.Password}\t{Roles.FirstOrDefault(a => a.SimulationRoleId == n.RoleId)?.Name ?? "Keine Rolle"}");
+        string ausgabe = "Benutzer\tUserId\tPasswort\tRolle\n";
+        ausgabe += string.Join('\n', zeilen);
+        JS.InvokeAsync<string>("navigator.clipboard.writeText", ausgabe);
     }
 }
