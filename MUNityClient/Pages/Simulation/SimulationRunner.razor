@@ -1,4 +1,5 @@
 ﻿@page "/sim/run/{id}"
+@using System.ComponentModel
 
 @inject Services.SimulationService simulationService;
 @inject Services.ListOfSpeakerService listOfSpeakerService;
@@ -16,22 +17,30 @@
     Diese Komponente soll auch das Basis Layout für das Simulationsfenster stellen.
 *@
 
+<MUNityClient.Shared.VirtualCommittee.ActiveRoom.SimulationTopNavbar SimulationContext="@_simulationContext" LayoutWrapper="@_layoutWrapper" />
 
-@if (_simulation != null && _auth != null)
+@if (_simulationContext?.Simulation != null && _simulationContext.MyAuth != null && _layoutWrapper != null)
 {
     <div class="row">
         <div class="col-12">
-            <MUNityClient.Shared.VirtualCommittee.SimulationVotingBanner SimulationSocket="@_socket" />
+            <MUNityClient.Shared.VirtualCommittee.SimulationVotingBanner SimulationContext="@_simulationContext" />
         </div>
     </div>
 
     <div class="row col-12 m-0 p-0">
 
         @* Benutzerliste *@
-        <div class="col-lg-3 col-md-12 col-sm-12">
-            <MUNityClient.Shared.VirtualCommittee.UserList.SimulationLiveUserList Users="@_users" Roles="_simulation.Roles" SocketHandler="@_socket" />
-            <div style="height: 50px;"></div>
-        </div>
+        @if (_layoutWrapper.ShowMemberlist)
+        {
+            <div class="col-lg-3 col-md-12 col-sm-12">
+                <MUNityClient.Shared.VirtualCommittee.UserList.SimulationLiveUserList SimulationContext="@_simulationContext" />
+                <div style="height: 50px;"></div>
+         </div>
+    }
+        else
+        {
+            <div class="col-lg-3"></div>
+        }
 
         @* Hauptinhalt *@
         <div class="col-lg-5 col-md-12 col-sm-12">
@@ -39,14 +48,9 @@
         </div>
 
         @* Ansicht für die Redeliste *@
-        <div class="col-md-12 col-lg-4 col-sm-12">
-            <div class="row">
-                <div class="card col-12">
-                    <div class="card-body">
-                        <span>Aktueller Status</span>
-                    </div>
-                </div>
-            </div>
+        @if (_layoutWrapper.ShowListOfSpeakers)
+        {
+            <div class="col-md-12 col-lg-4 col-sm-12">
             <div class="row">
                 @if (_listOfSpeakerId == "_loading_")
                 {
@@ -54,7 +58,7 @@
                 }
                 else if (string.IsNullOrEmpty(_listOfSpeakerId))
                 {
-                    if (_auth.CanCreateRole || _myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+                    if (_simulationContext.MyAuth.CanCreateRole || _simulationContext.MyRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
                     {
                         <button class="btn btn-success" @onclick="() => InitListOfSpeakers()">Redeliste anlegen</button>
                     }
@@ -69,18 +73,16 @@
                 }
             </div>
         </div>
+        }
+        
     </div>
 
     @* Ansicht für die Steuerung *@
     <div class="row m-0 p-0">
         <div class="col-12">
-            <MUNityClient.Shared.VirtualCommittee.SimulationControls Me="@_users.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId)"
-                                                                     SimulationId="@_simulation.SimulationId"
-                                                                     SpeakerlistId="@_listOfSpeakerId"
-                                                                     Role="@_myRole"
-                                                                     Socket="@_socket"
-                                                                     Users="@_users"
-                                                                     Roles="@_simulation.Roles"></MUNityClient.Shared.VirtualCommittee.SimulationControls>
+            <MUNityClient.Shared.VirtualCommittee.SimulationControls 
+                                                                     SpeakerlistSocket="_listOfSpeakerSocket"
+                                                                     SimulationContext="@_simulationContext"></MUNityClient.Shared.VirtualCommittee.SimulationControls>
         </div>
     </div>
 }
@@ -89,63 +91,97 @@
     [Parameter]
     public string Id { get; set; }
 
-    private MUNity.Schema.Simulation.SimulationResponse _simulation;
+    private Services.SocketHandlers.SimulationContext _simulationContext;
 
-    private MUNity.Schema.Simulation.SimulationAuthSchema _auth;
+    private Services.SocketHandlers.ListOfSpeakerSocketHandler _listOfSpeakerSocket;
 
-    private List<MUNity.Schema.Simulation.IUserItem> _users = new List<MUNity.Schema.Simulation.IUserItem>();
+    private MUNity.Models.ListOfSpeakers.ListOfSpeakers _listOfSpeakers;
 
-    private Services.SocketHandlers.SimulationSocketHandler _socket;
-    private int currentTab = 0;
-
-    private MUNity.Schema.Simulation.SimulationRoleItem _myRole;
+    //private MUNity.Schema.Simulation.SimulationRoleItem _myRole;
 
     private string _listOfSpeakerId = "_loading_";
 
+    private MUNityClient.Shared.VirtualCommittee.ActiveRoom.ActiveRoomLayoutWrapper _layoutWrapper;
 
     protected override async Task OnInitializedAsync()
     {
+        _layoutWrapper = new Shared.VirtualCommittee.ActiveRoom.ActiveRoomLayoutWrapper();
+        _layoutWrapper.PropertyChanged += LayoutChanged;
         int id = 0;
         if (int.TryParse(Id, out id))
         {
-            this._simulation = await simulationService.GetSimulation(id);
-            this._simulation.Roles = await simulationService.GetRoles(id);
-            this._auth = await simulationService.GetMyAuth(id);
 
-            _socket = await simulationService.Subscribe(id);
-            AddHandlers(_socket);
-            if (_auth.CanCreateRole)
+            _simulationContext = await simulationService.Subscribe(id);
+            if (_simulationContext != null)
             {
-                var tmpUsers = await simulationService.GetUserSetups(id);
-                this._users.AddRange(tmpUsers);
-                int roleId = this._users.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId)?.RoleId ?? -2;
-                this._myRole = this._simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == roleId);
+                
             }
-            else
-            {
-                var tmpUsers = (await simulationService.GetUsers(id)).ToList();
-                this._users.AddRange(tmpUsers);
-                int roleId = this._users.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId)?.RoleId ?? -2;
-                this._myRole = this._simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == roleId);
-            }
+            AddHandlers(_simulationContext);
 
             this._listOfSpeakerId = await this.simulationService.GetListOfSpeakerId(id);
+            if (!string.IsNullOrEmpty(_listOfSpeakerId))
+            {
+                this._listOfSpeakers = await listOfSpeakerService.GetFromApi(_listOfSpeakerId);
 
+                if (_listOfSpeakers != null)
+                {
+                    _listOfSpeakerSocket = await listOfSpeakerService.Subscribe(_listOfSpeakers);
+
+                    if (_listOfSpeakerSocket != null)
+                    {
+                        //_listOfSpeakerSocket.SpeakerListChanged += OnSpeakerlistChanged;
+                    }
+                }
+            }
 
             this.StateHasChanged();
         }
     }
 
-    
-
-    private void AddHandlers(Services.SocketHandlers.SimulationSocketHandler socket)
+    private void LayoutChanged(object sender, PropertyChangedEventArgs args)
     {
-        socket.UserConnected += OnUserConnected;
-        socket.UserDisconnected += OnUserDisconnected;
-        socket.PhaseChanged += OnPhaseChanged;
+        this.StateHasChanged();
     }
 
-    
+    private void AddHandlers(Services.SocketHandlers.SimulationContext context)
+    {
+        context.UserConnected += OnUserConnected;
+        context.UserDisconnected += OnUserDisconnected;
+        context.PhaseChanged += OnPhaseChanged;
+
+        context.HubConnection.Closed += (ex) =>
+        {
+            Console.WriteLine($"{DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")} Verbindung beendet");
+            if (ex != null)
+                Console.WriteLine(ex.Message);
+
+            this.StateHasChanged();
+
+            return null;
+        };
+
+        context.HubConnection.Reconnected += (ex) =>
+        {
+            Console.WriteLine($"{DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")} Reconnected");
+            if (ex != null)
+                Console.WriteLine(ex);
+
+            this.StateHasChanged();
+            return null;
+        };
+
+        context.HubConnection.Reconnecting += (ex) =>
+        {
+            Console.WriteLine($"{DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")} Reconnecting");
+            if (ex != null)
+                Console.WriteLine(ex.Message);
+
+            this.StateHasChanged();
+            return null;
+        };
+    }
+
+
 
     private void OnPhaseChanged(int sender, MUNity.Schema.Simulation.SimulationEnums.GamePhases phase)
     {
@@ -157,9 +193,9 @@
 
     private void OnUserConnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user)
     {
-        if (_users != null)
+        if (_simulationContext?.Simulation?.Users != null)
         {
-            var tmpUser = _users.FirstOrDefault(n => n.SimulationUserId == user.SimulationUserId);
+            var tmpUser = _simulationContext.Simulation.Users.FirstOrDefault(n => n.SimulationUserId == user.SimulationUserId);
             if (tmpUser != null)
             {
                 tmpUser.IsOnline = true;
@@ -171,9 +207,9 @@
 
     private void OnUserDisconnected(int sender, MUNity.Schema.Simulation.SimulationUserItem user)
     {
-        if (_users != null)
+        if (_simulationContext?.Simulation?.Users != null)
         {
-            var tmpUser = _users.FirstOrDefault(n => n.SimulationUserId == user.SimulationUserId);
+            var tmpUser = _simulationContext.Simulation.Users.FirstOrDefault(n => n.SimulationUserId == user.SimulationUserId);
             if (tmpUser != null)
             {
                 tmpUser.IsOnline = false;
@@ -184,9 +220,9 @@
 
     private async void InitListOfSpeakers()
     {
-        if (this._simulation != null)
+        if (this._simulationContext?.Simulation != null)
         {
-            var list = await this.simulationService.InitListOfSpeakers(this._simulation.SimulationId);
+            var list = await this.simulationService.InitListOfSpeakers(this._simulationContext.Simulation.SimulationId);
             if (list != null)
             {
                 this._listOfSpeakerId = list.ListOfSpeakersId;

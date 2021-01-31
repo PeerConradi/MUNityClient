@@ -1,11 +1,11 @@
 ﻿
-@if (Users != null && Users.Any())
+@if (SimulationContext?.Simulation?.Users != null && SimulationContext?.Simulation?.Roles != null && SimulationContext.Simulation.Users.Any())
 {
     <div class="widget-list widget-list-rounded m-b-30" data-id="widget">
-        @foreach (var user in Users)
+        @foreach (var user in SimulationContext?.Simulation?.Users)
         {
-            <MUNityClient.Shared.VirtualCommittee.UserList.SimulationUserListItem User="user" Role="@Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"
-                                                                                  SocketHandler="SocketHandler" />
+            <MUNityClient.Shared.VirtualCommittee.UserList.SimulationUserListItem User="user" Role="@SimulationContext.Simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId)"
+                                                                                  SimulationContext="@SimulationContext" />
         }
     </div>
 }
@@ -21,14 +21,8 @@
 
 
 @code {
-    [Parameter]
-    public List<MUNity.Schema.Simulation.IUserItem> Users { get; set; }
 
     [Parameter]
-    public List<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
-
-    [Parameter]
-    public MUNityClient.Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }
-
+    public MUNityClient.Services.SocketHandlers.SimulationContext SimulationContext { get; set; }
 
 }

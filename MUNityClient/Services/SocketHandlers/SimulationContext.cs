@@ -9,7 +9,12 @@ using MUNity.Schema.Simulation;
 
 namespace MUNityClient.Services.SocketHandlers
 {
-    public class SimulationSocketHandler
+
+    /// <summary>
+    /// The SocketHandler is turning more and more into some kind of ViewModel.
+    /// It handles the Socket operations and holds the Simulation Object.
+    /// </summary>
+    public class SimulationContext
     {
         public delegate void OnRolesChanged(int sender, IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> roles);
         public event OnRolesChanged RolesChanged;
@@ -52,8 +57,26 @@ namespace MUNityClient.Services.SocketHandlers
 
         private readonly int _simulationId;
 
-        private SimulationSocketHandler()
+        public MUNity.Schema.Simulation.SimulationResponse Simulation { get; private set; }
+
+        public IUserItem Me => MyAuth != null ? Simulation.Users.FirstOrDefault(n => n.SimulationUserId == MyAuth.SimulationUserId) : null;
+
+        public SimulationRoleItem MyRole
         {
+            get
+            {
+                if (Me == null) return null;
+                return Simulation?.Roles?.FirstOrDefault(n => n.SimulationRoleId == Me.RoleId);
+            }
+        }
+
+        public SimulationAuthSchema MyAuth { get; private set; }
+
+        private SimulationContext(SimulationResponse simulation, SimulationAuthSchema auth)
+        {
+            this.Simulation = simulation;
+            this.MyAuth = auth;
+
             HubConnection = new HubConnectionBuilder().WithUrl($"{Program.API_URL}/simsocket").Build();
             HubConnection.On<int, IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem>>("RolesChanged", (id, roles) => RolesChanged?.Invoke(id, roles));
             HubConnection.On<int, int, int>("UserRoleChanged", (simId, userId, roleId) => UserRoleChanged?.Invoke(simId, userId, roleId));
@@ -70,9 +93,9 @@ namespace MUNityClient.Services.SocketHandlers
             HubConnection.On<MUNity.Schema.Simulation.CreatedVoteModel>("VoteCreated", (args) => VoteCreated?.Invoke(this, args));
         }
 
-        public static async Task<SimulationSocketHandler> CreateHander()
+        public static async Task<SimulationContext> CreateHander(SimulationResponse simulation, SimulationAuthSchema auth)
         {
-            var socket = new SimulationSocketHandler();
+            var socket = new SimulationContext(simulation, auth);
             await socket.HubConnection.StartAsync();
             return socket;
         }

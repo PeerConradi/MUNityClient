@@ -1,8 +1,8 @@
-﻿@using MUNitySchema.Extensions.SimulationExtensions;
+﻿@using MUNity.Extensions.SimulationExtensions;
 @inject Services.SimulationService simulationService;
 
 
-<div class="widget-list-item bg-light border @((User.IsOnline) ? "border-success" : "border-danger")" style="border-width: 2px !important;" >
+<div class="widget-list-item bg-light w-100 border @((User.IsOnline) ? "border-success" : "border-danger")" style="border-width: 2px !important;" >
     <div class="widget-list-media ">
         @if (Role != null && !string.IsNullOrEmpty(Role.Iso))
         {
@@ -132,7 +132,7 @@
     public MUNity.Schema.Simulation.SimulationRoleItem Role { get; set; }
 
     [Parameter]
-    public MUNityClient.Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }
+    public MUNityClient.Services.SocketHandlers.SimulationContext SimulationContext { get; set; }
 
     private MUNity.Schema.Simulation.VotedEventArgs _lastVoteArgs { get; set; } = null;
 
@@ -142,13 +142,13 @@
 
     protected override void OnInitialized()
     {
-        if (SocketHandler != null)
+        if (SimulationContext != null)
         {
-            SocketHandler.UserPetition += OnUserPetition;
-            SocketHandler.UserPetitionAccpted += OnUserPetitionAccepted;
-            SocketHandler.UserPetitionDeleted += OnUserPetitionDeleted;
-            SocketHandler.UserVoted += UserVoted;
-            SocketHandler.VoteCreated += VoteCreated;
+            SimulationContext.UserPetition += OnUserPetition;
+            SimulationContext.UserPetitionAccpted += OnUserPetitionAccepted;
+            SimulationContext.UserPetitionDeleted += OnUserPetitionDeleted;
+            SimulationContext.UserVoted += UserVoted;
+            SimulationContext.VoteCreated += VoteCreated;
         }
         base.OnInitialized();
     }

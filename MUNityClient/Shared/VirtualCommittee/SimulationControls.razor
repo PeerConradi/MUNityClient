@@ -17,23 +17,22 @@
     Ist abhängig vom Context der Redeliste.
 *@
 
-@* MUNitySchema.Extenstions.SimulationExtension will move to MUNity.Extensions.SimulationExtensions in the next package version! *@
-@using MUNitySchema.Extensions.SimulationExtensions;
+@using MUNity.Extensions.SimulationExtensions;
 
 @inject Services.SimulationService simulationService;
 @inject Services.ListOfSpeakerService listOfSpeakerService;
 <!-- Grey with black text -->
 <nav class="navbar navbar-expand-sm bg-primary navbar-dark nav-bottom w-100" style="opacity: 0.75;">
     <ul class="navbar-nav">
-        <li class="nav-item">
+        <li class="nav-item @((_selectedTab == TabPages.GeneralControls) ? "active" : "")">
             <a class="nav-link" @onclick="() => _selectedTab = (_selectedTab == TabPages.GeneralControls) ? TabPages.None : TabPages.GeneralControls">Allgemeine Funktionen</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item @((_selectedTab == TabPages.ListOfSpeakers) ? "active" : "")">
             <a class="nav-link" @onclick="() => _selectedTab = (_selectedTab == TabPages.ListOfSpeakers) ? TabPages.None : TabPages.ListOfSpeakers">Redeliste</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item @((_selectedTab == TabPages.Voting) ? "active" : "")">
             <a class="nav-link" @onclick="() => { _selectedTab = (_selectedTab == TabPages.Voting) ? TabPages.None : TabPages.Voting; _hasNewVotes = false; }">
-                Abstimmung @if (_hasNewVotes && _lastCreatedVote.AllowedUsers.Contains(Me.SimulationUserId))
+                Abstimmung @if (_hasNewVotes && _lastCreatedVote.AllowedUsers.Contains(SimulationContext.Me.SimulationUserId))
                 {
                     <span class="badge badge-danger">Neu</span>
                 }
@@ -45,9 +44,9 @@
             <a class="nav-link">Anwesenheit</a>
         </li>
         -->
-        @if (Role != null && Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+        @if (SimulationContext?.MyRole != null && SimulationContext.MyRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
         {
-            <li class="nav-item">
+            <li class="nav-item @((_selectedTab == TabPages.Petitions) ? "active" : "")">
                 <a class="nav-link" @onclick="() => _selectedTab = (_selectedTab == TabPages.Petitions) ? TabPages.None : TabPages.Petitions">
                     Anträge @if (_petitions != null && _petitions.Any())
                     {
@@ -64,11 +63,8 @@
 @if (_selectedTab == TabPages.GeneralControls)
 {
     <div class="card floating-card shadow-2">
-
-        <SimulationControlsGeneral Me="@Me"
-                                   Role="@Role"
-                                   SimulationId="@SimulationId"
-                                   SpeakerlistId="@SpeakerlistId"></SimulationControlsGeneral>
+        
+        <SimulationControlsGeneral SimulationContext="@SimulationContext"></SimulationControlsGeneral>
 
 
     </div>
@@ -76,29 +72,26 @@
 
 @if (_selectedTab == TabPages.ListOfSpeakers)
 {
-    <div class="card floating-card shadow-2">
+    <div class="card floating-card shadow-2 w-100 p-3">
         @* Von der Sache her könnte an dieser Stelle auch die Beiden Buttons für auf die Redelisten und auf die FuK erscheinen. *@
-        @if (!string.IsNullOrEmpty(SpeakerlistId) && SpeakerlistId != "_loading_")
+        @if (SpeakerlistSocket != null)
         {
-            @if (Role != null && Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+            @if (SimulationContext?.MyRole != null && SimulationContext.MyRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
             {
-                <MUNityClient.Pages.LoS.ListOfSpeakerEditor Id="@SpeakerlistId" IsOnline="@true"></MUNityClient.Pages.LoS.ListOfSpeakerEditor>
+                <MUNityClient.Pages.LoS.ListOfSpeakerEditor Id="@SpeakerlistSocket.SourceList.ListOfSpeakersId" Socket="@SpeakerlistSocket" IsOnline="@true"></MUNityClient.Pages.LoS.ListOfSpeakerEditor>
             }
             else
             {
                 @* TODO: Buttons um auf die Redeliste oder FuK zu kommen an diese Stelle verschieben *@
-                <button class="btn btn-info" @onclick="AddMeToListOfSpeakers">Auf die Redeliste</button>
-                <button class="btn btn-info" @onclick="AddMeToListOfQuestions">Auf Fragen und Kurzbemerkungen</button>
+                <button class="btn btn-info" @onclick="AddMeToListOfSpeakers" disabled="@(SpeakerlistSocket.SourceList.ListClosed)">Auf die Redeliste</button>
+                <button class="btn btn-info" @onclick="AddMeToListOfQuestions" disabled="@(SpeakerlistSocket.SourceList.QuestionsClosed)">Auf Fragen und Kurzbemerkungen</button>
             }
-        }
-        else if (SpeakerlistId == "_loading_")
-        {
-            <p>Redeliste wird geladen</p>
         }
         else
         {
-            <p>Keine Redeliste</p>
+            <p>Es wurde keine Redelistenverbindung übergeben. Möglicherweise ist keine Redeliste hinterlegt.</p>
         }
+        <span class="close-floating-card badge badge-warning hoverable" @onclick="() => _selectedTab = TabPages.None">Fenster schließen</span>
     </div>
 }
 
@@ -164,13 +157,14 @@
 @if (_selectedTab == TabPages.Voting)
 {
 
-    @if ((_lastCreatedVote == null || _lastCreatedVote != null && !_lastCreatedVote.AllowedUsers.Contains(Me.SimulationUserId)) && Role != null && Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+    @if (SimulationContext != null && (_lastCreatedVote == null || _lastCreatedVote != null && !_lastCreatedVote.AllowedUsers.Contains(SimulationContext.Me.SimulationUserId)) && SimulationContext?.MyRole != null && SimulationContext.MyRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
     {
-        <div class="card floating-card shadow-2">
-            <CreateVoteComponent SimulationId="@SimulationId"></CreateVoteComponent>
+        <div class="card floating-card shadow-2 p-3">
+            <CreateVoteComponent SimulationId="@SimulationContext.Simulation.SimulationId"></CreateVoteComponent>
+            <span class="close-floating-card badge badge-warning hoverable" @onclick="() => _selectedTab = TabPages.None">Fenster schließen</span>
         </div>
     }
-    else if (_lastCreatedVote != null && _lastCreatedVote.AllowedUsers.Contains(Me.SimulationUserId))
+    else if (_lastCreatedVote != null && _lastCreatedVote.AllowedUsers.Contains(SimulationContext.Me.SimulationUserId))
     {
         <div class="card floating-card shadow-2">
             <div class="row">
@@ -207,25 +201,10 @@
     }
 
     [Parameter]
-    public MUNity.Schema.Simulation.SimulationRoleItem Role { get; set; }
+    public MUNityClient.Services.SocketHandlers.ListOfSpeakerSocketHandler SpeakerlistSocket { get; set; }
 
     [Parameter]
-    public string SpeakerlistId { get; set; }
-
-    [Parameter]
-    public int SimulationId { get; set; }
-
-    [Parameter]
-    public MUNity.Schema.Simulation.IUserItem Me { get; set; }
-
-    [Parameter]
-    public Services.SocketHandlers.SimulationSocketHandler Socket { get; set; }
-
-    [Parameter]
-    public IEnumerable<MUNity.Schema.Simulation.IUserItem> Users { get; set; }
-
-    [Parameter]
-    public IEnumerable<MUNity.Schema.Simulation.SimulationRoleItem> Roles { get; set; }
+    public Services.SocketHandlers.SimulationContext SimulationContext { get; set; }
 
     private TabPages _selectedTab = TabPages.None;
 
@@ -235,13 +214,15 @@
 
     private MUNity.Schema.Simulation.CreatedVoteModel _lastCreatedVote { get; set; } = null;
 
+    private MUNity.Models.ListOfSpeakers.ListOfSpeakers _listOfSpeakers;
+
     private string GetPetitionDisplayName(MUNity.Schema.Simulation.Petition petition)
     {
-        if (Users == null) return "Unbekannt";
-        var user = Users.FirstOrDefault(n => n.SimulationUserId == petition.PetitionUserId);
+        if (SimulationContext.Simulation.Users == null) return "Unbekannt";
+        var user = SimulationContext.Simulation.Users.FirstOrDefault(n => n.SimulationUserId == petition.PetitionUserId);
         if (user == null) return "Unbekannt";
-        if (user.RoleId == -2 || Roles == null) return user.DisplayName ?? "Unbekannt";
-        var role = Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId);
+        if (user.RoleId == -2 || SimulationContext.Simulation.Roles == null) return user.DisplayName ?? "Unbekannt";
+        var role = SimulationContext.Simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == user.RoleId);
         if (role != null) return role.Name;
         return "Unbekannt";
     }
@@ -257,14 +238,19 @@
     {
         _petitions = new List<MUNity.Schema.Simulation.Petition>();
         _currentPetitions = new List<MUNity.Schema.Simulation.Petition>();
-        if (Socket != null)
+        if (SimulationContext != null)
         {
-            Socket.UserPetition += OnUserPetition;
-            Socket.UserPetitionAccpted += OnUserPetitionAccepted;
-            Socket.UserPetitionDeleted += OnUserPetitionDeleted;
-            Socket.VoteCreated += VoteCreated;
+            SimulationContext.UserPetition += OnUserPetition;
+            SimulationContext.UserPetitionAccpted += OnUserPetitionAccepted;
+            SimulationContext.UserPetitionDeleted += OnUserPetitionDeleted;
+            SimulationContext.VoteCreated += VoteCreated;
         }
         base.OnInitialized();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
     }
 
     private async void AcceptPetition(MUNity.Schema.Simulation.Petition petition)
@@ -309,7 +295,7 @@
     {
         if (_lastCreatedVote != null)
         {
-            await this.simulationService.Vote(SimulationId, _lastCreatedVote.CreatedVoteModelId, 0);
+            await this.simulationService.Vote(SimulationContext.Simulation.SimulationId, _lastCreatedVote.CreatedVoteModelId, 0);
             _lastCreatedVote = null;
             _hasNewVotes = false;
             _selectedTab = TabPages.None;
@@ -321,7 +307,7 @@
     {
         if (_lastCreatedVote != null)
         {
-            await this.simulationService.Vote(SimulationId, _lastCreatedVote.CreatedVoteModelId, 1);
+            await this.simulationService.Vote(SimulationContext.Simulation.SimulationId, _lastCreatedVote.CreatedVoteModelId, 1);
             _lastCreatedVote = null;
             _hasNewVotes = false;
             _selectedTab = TabPages.None;
@@ -333,7 +319,7 @@
     {
         if (_lastCreatedVote != null)
         {
-            await this.simulationService.Vote(SimulationId, _lastCreatedVote.CreatedVoteModelId, 2);
+            await this.simulationService.Vote(SimulationContext.Simulation.SimulationId, _lastCreatedVote.CreatedVoteModelId, 2);
             _lastCreatedVote = null;
             _hasNewVotes = false;
             _selectedTab = TabPages.None;
@@ -343,32 +329,36 @@
 
     private void AddMeToListOfSpeakers()
     {
-        if (Role != null)
+        if (SpeakerlistSocket == null) return;
+
+        if (SimulationContext?.MyRole != null)
         {
-            listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Role.Name, Role.Iso);
+            listOfSpeakerService.AddSpeakerToList(SpeakerlistSocket.SourceList.ListOfSpeakersId, SimulationContext.MyRole.Name, SimulationContext.MyRole.Iso);
             return;
         }
         else
         {
-            if (Me != null)
+            if (SimulationContext?.Me != null)
             {
-                listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Me.DisplayName, "");
+                listOfSpeakerService.AddSpeakerToList(SpeakerlistSocket.SourceList.ListOfSpeakersId, SimulationContext.Me.DisplayName, "");
             }
         }
     }
 
     private void AddMeToListOfQuestions()
     {
-        if (Role != null)
+        if (SpeakerlistSocket == null) return;
+
+        if (SimulationContext?.MyRole != null)
         {
-            listOfSpeakerService.AddQuestionToList(SpeakerlistId, Role.Name, Role.Iso);
+            listOfSpeakerService.AddQuestionToList(SpeakerlistSocket.SourceList.ListOfSpeakersId, SimulationContext.MyRole.Name, SimulationContext.MyRole.Iso);
             return;
         }
         else
         {
-            if (Me != null)
+            if (SimulationContext?.Me != null)
             {
-                listOfSpeakerService.AddQuestionToList(SpeakerlistId, Me.DisplayName, "");
+                listOfSpeakerService.AddQuestionToList(SpeakerlistSocket.SourceList.ListOfSpeakersId, SimulationContext.Me.DisplayName, "");
             }
         }
     }
@@ -404,5 +394,14 @@
         left: 0px;
         right: auto;
         z-index: 100;
+    }
+
+    .close-floating-card {
+        position: absolute;
+        top: -5px;
+        left: auto;
+        right: 10px;
+        bottom: auto;
+        cursor: pointer;
     }
 </style>

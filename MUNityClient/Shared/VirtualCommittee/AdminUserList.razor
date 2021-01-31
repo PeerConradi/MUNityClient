@@ -35,7 +35,7 @@
                 {
                     if (user != null)
                     {
-                        <UserListItemAdmin User="user" SimulationId="SimulationId" UserRemoveClicked="@OnUserRemoved" Roles="Roles" PasswordShown="@showPasswords"></UserListItemAdmin>
+                        <UserListItemAdmin User="user" SimulationId="SimulationContext.Simulation.SimulationId" UserRemoveClicked="@OnUserRemoved" Roles="Roles" PasswordShown="@showPasswords"></UserListItemAdmin>
                     }
                 }
             </tbody>
@@ -56,11 +56,9 @@ else
 }
 
 @code {
-    [Parameter]
-    public int SimulationId { get; set; }
 
     [Parameter]
-    public Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }
+    public Services.SocketHandlers.SimulationContext SimulationContext { get; set; }
 
     private Boolean showPasswords = false;
 
@@ -72,17 +70,17 @@ else
     protected override async Task OnInitializedAsync()
     {
 
-        this.Users = await _simulationService.GetUserSetups(this.SimulationId);
+        this.Users = await _simulationService.GetUserSetups(SimulationContext.Simulation.SimulationId);
         if (Roles == null)
         {
-            this.Roles = await _simulationService.GetRoles(this.SimulationId);
+            this.Roles = await _simulationService.GetRoles(SimulationContext.Simulation.SimulationId);
         }
-        if (SocketHandler != null)
+        if (SimulationContext != null)
         {
-            SocketHandler.RolesChanged += OnRolesChanged;
-            SocketHandler.UserConnected += OnUserConnected;
-            SocketHandler.UserDisconnected += OnUserDisconnected;
-            SocketHandler.UserRoleChanged += OnUserRoleChanged;
+            SimulationContext.RolesChanged += OnRolesChanged;
+            SimulationContext.UserConnected += OnUserConnected;
+            SimulationContext.UserDisconnected += OnUserDisconnected;
+            SimulationContext.UserRoleChanged += OnUserRoleChanged;
         }
     }
 
@@ -99,7 +97,7 @@ else
 
     private async Task<EventCallback> OnUserRemoved(int userId)
     {
-        await this._simulationService.RemoveUser(this.SimulationId, userId);
+        await this._simulationService.RemoveUser(this.SimulationContext.Simulation.SimulationId, userId);
         this.Users.RemoveAll(n => n.SimulationUserId == userId);
         return EventCallback.Empty;
     }
@@ -137,7 +135,7 @@ else
 
     private async Task NewUser()
     {
-        var user = await _simulationService.CreateUser(SimulationId);
+        var user = await _simulationService.CreateUser(this.SimulationContext.Simulation.SimulationId);
         if (user != null)
         {
             Users.Add(user);

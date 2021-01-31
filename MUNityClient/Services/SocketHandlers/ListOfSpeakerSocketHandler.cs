@@ -15,7 +15,8 @@ namespace MUNityClient.Services.SocketHandlers
     public class ListOfSpeakerSocketHandler
     {
 
-        private ListOfSpeakers _listOfSpeakers;
+        public ListOfSpeakers SourceList { get; private set; }
+            
 
         public event EventHandler<int> QuestionTimerStarted;
 
@@ -29,14 +30,24 @@ namespace MUNityClient.Services.SocketHandlers
 
         private ListOfSpeakerSocketHandler(ListOfSpeakers listOfSpeakers)
         {
-            _listOfSpeakers = listOfSpeakers;
+            SourceList = listOfSpeakers;
             
             HubConnection = new HubConnectionBuilder().WithUrl($"{Program.API_URL}/slsocket").Build();
+
+            SpeakerListChanged += ListOfSpeakerSocketHandler_SpeakerListChanged;
 
             HubConnection.On<int>(nameof(MUNity.Hubs.ITypedListOfSpeakerHub.QuestionTimerStarted), (seconds) => QuestionTimerStarted?.Invoke(this, seconds));
             HubConnection.On<ListOfSpeakers>(nameof(MUNity.Hubs.ITypedListOfSpeakerHub.SpeakerListChanged), (list) => SpeakerListChanged?.Invoke(this, list));
             HubConnection.On<int>(nameof(MUNity.Hubs.ITypedListOfSpeakerHub.SpeakerTimerStarted), (seconds) => SpeakerTimerStarted.Invoke(this, seconds));
             HubConnection.On<string>(nameof(MUNity.Hubs.ITypedListOfSpeakerHub.TimerStopped),(s) => TimerStopped?.Invoke(this, new EventArgs()));
+        }
+
+        private void ListOfSpeakerSocketHandler_SpeakerListChanged(object sender, ListOfSpeakers e)
+        {
+            if (e.ListOfSpeakersId == SourceList.ListOfSpeakersId)
+            {
+                SourceList = e;
+            }
         }
 
         public static async Task<ListOfSpeakerSocketHandler> CreateHandler(ListOfSpeakers listOfSpeakers)

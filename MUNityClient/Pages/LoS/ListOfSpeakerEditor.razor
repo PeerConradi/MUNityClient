@@ -55,16 +55,21 @@
                                 <h5 class="col-12 p-0">
                                     <i class="fas fa-user-alt mr-2"></i>
                                     @if (Speakerlist.CurrentSpeaker != null)
-                                {
-                                            @Speakerlist.CurrentSpeaker.Name
-                                }
-                                else
-                                {
-                                            <span>-</span>
-                                }
-                                    <span type="button" class="text-danger hover-enabled" title="Kopf leeren"
-                                        @onclick="() => this.Speakerlist.ClearCurrentSpeaker()"><i
-                                            class="fas fa-trash ml-3"></i></span>
+                                    {
+                                        @Speakerlist.CurrentSpeaker.Name
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                    @if (Speakerlist.CurrentSpeaker != null)
+                                    {
+                                        <span type="button" class="text-danger hover-enabled" title="Kopf leeren"
+                                              @onclick="() => this.Speakerlist.ClearCurrentSpeaker()">
+                                            <i class="fas fa-trash ml-3"></i>
+                                        </span>
+                                    }
+
                                 </h5>
                             </div>
                             <div class="col-7 row m-0 p-0 d-flex justify-content-end">
@@ -251,7 +256,8 @@
 
     private MUNityClient.Shared.Bootstrap.Modal SpeakingTimeConfigModal { get; set; }
 
-    private Services.SocketHandlers.ListOfSpeakerSocketHandler _socket;
+    [Parameter]
+    public Services.SocketHandlers.ListOfSpeakerSocketHandler Socket { get; set; }
 
     private class SpeakerToAdd
     {
@@ -349,40 +355,42 @@
         if (IsOnline)
         {
             this.Speakerlist = await this.listOfSpeakerService.GetFromApi(this.Id);
-            @* Wir registrieren die Redelisten beim WebSocket um über Änderungen informeirt zu werden. *@
-        _socket = await listOfSpeakerService.Subscribe(Speakerlist);
-        if (_socket != null)
-        {
-            _socket.SpeakerListChanged += OnSpeakerlistChanged;
+        
+            // Check if the socket is already passed as a Parameter
+            if (Socket != null)
+                Socket = await listOfSpeakerService.Subscribe(Speakerlist);
 
+            if (Socket != null)
+            {
+                Socket.SpeakerListChanged += OnSpeakerlistChanged;
+            }
+        }
+        else
+        {
+            this.Speakerlist = await this.listOfSpeakerService.GetListOfSpeakers(this.Id);
+        }
+
+        if (this.Speakerlist != null)
+        {
+            this.Settings = new SpeakerlistSettings(this.Speakerlist);
+
+            // Wir bauen jetzt für den ersten Entwurf einen Timer, welcher
+            // jede Sekunde neu Zeichnet. Der Grund dafür ist, dass die
+            // Redeliste nicht selber mit einem Timer arbeitet sondern
+            // Startzeiten mit der aktuellen Uhrzeit Synct und hierdurch
+            // die Redezeiten berechnet.
+            // Es ist theoretisch möglich sich von der Redeliste ein StateChanged Event geben zu lassen
+            // dann kann der Timer pausiert werden, wenn ohnehin gerade niemand spricht, aber ich halte
+            // eine aktualisierung der Ansicht (kein Serverping) nicht für zu viel. ~Peer
+            var timer = new Timer(1000);
+            timer.Elapsed += TimerElapsed;
+            timer.Start();
+
+            Speakerlist.PropertyChanged += StoreOnListChanged;
+            Speakerlist.AllSpeakers.CollectionChanged += StoreOnCollectionChanged;
+            base.OnInitialized();
         }
     }
-    else
-    {
-        this.Speakerlist = await this.listOfSpeakerService.GetListOfSpeakers(this.Id);
-    }
-
-    if (this.Speakerlist != null)
-    {
-        this.Settings = new SpeakerlistSettings(this.Speakerlist);
-
-        // Wir bauen jetzt für den ersten Entwurf einen Timer, welcher
-        // jede Sekunde neu Zeichnet. Der Grund dafür ist, dass die
-        // Redeliste nicht selber mit einem Timer arbeitet sondern
-        // Startzeiten mit der aktuellen Uhrzeit Synct und hierdurch
-        // die Redezeiten berechnet.
-        // Es ist theoretisch möglich sich von der Redeliste ein StateChanged Event geben zu lassen
-        // dann kann der Timer pausiert werden, wenn ohnehin gerade niemand spricht, aber ich halte
-        // eine aktualisierung der Ansicht (kein Serverping) nicht für zu viel. ~Peer
-        var timer = new Timer(1000);
-        timer.Elapsed += TimerElapsed;
-        timer.Start();
-
-        Speakerlist.PropertyChanged += StoreOnListChanged;
-        Speakerlist.AllSpeakers.CollectionChanged += StoreOnCollectionChanged;
-        base.OnInitialized();
-    }
-}
 
 private void OnSpeakerlistChanged(object sender, ListOfSpeakers newList)
 {

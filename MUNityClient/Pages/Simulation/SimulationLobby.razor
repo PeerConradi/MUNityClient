@@ -5,13 +5,13 @@
 
 @layout MUNityClient.Shared.EmptyLayout;
 
-@if (Simulation == null)
+@if (_context?.Simulation == null)
 {
     <MUNityClient.Shared.Bootstrap.Spinner DisplayText="Lobby wird geladen" />
 }
 else
 {
-    <MUNityClient.Shared.VirtualCommittee.SimulationPrePhase Id="@Simulation.SimulationId"></MUNityClient.Shared.VirtualCommittee.SimulationPrePhase>
+    <MUNityClient.Shared.VirtualCommittee.SimulationPrePhase SimulationContext="@_context"></MUNityClient.Shared.VirtualCommittee.SimulationPrePhase>
 }
 
 @code {
@@ -19,15 +19,15 @@ else
     public string Id { get; set; }
 
 
-    public MUNity.Schema.Simulation.SimulationResponse Simulation { get; set; }
+    private MUNityClient.Services.SocketHandlers.SimulationContext _context = null;
 
     protected override async Task OnInitializedAsync()
     {
         int id = 0;
         if (int.TryParse(Id, out id))
         {
-            this.Simulation = await simulationService.GetSimulation(id);
-            if (Simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online)
+            this._context = await simulationService.Subscribe(id);
+            if (_context != null && _context.Simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online)
             {
                 navigationManager.NavigateTo($"/sim/run/{id}");
             }
