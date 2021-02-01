@@ -3,22 +3,15 @@
 @inject Services.SimulationService simulationService;
 @inject NavigationManager navigationManager;
 
-@if (Simulation == null)
+@layout MUNityClient.Shared.EmptyLayout;
+
+@if (_context?.Simulation == null)
 {
-    <div class="row col-12 m-0 p-0 d-flex w-100 justify-content-center mt-5">
-        <div class="d-flex w-100 justify-content-center">
-            <div class="spinner-border text-primary p-4" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
-        <div class="d-flex justify-content-center mt-3">
-            Lobby wird geladen...
-        </div>
-    </div>
+    <MUNityClient.Shared.Bootstrap.Spinner DisplayText="Lobby wird geladen" />
 }
 else
 {
-    <MUNityClient.Shared.VirtualCommittee.SimulationPrePhase Id="@Simulation.SimulationId"></MUNityClient.Shared.VirtualCommittee.SimulationPrePhase>
+    <MUNityClient.Shared.VirtualCommittee.SimulationPrePhase SimulationContext="@_context"></MUNityClient.Shared.VirtualCommittee.SimulationPrePhase>
 }
 
 @code {
@@ -26,15 +19,15 @@ else
     public string Id { get; set; }
 
 
-    public MUNity.Schema.Simulation.SimulationResponse Simulation { get; set; }
+    private MUNityClient.Services.SocketHandlers.SimulationContext _context = null;
 
     protected override async Task OnInitializedAsync()
     {
         int id = 0;
         if (int.TryParse(Id, out id))
         {
-            this.Simulation = await simulationService.GetSimulation(id);
-            if (Simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online)
+            this._context = await simulationService.Subscribe(id);
+            if (_context != null && _context.Simulation.Phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online)
             {
                 navigationManager.NavigateTo($"/sim/run/{id}");
             }

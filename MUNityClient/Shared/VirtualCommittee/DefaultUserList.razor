@@ -53,11 +53,9 @@ else
 }
 
 @code {
-    [Parameter]
-    public int SimulationId { get; set; }
 
     [Parameter]
-    public Services.SocketHandlers.SimulationSocketHandler SocketHandler { get; set; }
+    public Services.SocketHandlers.SimulationContext SimulationContext { get; set; }
 
     public IEnumerable<MUNity.Schema.Simulation.SimulationUserItem> Users { get; set; }
 
@@ -66,19 +64,19 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (SocketHandler != null)
+        if (SimulationContext != null)
         {
-            SocketHandler.UserConnected += OnUserConnected;
-            SocketHandler.UserDisconnected += OnUserDisconnected;
-            SocketHandler.UserRoleChanged += OnUserRoleChanged;
+            SimulationContext.UserConnected += OnUserConnected;
+            SimulationContext.UserDisconnected += OnUserDisconnected;
+            SimulationContext.UserRoleChanged += OnUserRoleChanged;
         }
 
         if (Roles == null)
         {
-            this.Roles = await _simulationService.GetRoles(this.SimulationId);
+            this.Roles = await _simulationService.GetRoles(SimulationContext.Simulation.SimulationId);
         }
 
-        this.Users = await _simulationService.GetUsers(this.SimulationId);
+        this.Users = await _simulationService.GetUsers(SimulationContext.Simulation.SimulationId);
     }
 
     private void OnUserRoleChanged(int sender, int userId, int roleId)

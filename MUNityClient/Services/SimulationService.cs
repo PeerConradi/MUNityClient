@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http.Json;
 using Blazored.LocalStorage;
 using System.Net.Http;
+using MUNity.Schema.Simulation;
 
 namespace MUNityClient.Services
 {
@@ -222,6 +223,23 @@ namespace MUNityClient.Services
             return await client.GetAsync($"/api/Simulation/RemoveSimulationUser?simulationId={simulationId}&userId={userId}");
         }
 
+        public async Task<HttpResponseMessage> CreateVote(MUNity.Schema.Simulation.CreateSimulationVoting model)
+        {
+            var client = _httpService.HttpClient;
+            model.Token = (await GetSimulationToken(model.SimulationId))?.Token ?? "";
+            Console.WriteLine(model.Token);
+            Console.WriteLine(model);
+            Console.WriteLine(model.SimulationId);
+            return await client.PostAsJsonAsync<MUNity.Schema.Simulation.CreateSimulationVoting>($"/api/Simulation/CreateVoting", model);
+        }
+
+        public async Task<HttpResponseMessage> Vote(int simulationId, string voteId, int choice)
+        {
+            var client = await GetSimulationClient(simulationId);
+            if (client == null) return null;
+            return await client.GetAsync($"/api/Simulation/Vote?simulationId={simulationId}&voteId={voteId}&choice={choice}");
+        }
+
         private async Task<HttpClient> GetSimulationClient(int id)
         {
             var token = await GetSimulationToken(id);
@@ -263,16 +281,51 @@ namespace MUNityClient.Services
             await this._localStorage.SetItemAsync("munity_simsims", tokens);
         }
 
-        public async Task<SocketHandlers.SimulationSocketHandler> Subscribe(int simulationId)
+        /// <summary>
+        /// Creates a kind of Simulation ViewModel that holds the Simulation itself and all the relevant information
+        /// </summary>
+        /// <param name="simulationId"></param>
+        /// <returns></returns>
+        public async Task<SocketHandlers.SimulationContext> Subscribe(int simulationId)
         {
             var token = await GetSimulationToken(simulationId);
             if (token == null) return null;
 
-            var socket = await SocketHandlers.SimulationSocketHandler.CreateHander();
+            var simulation = await this.GetSimulation(simulationId);
+            if (simulation == null) return null;
+            simulation.Roles = await this.GetRoles(simulationId);
+
+            
+
+            var auth = await this.GetMyAuth(simulationId);
+
+            var defaultUsers = await this.GetUsers(simulationId);
+
+            var currentUser = defaultUsers.FirstOrDefault(n => n.SimulationUserId == auth.SimulationUserId);
+            var myRole = simulation.Roles.FirstOrDefault(n => n.SimulationRoleId == auth.SimulationUserId);
+
+            // Load users extra depending on auth
+            if (auth.CanCreateRole || (myRole != null && myRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman))
+            {
+                var tmpUsers = await this.GetUserSetups(simulationId);
+                simulation.Users.Clear();
+                simulation.Users.AddRange(tmpUsers);
+                var meInThisList = tmpUsers.FirstOrDefault(n => n.SimulationUserId == auth.SimulationUserId);
+                if (meInThisList != null) meInThisList.IsOnline = true;
+            }
+            else
+            {
+                simulation.Users.Clear();
+                simulation.Users.AddRange(defaultUsers);
+                var meInThisList = defaultUsers.FirstOrDefault(n => n.SimulationUserId == auth.SimulationUserId);
+                if (meInThisList != null) meInThisList.IsOnline = true;
+            }
+
+            var socket = await SocketHandlers.SimulationContext.CreateHander(simulation, auth);
             var connId = socket.HubConnection.ConnectionId;
             var subscribeBody = new MUNity.Schema.Simulation.SubscribeSimulation()
             {
-                SimulationId = simulationId,
+                SimulationId = simulation.SimulationId,
                 ConnectionId = connId,
                 Token = token.Token
             };

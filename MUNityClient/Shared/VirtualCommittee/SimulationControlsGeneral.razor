@@ -4,11 +4,11 @@
 @inject Services.SimulationService simulationService;
 @inject Services.ListOfSpeakerService listOfSpeakerService;
 
-@if (Role != null)
+@if (SimulationContext.MyRole != null)
 {
     <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
         <div class="btn-group dropup" role="group">
-            @if (Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate || Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Ngo)
+            @if (SimulationContext.MyRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate || SimulationContext.MyRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Ngo)
             {
                 <button id="btnGroupDrop1"
                         type="button"
@@ -37,7 +37,7 @@
                     <li><a class="dropdown-item" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GOInformelleSitzung)'>Informelle Sitzung</a></li>
 
                     @* Funktionen nur für Delegierte *@
-                    @if (Role.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate)
+                    @if (SimulationContext.MyRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Delegate)
                     {
                         <li><a class="dropdown-item" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GORevision)'>Revision einer Entscheidung des Vorsitzes</a></li>
                         <li><a class="dropdown-item" @onclick='() => MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes.GONeuTagesordnungspunkt)'>Aufnahme eines neuen Tagesordnungspunktes</a></li>
@@ -52,17 +52,16 @@
                     }
                 </ul>
             }
+
         </div>
     </div>
+
+    if (this.SimulationContext.MyRole.RoleType == MUNity.Schema.Simulation.SimulationEnums.RoleTypes.Chairman)
+    {
+        <button class="btn btn-primary" @onclick="() => BackToLobby()">Zurück in die Lobby</button>
+    }
 }
 
-@* Kann ggf. in einen eigenen Reiter für die Redelistensteuerung ausgelagert werden! *@
-@if (!string.IsNullOrEmpty(SpeakerlistId) && SpeakerlistId != "_loading_")
-{
-    <button class="btn btn-info" @onclick="AddMeToListOfSpeakers">Auf die Redeliste</button>
-    <button class="btn btn-info" @onclick="AddMeToListOfQuestions">Auf Fragen und Kurzbemerkungen</button>
-
-}
 
 @code {
     private bool showPers { get; set; } = false;
@@ -70,22 +69,13 @@
     public bool showGO { get; set; } = false;
 
     [Parameter]
-    public MUNity.Schema.Simulation.SimulationRoleItem Role { get; set; }
-
-    [Parameter]
-    public string SpeakerlistId { get; set; }
-
-    [Parameter]
-    public int SimulationId { get; set; }
-
-    [Parameter]
-    public MUNity.Schema.Simulation.IUserItem Me { get; set; }
+    public MUNityClient.Services.SocketHandlers.SimulationContext SimulationContext { get; set; } = null;
 
     private async Task MakePetition(MUNity.Schema.Simulation.Petition.PetitionTypes type)
     {
-        if (SimulationId == 0) return;
+        if (SimulationContext?.Simulation == null) return;
         var petition = new MUNity.Schema.Simulation.Petition();
-        petition.SimulationId = SimulationId;
+        petition.SimulationId = SimulationContext.Simulation.SimulationId;
         petition.Text = "";
         petition.PetitionType = type;
         await this.simulationService.MakePetition(petition);
@@ -93,35 +83,8 @@
         showGO = false;
     }
 
-    private void AddMeToListOfSpeakers()
+    private async Task BackToLobby()
     {
-        if (Role != null)
-        {
-            listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Role.Name, Role.Iso);
-            return;
-        }
-        else
-        {
-            if (Me != null)
-            {
-                listOfSpeakerService.AddSpeakerToList(SpeakerlistId, Me.DisplayName, "");
-            }
-        }
-    }
-
-    private void AddMeToListOfQuestions()
-    {
-        if (Role != null)
-        {
-            listOfSpeakerService.AddQuestionToList(SpeakerlistId, Role.Name, Role.Iso);
-            return;
-        }
-        else
-        {
-            if (Me != null)
-            {
-                listOfSpeakerService.AddQuestionToList(SpeakerlistId, Me.DisplayName, "");
-            }
-        }
+        var response = await this.simulationService.SetPhase(this.SimulationContext.Simulation.SimulationId, (int)MUNity.Schema.Simulation.SimulationEnums.GamePhases.Lobby);
     }
 }

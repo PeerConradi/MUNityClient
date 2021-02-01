@@ -4,22 +4,22 @@
 @inject MUNityClient.Services.SimulationService simulationService;
 @inject NavigationManager navigationManager;
 @* Dies ist eine Teilnehmendenansicht an dieser Stelle werden den Nutzern Rollen zugewiesen bzw. können sich diese ihre Rollen auswählen. *@
-@if (_simulation != null)
+@if (SimulationContext?.Simulation != null)
 {
     <div class="row col-12 m-0 p-0">
         <div class="col">
             <div class="card">
                 <div class="card-header">
-                    @_simulation.Name
+                    <a href="/sim/home" class="btn btn-danger btn-sm">Raum verlassen</a> @SimulationContext.Simulation.Name
                 </div>
                 <div class="card-body p-0">
-                    @if (_auth.CanCreateRole)
+                    @if (SimulationContext.MyAuth.CanCreateRole)
                     {
-                        <AdminUserList SimulationId="_simulation.SimulationId" SocketHandler="_socket"></AdminUserList>
+                        <AdminUserList SimulationContext="@SimulationContext"></AdminUserList>
                     }
                     else
                     {
-                        <DefaultUserList SimulationId="_simulation.SimulationId" SocketHandler="_socket"></DefaultUserList>
+                        <DefaultUserList SimulationContext="@SimulationContext"></DefaultUserList>
                     }
                 </div>
                 @*
@@ -34,7 +34,7 @@
             </div>
         </div>
 
-        @if (_auth.CanCreateRole)
+        @if (SimulationContext.MyAuth.CanCreateRole)
         {
             <div class="col-4">
                 <div class="card">
@@ -42,7 +42,7 @@
                         Einstellungen
                     </div>
                     <div class="card-body">
-                        @if (_presets != null && _presets.Any() && _auth.CanCreateRole)
+                        @if (_presets != null && _presets.Any() && SimulationContext.MyAuth.CanCreateRole)
                         {
                             <div class="form-group">
                                 <label>Vorlage</label>
@@ -71,7 +71,7 @@
 
                     </div>
                     <div class="card-footer">
-                        @if (_auth != null && _auth.CanCreateRole)
+                        @if (SimulationContext.MyAuth != null && SimulationContext.MyAuth.CanCreateRole)
                         {
                             <button class="btn btn-block btn-success" @onclick="() => StartPhase()">Starten</button>
                         }
@@ -83,31 +83,18 @@
 }
 else
 {
-    <div class="row d-flex w-100 justify-content-center mt-5">
-        <div class="d-flex w-100 justify-content-center">
-            <div class="spinner-border text-primary p-4" role="status">
-                <span class="sr-only">Loading...</span>
-            </div>
-        </div>
-        <div class="d-flex justify-content-center mt-3">
-            Lobby wird geladen...
-        </div>
-    </div>
+    <MUNityClient.Shared.Bootstrap.Spinner DisplayText="Lobby wird geladen" />
 }
 
 
 @code {
     [Parameter]
-    public int? Id { get; set; }
-
-    private MUNity.Schema.Simulation.SimulationAuthSchema _auth { get; set; }
-
-    private Services.SocketHandlers.SimulationSocketHandler _socket;
-
-    private MUNity.Schema.Simulation.SimulationResponse _simulation { get; set; }
+    public Services.SocketHandlers.SimulationContext SimulationContext { get; set; } = null;
 
     private IEnumerable<Models.Simulation.SimulationPreset> _presets { get; set; }
+
     private Models.Simulation.SimulationPreset SelectedPreset { get; set; }
+
     private string SelectedPresetId
     {
         get => SelectedPreset?.Id ?? "";
@@ -116,7 +103,7 @@ else
 
     private int SelectedRole
     {
-        get => this._simulation.Users.FirstOrDefault(n => n.SimulationUserId == _auth.SimulationUserId).RoleId;
+        get => SimulationContext.Simulation.Users.FirstOrDefault(n => n.SimulationUserId == SimulationContext.MyAuth.SimulationUserId).RoleId;
         set
         {
             SelectRole(value);
@@ -125,50 +112,47 @@ else
 
     private async Task StartPhase()
     {
-        var response = await this.simulationService.SetPhase(this._simulation.SimulationId, (int)MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online);
+        var response = await this.simulationService.SetPhase(SimulationContext.Simulation.SimulationId, (int)MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online);
     }
 
     
 
     private async Task ActivatePreset()
     {
-        if (this.Id != null && this.SelectedPresetId != null)
+        if (SimulationContext.Simulation != null)
         {
 
-            await this.simulationService.ApplyPreset(Id.Value, SelectedPresetId);
-            this._simulation.Roles = await this.simulationService.GetRoles(Id.Value);
+            await this.simulationService.ApplyPreset(SimulationContext.Simulation.SimulationId, SelectedPresetId);
+            SimulationContext.Simulation.Roles = await this.simulationService.GetRoles(SimulationContext.Simulation.SimulationId);
         }
     }
 
     protected async override Task OnInitializedAsync()
     {
-        if (Id != null)
+        if (SimulationContext.Simulation != null)
         {
-            _socket = await this.simulationService.Subscribe(Id.Value);
-            AppendEvents(_socket);
-            this._simulation = await this.simulationService.GetSimulation(Id.Value);
-            this._auth = await this.simulationService.GetMyAuth(Id.Value);
+            AppendEvents(SimulationContext);
             this._presets = await this.simulationService.GetPresets();
         }
 
         //return base.OnInitializedAsync();
     }
 
-    private void AppendEvents(MUNityClient.Services.SocketHandlers.SimulationSocketHandler handler)
+    private void AppendEvents(MUNityClient.Services.SocketHandlers.SimulationContext context)
     {
-        handler.PhaseChanged += PhaseChanged;
+        context.PhaseChanged += PhaseChanged;
     }
 
     private void PhaseChanged(int sender, MUNity.Schema.Simulation.SimulationEnums.GamePhases phase)
     {
         if (phase == MUNity.Schema.Simulation.SimulationEnums.GamePhases.Online)
         {
-            navigationManager.NavigateTo($"/sim/run/{_simulation.SimulationId}");
+            navigationManager.NavigateTo($"/sim/run/{SimulationContext.Simulation.SimulationId}");
         }
     }
 
     private async Task SelectRole(int roleId)
     {
-        await this.simulationService.PickRole(this._simulation.SimulationId, roleId);
+        await this.simulationService.PickRole(SimulationContext.Simulation.SimulationId, roleId);
     }
 }
